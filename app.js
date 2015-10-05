@@ -44,7 +44,6 @@ passport.deserializeUser(function(obj, done) {
   });
 });
 
-
 // Use the GoogleStrategy within Passport.
 //   Strategies in passport require a `validate` function, which accept
 //   credentials (in this case, an OpenID identifier and profile), and invoke a
@@ -55,7 +54,6 @@ passport.use(new GoogleStrategy({
     callbackURL: 'http://localhost:3000/auth/google/return',
   },
   function(accessToken, refreshToken, profile, done) {
-    console.log('refresh token: ' + refreshToken);
     User.findOne({
       googleId: profile.id
     }, function(err, user) {
@@ -119,9 +117,9 @@ app.get('/', function(req, res){
 
 app.get('/account', ensureAuthenticated, function(req, res){
   var gmailClient = new GmailClient(req.user);
-  var msg = gmailClient.fetchInbox(function(msg) {
-    console.log(msg);
-    res.render('account', { user: req.user, msg: msg});
+  gmailClient.listLabels(function(labels) {
+    console.log('listLabels returned: ' + labels);
+    res.render('account', { user: req.user, labels: labels });
   });
 });
 
