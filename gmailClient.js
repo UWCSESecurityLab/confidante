@@ -1,5 +1,5 @@
 'use strict';
-var Imap = require('imap');
+var BrowserBox = require('browserbox');
 
 function buildOAuthString(email, accessToken) {
   return new Buffer(
@@ -10,26 +10,17 @@ function buildOAuthString(email, accessToken) {
 class gmailClient {
   constructor(user) {
     var oauthString = buildOAuthString(user.profile.emails[0].value, user.accessToken);
-    this.imap = new Imap({
+    this.client = new BrowserBox({
       host: 'imap.gmail.com',
       port: 993,
-      tls: true,
-      xoauth2: oauthString
+      options: {
+        auth: {
+          xoauth2: oauthString
+        },
+        requireTLS: true
+      }
     });
   }
-
-  fetchInbox() {
-    imap.once('ready', function() {
-      imap.openBox('INBOX', true, function(error, inbox) {
-        if (error) return error;
-        imap.seq.fetch()
-      })
-    });
-
-    imap.connect();
-  }
-
-
 }
 
-modules.exports = gmailClient;
+module.exports = gmailClient;

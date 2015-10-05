@@ -10,9 +10,10 @@ var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 var expressLayouts = require('express-ejs-layouts')
 var mongoose = require('mongoose')
 var MongoSessionStore = require('connect-mongodb-session')(session)
-var User = require('./user.js')
+var User = require('./models/user.js')
 var credentials = require('./client_secret.json');
 var inspect = require('util').inspect;
+var GmailClient = require('./gmailClient.js');
 
 // Mongo session store setup.
 store = new MongoSessionStore({
@@ -25,7 +26,6 @@ store.on('error', function(error) {
 
 // User model.
 mongo = mongoose.connect('mongodb://localhost/test');
-User = user.User
 
 // Passport session setup.
 //   To support persistent login sessions, Passport needs to be able to
@@ -118,9 +118,11 @@ app.get('/', function(req, res){
 });
 
 app.get('/account', ensureAuthenticated, function(req, res){
-  console.log(req.user);
-  testImap(req.user);
-  res.render('account', { user: req.user });
+  var gmailClient = new GmailClient(req.user);
+  var msg = gmailClient.fetchInbox(function(msg) {
+    console.log(msg);
+    res.render('account', { user: req.user, msg: msg});
+  });
 });
 
 app.get('/login', function(req, res){
