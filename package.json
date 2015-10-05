@@ -7,10 +7,18 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Eric Zeng",
-  "license": "MIT",
   "dependencies": {
     "body-parser": "^1.14.1",
-    "connect-mongodb-session": "^1.0.5"
+    "connect-mongodb-session": "^1.0.5",
+    "express": "^4.13.3",
+    "express-ejs-layouts": "^1.1.0",
+    "express-logger": "0.0.3",
+    "express-session": "^1.11.3",
+    "imap": "^0.8.15",
+    "method-override": "^2.3.5",
+    "mongoose": "^4.1.9",
+    "passport": "^0.3.0",
+    "passport-google-oauth": "^0.2.0"
   },
   "devDependencies": {},
   "repository": {
