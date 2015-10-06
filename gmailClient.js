@@ -3,18 +3,13 @@ var google = require('googleapis');
 var googleAuth = require('google-auth-library');
 var credentials = require('./client_secret.json');
 
-class gmailClient {
-  constructor(user) {
-    var auth = new googleAuth();
-    this.oauth2Client = new auth.OAuth2(
-      credentials.web.client_id,
-      credentials.web.client_secret,
-      credentials.web.redirect_uris[0]
-    );
-    this.oauth2Client.credentials = {
-      access_token: user.accessToken,
-      refresh_token: user.refreshToken
-    };
+class GmailClient {
+  /**
+   * Constructs a new Gmail Client.
+   * @param googleAuth.OAuth2.OAuth2Client: An authenticaed Google OAuth2 client.
+   */
+  constructor(oauth2Client) {
+    this.oauth2Client = oauth2Client;
   }
   /**
    * Returns a string listing the labels
@@ -41,4 +36,4 @@ class gmailClient {
   }
 }
 
-module.exports = gmailClient;
+module.exports = GmailClient;
