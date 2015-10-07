@@ -2,8 +2,15 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema
 
 var userSchema = new Schema({
-  // TODO: figure out Google user fields
-  googleToken: Object
+  google: {
+    email: String,
+    credentials: {
+      access_token: String,
+      token_type: String,
+      id_token: String,
+      expiry_date: Number
+    }
+  }
 });
 
 module.exports = mongoose.model('User', userSchema)
