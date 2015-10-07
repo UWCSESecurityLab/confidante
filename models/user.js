@@ -2,15 +2,19 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema
 
 var userSchema = new Schema({
-  google: {
-    email: String,
-    credentials: {
-      access_token: String,
-      token_type: String,
-      id_token: String,
-      expiry_date: Number
+  googleId: {
+    type: String,
+    index: {
+      unique: true
     }
-  }
+  },
+  sessionID: {
+    type: String
+  },
+  accessToken: String,
+  refreshToken: String,
+  email: String,
+  profile: Object
 });
 
 module.exports = mongoose.model('User', userSchema)
