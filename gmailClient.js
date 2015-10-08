@@ -6,7 +6,7 @@ var credentials = require('./client_secret.json');
 class GmailClient {
   /**
    * Constructs a new authenticated Gmail Client.
-   * @param token The token object provided by the Google OAuth library
+   * @param token The token object provided by the Google OAuth library.
    */
   constructor(token) {
     var auth = new googleAuth();
@@ -18,7 +18,6 @@ class GmailClient {
     console.log('Constructing new Gmail client with token data:');
     console.log(token);
     this.oauth2Client.credentials = token;
-    this.gmail = google.gmail('v1');
   }
 
   /**
@@ -26,10 +25,9 @@ class GmailClient {
    * @return a Promise containing the email address as a string.
    */
   getEmailAddress() {
-    var gmail = this.gmail;
     var oauth2Client = this.oauth2Client;
     return new Promise(function(resolve, reject) {
-      gmail.users.getProfile({
+      google.gmail('v1').users.getProfile({
         auth: oauth2Client,
         userId: 'me'
       }, function(err, response) {
@@ -39,29 +37,22 @@ class GmailClient {
     });
   }
 
-
   /**
-   * Returns a string listing the labels
+   * Get the user's labels.
+   * @return a Promise containing an array of strings.
    */
-  listLabels(callback) {
-    console.log('calling listLabels');
-    var gmail = google.gmail('v1');
-    gmail.users.labels.list({
-      auth: this.oauth2Client,
-      userId: 'me',
-    }, function(err, response) {
-      if (err) {
-        console.log(err);
-        callback(['The API returned an error: ' + err]);
-      }
-      var labels = response.labels;
-      if (labels.length == 0) {
-        console.log('No labels found.');
-        callback(['No labels found.']);
-      } else {
-        callback(labels.map(function(label) { return label.name }));
-      }
-    });
+  listLabels() {
+    var oauth2Client = this.oauth2Client;
+    return new Promise(function(resolve, reject) {
+      google.gmail('v1').users.labels.list({
+        auth: oauth2Client,
+        userId: 'me',
+      }, function(err, response) {
+        if (err) reject(err);
+        var labels = response.labels;
+        resolve(labels.map(function(label) { return label.name }));
+      });
+    })
   }
 }
 

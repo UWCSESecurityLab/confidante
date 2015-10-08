@@ -52,7 +52,8 @@ app.get('/', function(req, res) {
 
 app.get('/account', ensureAuthenticated, function(req, res){
   var gmailClient = new GmailClient(req.session.googleToken);
-  gmailClient.listLabels(function(labels) {
+  gmailClient.listLabels().then(function(labels) {
+    console.log('promise resolved');
     res.render('account', { labels: labels, loggedIn: !!req.session.googleToken });
   });
 });
