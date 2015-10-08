@@ -1,7 +1,6 @@
 'use strict';
 
 var util = require('util');
-var url = require('url');
 
 var express = require('express');
 var expressLayouts = require('express-ejs-layouts')
@@ -9,7 +8,6 @@ var session = require('express-session');
 
 var mongoose = require('mongoose')
 var MongoSessionStore = require('connect-mongodb-session')(session)
-var google = require('googleapis');
 var googleAuthLibrary = require('google-auth-library');
 var googleAuth = new googleAuthLibrary();
 
