@@ -20,8 +20,7 @@
     "method-override": "^2.3.5",
     "mongoose": "^4.1.9",
     "passport": "^0.3.0",
-    "passport-google-oauth": "^0.2.0",
-    "passport-google-oauth2": "^0.1.6"
+    "passport-google-oauth": "^0.2.0"
   },
   "devDependencies": {},
   "repository": {

@@ -1,6 +1,6 @@
 'use strict';
 var google = require('googleapis');
-var googleAuthLibrary = require('google-auth-library');
+var googleAuth = require('google-auth-library');
 var credentials = require('./client_secret.json');
 
 class GmailClient {
@@ -8,17 +8,8 @@ class GmailClient {
    * Constructs a new Gmail Client.
    * @param googleAuth.OAuth2.OAuth2Client: An authenticaed Google OAuth2 client.
    */
-  constructor(accessToken, refreshToken) {
-    var googleAuth = new googleAuthLibrary()
-    this.oauth2Client = new googleAuth.OAuth2(
-      credentials.web.client_id,
-      credentials.web.client_secret,
-      credentials.web.redirect_uris[0]
-    );
-    this.oauth2Client.setCredentials({
-      access_token: accessToken,
-      refresh_token: refreshToken
-    })
+  constructor(oauth2Client) {
+    this.oauth2Client = oauth2Client;
   }
   /**
    * Returns a string listing the labels
