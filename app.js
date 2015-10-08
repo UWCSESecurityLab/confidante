@@ -52,24 +52,16 @@ app.use(methodOverride());
 app.use(session({
   secret: 'keyboard cat',
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
   store: store
 }));
 
 app.get('/', function(req, res) {
-  res.render('index', { loggedIn: !!req.session.googleToken });
+  res.render('index', { loggedIn: !!req.session.googleToken, email: req.session.email });
 });
 
 app.get('/account', ensureAuthenticated, function(req, res){
-  var oauth2Client = new googleAuth.OAuth2(
-    credentials.web.client_id,
-    credentials.web.client_secret,
-    credentials.web.redirect_uris[0]
-  );
-
-  oauth2Client.credentials = req.session.googleToken
-
-  var gmailClient = new GmailClient(oauth2Client);
+  var gmailClient = new GmailClient(req.session.googleToken);
   gmailClient.listLabels(function(labels) {
     res.render('account', { labels: labels, loggedIn: !!req.session.googleToken });
   });
@@ -99,69 +91,21 @@ app.get('/auth/google/return', function(req, res) {
   // Exchange authorization code for access token
   var code = req.query.code;
   if (!code) {
+    console.log('No authorization code in query string!');
     res.redirect('/login');
   }
-
-  var oauth2Client = new googleAuth.OAuth2(
-    credentials.web.client_id,
-    credentials.web.client_secret,
-    credentials.web.redirect_uris[0]
-  );
-
-  oauth2Client.getToken(code, function(err, token) {
-    if (err) {
-      console.log('Error while tring to retrieve access token', err);
-      res.redirect('/');
-    }
-    console.log(token);
-    oauth2Client.credentials = token;
-    req.session.googleToken = token;
-
-    // Look up user's email and profile
-    google.plus('v1').people.get({
-        userId: 'me',
-        auth: oauth2Client
-      }, function(err, response) {
-        if (err) {
-          console.log('[G+ API error] ' + err);
-          res.redirect('/');
-        }
-        console.log(response);
-        // Persist user email, tokens in database
-        var email = response.emails[0].value;
-        User.findOne({ 'google.email': email }, function(err, user) {
-          if (err) {
-            console.log('Error finding user');
-            console.log(err);
-            redirect('/');
-          }
-          if (user === null) {
-            var user = new User({
-              google: {
-                email: email,
-                credentials: token
-              }
-            });
-            user.save(function(err) {
-              if (err) {
-                console.log('Error saving user');
-                console.log(err);
-              }
-              res.redirect('/');
-            });
-          } else {
-            user.google.credentials = token;
-            user.save(function(err) {
-              if (err) {
-                console.log('Error saving user');
-                console.log(err);
-              }
-              res.redirect('/');
-            });
-          }
-        });
-      }
-    );
+  var tokenPromise = getGoogleOAuthToken(code);
+  var emailPromise = tokenPromise.then(function(token) {
+    var gmailClient = new GmailClient(token);
+    return gmailClient.getEmailAddress();
+  });
+  Promise.all([tokenPromise, emailPromise]).then(function(values) {
+    req.session.googleToken = values[0];
+    req.session.email = values[1];
+    res.redirect('/');
+  }).catch(function(error) {
+    console.log(error);
+    res.redirect('/login');
   });
 });
 
@@ -172,6 +116,25 @@ app.get('/logout', function(req, res) {
 });
 
 app.listen(3000);
+
+
+function getGoogleOAuthToken(authCode) {
+  return new Promise(function(resolve, reject) {
+    var oauth2Client = new googleAuth.OAuth2(
+      credentials.web.client_id,
+      credentials.web.client_secret,
+      credentials.web.redirect_uris[0]
+    );
+
+    oauth2Client.getToken(authCode, function(err, token) {
+      if (err) {
+        reject(Error('Error while tring to retrieve access token' + err));
+      }
+      console.log(token);
+      resolve(token);
+    });
+  });
+}
 
 // Simple route middleware to ensure user is authenticated.
 //   Use this route middleware on any resource that needs to be protected.  If
