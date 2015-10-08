@@ -4,7 +4,7 @@ var Schema = mongoose.Schema
 var userSchema = new Schema({
   google: {
     email: String,
-    token: Object
+    refreshToken: String
   }
 });
 
