@@ -1,0 +1,20 @@
+<% for (var i = 0; i < threads.length; i++) { %>
+  <div class='thread'>
+    <% var thread = threads[i] %>
+    <% for (var j = 0; j < thread.messages.length; j++) { %>
+    <div class='message'>
+      <% var message = thread.messages[j] %>
+      <div class='subject'>
+        <h2>Subject: <%= message.payload.headers.find(function(header) { return header.name == 'Subject'}).value %></h2>
+      </div>
+      <div class='metadata'>
+        <p>From: <%= message.payload.headers.find(function(header) { return header.name == 'From' }).value %></p>
+        <p>To: <%= message.payload.headers.find(function(header) { return header.name == 'To' }).value %></p>
+      </div>
+      <div class='body'>
+        <%= message.payload.parts.find(function(part) { return part.headers.find(function(header) { return header.name == 'Content-Type' && header.value.includes('html')}) !== undefined }).body.data %>
+      </div>
+    </div>
+    <% } %>
+  </div>
+<% } %>

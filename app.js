@@ -68,6 +68,13 @@ app.get('/login', function(req, res) {
   res.render('login', { loggedIn: !!req.session.googleToken });
 });
 
+app.get('/inbox', ensureAuthenticated, function(req, res) {
+  var gmailClient = new GmailClient(req.session.googleToken);
+  gmailClient.getEncryptedInbox().then(function(threads) {
+    res.render('inbox', { threads: threads, loggedIn: !!req.session.googleToken })
+  });
+});
+
 app.get('/auth/google', function(req, res) {
   var oauth2Client = new googleAuth.OAuth2(
     credentials.web.client_id,
@@ -192,6 +199,14 @@ function storeGoogleCredentials(email, refreshToken) {
 //   the request will proceed.  Otherwise, the user will be redirected to the
 //   login page.
 function ensureAuthenticated(req, res, next) {
-  if (req.session.googleToken) { return next(); }
+  if (req.session.googleToken) {
+    var tokenExpiry = new Date(req.session.googleToken.expiry_date);
+    var now = new Date();
+    if (tokenExpiry - now <= 0) {
+      delete req.session.googleToken;
+      res.redirect('/login');
+    }
+    return next();
+  }
   res.redirect('/login')
 }
