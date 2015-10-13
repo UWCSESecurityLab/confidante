@@ -51,14 +51,6 @@ app.get('/', function(req, res) {
 app.get('/account', ensureAuthenticated, function(req, res){
   var gmailClient = new GmailClient(req.session.googleToken);
 
-  gmailClient.getEncryptedInbox().then(function(threads) {
-    console.log('Inbox Threads:');
-    console.log(threads);
-  }).catch(function(error) {
-    console.error('getEncryptedInbox failed:');
-    console.error(error);
-  });
-
   gmailClient.listLabels().then(function(labels) {
     res.render('account', { labels: labels, loggedIn: !!req.session.googleToken });
   });
