@@ -4,7 +4,7 @@
   "description": "Hello world",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha test/pgpTest.js"
   },
   "author": "Eric Zeng",
   "dependencies": {
@@ -17,7 +17,11 @@
     "googleapis": "^2.1.5",
     "mongoose": "^4.1.9"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "chai": "^3.3.0",
+    "mocha": "^2.3.3",
+    "mockery": "^1.4.0"
+  },
   "repository": {
     "type": "git",
     "url": "git@gitlab.cs.washington.edu:lerner/keymail.git"

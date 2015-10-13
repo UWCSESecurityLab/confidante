@@ -95,7 +95,7 @@ class GmailClient {
           continue;
         }
         var encodedBody = new Buffer(messagePart.body.data, 'base64');
-        if (pgp.containsPGPArmor(encodedBody.toString())) {
+        if (pgp.containsPGPMessage(encodedBody.toString())) {
           return true;
         }
       }
