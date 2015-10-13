@@ -1,35 +1,8 @@
 'use strict';
 var google = require('googleapis');
 var googleAuth = require('google-auth-library');
+var pgp = require('./pgp.js');
 var credentials = require('./client_secret.json');
-
-// Strings used to build PGP Armor
-var ARMOR_LINE = '-----';
-var BEGIN = 'BEGIN PGP';
-var END = 'END PGP';
-var ARMOR_TYPES = [
-  'MESSAGE',
-  'PUBLIC KEY BLOCK',
-  'PRIVATE KEY BLOCK',
-  'SIGNATURE'
-];
-
-function header(type) {
-  return ARMOR_LINE + BEGIN + ' ' + type + ARMOR_LINE;
-}
-function footer(type) {
-  return ARMOR_LINE + END + ' ' + type + ARMOR_LINE;
-}
-
-function containsPGPArmor(text) {
-  for (var i = 0; i < ARMOR_TYPES.length; i++) {
-    var type = ARMOR_TYPES[i];
-    if (text.includes(header(type)) && text.includes(footer(type))) {
-      return true;
-    }
-  }
-  return false;
-}
 
 class GmailClient {
   /**
@@ -113,7 +86,6 @@ class GmailClient {
         // formatted and the other is plaintext. Find the plaintext message.
         var messagePart = message.payload.parts.find(function(messagePart) {
           var plainTextHeader = messagePart.headers.find(function(header) {
-            console.log('checking header for text/plain - ' + header.name + ': ' + header.value);
             return header.name == 'Content-Type' &&
                    header.value.includes('text/plain');
           });
@@ -123,7 +95,7 @@ class GmailClient {
           continue;
         }
         var encodedBody = new Buffer(messagePart.body.data, 'base64');
-        if (containsPGPArmor(encodedBody.toString())) {
+        if (pgp.containsPGPArmor(encodedBody.toString())) {
           return true;
         }
       }
