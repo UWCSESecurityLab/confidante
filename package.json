@@ -19,8 +19,10 @@
   },
   "devDependencies": {
     "chai": "^3.3.0",
+    "chai-as-promised": "^5.1.0",
     "mocha": "^2.3.3",
-    "mockery": "^1.4.0"
+    "mockery": "^1.4.0",
+    "sinon": "^1.17.1"
   },
   "repository": {
     "type": "git",
