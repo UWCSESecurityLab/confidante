@@ -6,12 +6,14 @@ var express = require('express');
 var expressLayouts = require('express-ejs-layouts')
 var session = require('express-session');
 
+var request = require('request');
+
 var mongoose = require('mongoose')
 var MongoSessionStore = require('connect-mongodb-session')(session)
 var googleAuthLibrary = require('google-auth-library');
 var googleAuth = new googleAuthLibrary();
 
-var credentials = require('./client_secret.json');
+// var credentials = require('./client_secret.json');
 var GmailClient = require('./gmailClient.js');
 var User = require('./models/user.js')
 
@@ -121,6 +123,44 @@ app.get('/auth/google/return', function(req, res) {
     console.error(error);
     res.redirect('/login');
   });
+});
+
+/**
+ * These endpoints replicate the functionality of the keybase /getsalt and /login
+ * endpoints by echoing the browser's request through to keybase and returning 
+ * the results verbatim to the user -- the server acts as a proxy.
+ *
+ * The goal here is that the browser can perform the full login flow (as though
+ * it were CORS enabled) without revealing its secrets (the user passphrase) to
+ * our server. The server still gains access to the account, since it can eavesdrop
+ * the entire conversation, but it doesn't learn the user passphrase. This is
+ * critical, since the passphrase protects the private key, which the server may
+ * also later eavesdrop (in encrypted form) if it is stored in keybase.
+ */
+app.get('/getsalt.json', function(req, res) {
+  // /getsalt
+  // Inputs: email_or_username
+  // Outputs: guest_id, status, slat, csrf_token, login_session, pwh_version
+  //
+  var email_or_username = req.query.email_or_username;
+  if (email_or_username) {
+    console.log('/getsalt for email_or_username=' + email_or_username);
+    var GET_SALT_URL = 'https://keybase.io/_/api/1.0/getsalt.json?email_or_username=';
+    request(GET_SALT_URL + email_or_username, function(error, response, body) {
+      if (!error && response.statusCode == 200) {
+        body = JSON.parse(body);
+        res.json(body);
+      } else {
+        res.status(400).send(error);
+      }
+    });
+  } else {
+    console.log('/getsalt requires a truthy email_or_username, not ' + email_or_username);
+    res.status(400).send('/getsalt requires a truthy email_or_username, not ' + email_or_username);
+  }
+});
+app.get('/login.json', function(req, res) {
+
 });
 
 app.get('/logout', function(req, res) {
