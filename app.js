@@ -151,12 +151,16 @@ app.get('/getsalt.json', function(req, res) {
       qs: req.query
     },
     function(error, response, body) {
+      if (error) {
+        res.status(500).send('Failed to contact keybase /getsalt.json endpoint.');
+        return;
+      }
       // Echo the response with the same status code.
       res.status(response.statusCode).send(body);
     });
 });
 app.post('/login.json', function(req, res) {
-  // /login
+  // /login.json
   // Inputs: email_or_username, hmac_pwh, login_session
   // Outputs: status, session, me
   //
@@ -167,6 +171,10 @@ app.post('/login.json', function(req, res) {
       qs: req.query
     },
     function (error, response, body) {
+      if (error) {
+        res.status(500).send('Failed to contact keybase /login.json endpoint.');
+        return;
+      }
       // Echo the response with the same status code.
       res.status(response.statusCode).send(body);
     }
