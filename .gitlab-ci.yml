@@ -1,2 +1,2 @@
 job1:
-  script: "npm test"
+  script: "test.sh"
