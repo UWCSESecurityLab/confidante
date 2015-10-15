@@ -5,6 +5,7 @@ var util = require('util');
 var express = require('express');
 var expressLayouts = require('express-ejs-layouts')
 var session = require('express-session');
+var bodyParser = require('body-parser');
 
 var request = require('request');
 
@@ -38,6 +39,7 @@ var app = express();
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 app.use(expressLayouts);
+app.use(bodyParser.json());
 
 app.use(session({
   secret: 'keyboard cat',
@@ -140,7 +142,7 @@ app.get('/auth/google/return', function(req, res) {
 app.get('/getsalt.json', function(req, res) {
   // /getsalt
   // Inputs: email_or_username
-  // Outputs: guest_id, status, slat, csrf_token, login_session, pwh_version
+  // Outputs: guest_id, status, csrf_token, login_session, pwh_version
   //
   var email_or_username = req.query.email_or_username;
   if (email_or_username) {
@@ -159,8 +161,35 @@ app.get('/getsalt.json', function(req, res) {
     res.status(400).send('/getsalt requires a truthy email_or_username, not ' + email_or_username);
   }
 });
-app.get('/login.json', function(req, res) {
+app.post('/login.json', function(req, res) {
+  // /login
+  // Inputs: email_or_username, hmac_pwh, login_session
+  // Outputs: status, session, me
+  //
+  console.log(req.body);
+  console.log('/login.json for email_or_username=' + req.query.email_or_username);
 
+  request(
+    { method: 'POST',
+      url: 'https://keybase.io/_/api/1.0/login.json',
+      qs: {
+        'email_or_username': req.query.email_or_username,
+        'hmac_pwh': req.query.hmac_pwh,
+        'login_session': req.query.login_session
+      }
+    },
+    function (error, response, body) {
+      if (!error && response.statusCode == 200) {
+        body = JSON.parse(body);
+        res.json(body);
+        console.log(body);
+      } else {
+        res.json(body);
+        console.log(error);
+        console.log(response);
+      }
+    }
+  );
 });
 
 app.get('/logout', function(req, res) {
