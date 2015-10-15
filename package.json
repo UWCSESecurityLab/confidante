@@ -4,7 +4,7 @@
   "description": "Hello world",
   "main": "app.js",
   "scripts": {
-    "test": "mocha test/pgpTest.js"
+    "test": "mocha"
   },
   "author": "Eric Zeng",
   "dependencies": {
