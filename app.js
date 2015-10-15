@@ -39,7 +39,6 @@ var app = express();
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 app.use(expressLayouts);
-app.use(bodyParser.json());
 
 app.use(session({
   secret: 'keyboard cat',
@@ -128,9 +127,10 @@ app.get('/auth/google/return', function(req, res) {
 });
 
 /**
- * These endpoints replicate the functionality of the keybase /getsalt and /login
- * endpoints by echoing the browser's request through to keybase and returning 
- * the results verbatim to the user -- the server acts as a proxy.
+ * These endpoints replicate the functionality of the keybase /getsalt.json and
+ * /login.json endpoints by echoing the browser's request through to keybase
+ * and returning the results verbatim to the user -- the server acts as a
+ * proxy.
  *
  * The goal here is that the browser can perform the full login flow (as though
  * it were CORS enabled) without revealing its secrets (the user passphrase) to
@@ -140,54 +140,35 @@ app.get('/auth/google/return', function(req, res) {
  * also later eavesdrop (in encrypted form) if it is stored in keybase.
  */
 app.get('/getsalt.json', function(req, res) {
-  // /getsalt
+  // /getsalt.json
   // Inputs: email_or_username
   // Outputs: guest_id, status, csrf_token, login_session, pwh_version
   //
-  var email_or_username = req.query.email_or_username;
-  if (email_or_username) {
-    console.log('/getsalt for email_or_username=' + email_or_username);
-    var GET_SALT_URL = 'https://keybase.io/_/api/1.0/getsalt.json?email_or_username=';
-    request(GET_SALT_URL + email_or_username, function(error, response, body) {
-      if (!error && response.statusCode == 200) {
-        body = JSON.parse(body);
-        res.json(body);
-      } else {
-        res.status(400).send(error);
-      }
+  var GET_SALT_URL = 'https://keybase.io/_/api/1.0/getsalt.json';
+  request(
+    { method: 'GET',
+      url: GET_SALT_URL,
+      qs: req.query
+    },
+    function(error, response, body) {
+      // Echo the response with the same status code.
+      res.status(response.statusCode).send(body);
     });
-  } else {
-    console.log('/getsalt requires a truthy email_or_username, not ' + email_or_username);
-    res.status(400).send('/getsalt requires a truthy email_or_username, not ' + email_or_username);
-  }
 });
 app.post('/login.json', function(req, res) {
   // /login
   // Inputs: email_or_username, hmac_pwh, login_session
   // Outputs: status, session, me
   //
-  console.log(req.body);
-  console.log('/login.json for email_or_username=' + req.query.email_or_username);
-
+  var LOGIN_URL = 'https://keybase.io/_/api/1.0/login.json';
   request(
     { method: 'POST',
-      url: 'https://keybase.io/_/api/1.0/login.json',
-      qs: {
-        'email_or_username': req.query.email_or_username,
-        'hmac_pwh': req.query.hmac_pwh,
-        'login_session': req.query.login_session
-      }
+      url: LOGIN_URL,
+      qs: req.query
     },
     function (error, response, body) {
-      if (!error && response.statusCode == 200) {
-        body = JSON.parse(body);
-        res.json(body);
-        console.log(body);
-      } else {
-        res.json(body);
-        console.log(error);
-        console.log(response);
-      }
+      // Echo the response with the same status code.
+      res.status(response.statusCode).send(body);
     }
   );
 });
