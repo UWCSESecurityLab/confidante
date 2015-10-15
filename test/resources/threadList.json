@@ -1,0 +1,14 @@
+{
+  "threads": [
+    {
+      "id": "15068af0e40309ce",
+      "snippet": "Test Message",
+      "historyId": "383128"
+    },
+    {
+      "id": "15068ad2c26a82a7",
+      "snippet": "-----BEGIN PGP MESSAGE----- Version: Keybase OpenPGP v2.0.47 Comment: https://keybase.io/crypto",
+      "historyId": "383060"
+    }
+  ]
+}

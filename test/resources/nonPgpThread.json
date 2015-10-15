@@ -1,0 +1,96 @@
+{
+  "id": "15068af0e40309ce",
+  "historyId": "383128",
+  "messages": [
+    {
+      "id": "15068af0e40309ce",
+      "threadId": "15068af0e40309ce",
+      "labelIds": [
+        "SENT",
+        "INBOX",
+        "IMPORTANT"
+      ],
+      "snippet": "Test Message",
+      "historyId": "383128",
+      "internalDate": "1444865314000",
+      "payload": {
+        "mimeType": "multipart/alternative",
+        "filename": "",
+        "headers": [
+          {
+            "name": "MIME-Version",
+            "value": "1.0"
+          },
+          {
+            "name": "Received",
+            "value": "by 10.25.140.211 with HTTP; Wed, 14 Oct 2015 16:28:34 -0700 (PDT)"
+          },
+          {
+            "name": "Date",
+            "value": "Wed, 14 Oct 2015 16:28:34 -0700"
+          },
+          {
+            "name": "Delivered-To",
+            "value": "ericzeng@cs.washington.edu"
+          },
+          {
+            "name": "Message-ID",
+            "value": "<CAD5HpZ6JM0uQjADV1sT2+-9ZNYv7StNcZzXo36sZZOQ3j5YQbw@mail.gmail.com>"
+          },
+          {
+            "name": "Subject",
+            "value": "Non-PGP message"
+          },
+          {
+            "name": "From",
+            "value": "Eric Zeng <ericzeng@cs.washington.edu>"
+          },
+          {
+            "name": "To",
+            "value": "Eric Zeng <ericzeng@cs.washington.edu>"
+          },
+          {
+            "name": "Content-Type",
+            "value": "multipart/alternative; boundary=001a114b13fed46ca1052218eb2b"
+          }
+        ],
+        "body": {
+          "size": 0
+        },
+        "parts": [
+          {
+            "partId": "0",
+            "mimeType": "text/plain",
+            "filename": "",
+            "headers": [
+              {
+                "name": "Content-Type",
+                "value": "text/plain; charset=UTF-8"
+              }
+            ],
+            "body": {
+              "size": 14,
+              "data": "VGVzdCBNZXNzYWdlDQo="
+            }
+          },
+          {
+            "partId": "1",
+            "mimeType": "text/html",
+            "filename": "",
+            "headers": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=UTF-8"
+              }
+            ],
+            "body": {
+              "size": 35,
+              "data": "PGRpdiBkaXI9Imx0ciI-VGVzdCBNZXNzYWdlPC9kaXY-DQo="
+            }
+          }
+        ]
+      },
+      "sizeEstimate": 687
+    }
+  ]
+}

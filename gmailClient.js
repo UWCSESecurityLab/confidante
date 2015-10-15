@@ -36,7 +36,7 @@ class GmailClient {
   }
 
   /**
-   * Returns PGP encrypted messages from the user's inbox.
+   * Returns an array of PGP encrypted threads from the user's inbox.
    */
   getEncryptedInbox() {
     return new Promise(function(resolve, reject) {

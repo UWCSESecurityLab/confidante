@@ -1,6 +1,6 @@
 var should = require('chai').should();
 var pgp = require('../pgp.js');
-var data = require('./pgpData.json');
+var data = require('./resources/pgpData.json');
 
 describe('pgp.js', function() {
   describe('containsPGPMessage()', function() {
