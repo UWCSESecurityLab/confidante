@@ -3,7 +3,8 @@
 var util = require('util');
 
 var express = require('express');
-var expressLayouts = require('express-ejs-layouts')
+var bodyParser = require('body-parser');
+var expressLayouts = require('express-ejs-layouts');
 var session = require('express-session');
 
 var mongoose = require('mongoose')
@@ -36,7 +37,8 @@ var app = express();
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 app.use(expressLayouts);
-
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 app.use(session({
   secret: 'keyboard cat',
   resave: false,
@@ -64,6 +66,27 @@ app.get('/inbox', ensureAuthenticated, function(req, res) {
   var gmailClient = new GmailClient(req.session.googleToken);
   gmailClient.getEncryptedInbox().then(function(threads) {
     res.render('inbox', { threads: threads, loggedIn: !!req.session.googleToken })
+  });
+});
+
+app.get('/newMessage', ensureAuthenticated, function(req, res) {
+  res.render('newMessage', { emailAddress: req.session.email, loggedIn: !!req.session.googleToken});
+});
+
+app.post('/sendMessage', ensureAuthenticated, function(req, res) {
+  console.log(req.body);
+  var gmailClient = new GmailClient(req.session.googleToken);
+  var rfcMessage = gmailClient.buildRfcMessage({
+    headers: {
+      to: [req.body.to],
+      from: req.session.email,
+      subject: req.body.subject,
+      date: new Date().toString()
+    },
+    body: req.body.email
+  });
+  gmailClient.sendMessage(rfcMessage).then(function(response) {
+    console.log('response');
   });
 });
 
