@@ -17,7 +17,8 @@
     "google-auth-library": "^0.9.6",
     "googleapis": "^2.1.5",
     "mongoose": "^4.1.9",
-    "request": "^2.65.0"
+    "request": "^2.65.0",
+    "triplesec": "^3.0.25"
   },
   "devDependencies": {
     "chai": "^3.3.0",
