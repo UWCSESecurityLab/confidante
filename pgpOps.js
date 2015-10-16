@@ -6,7 +6,7 @@ var triplesec = require('triplesec');
 var pgpUtils = require('pgp-utils').armor;
 var crypto = require('crypto');
 
-module.exports.checkP3SKBHash = function(json) {
+function checkP3SKBHash(json) {
   // Check the hash
   var given = json.hash.value.toString('hex');
   json.hash.value = new Buffer([]);
@@ -14,24 +14,26 @@ module.exports.checkP3SKBHash = function(json) {
   var computed = crypto.createHash('SHA256').update(newbuf).digest().toString('hex')
   return given === computed;
 }
+module.exports.checkP3SKBHash = checkP3SKBHash;
 
-module.exports.computeP3SKBHash = function(obj) {
+function computeP3SKBHash(obj) {
   obj.hash.body = new Buffer(0);
   var packed = purepack.pack(obj, { sort_keys : true });
   var computed = crypto.createHash('SHA256').update(packed).digest().toString('hex')
   return computed;
 }
+module.exports.computeP3SKBHash = computeP3SKBHash;
 
-module.exports.p3skbToArmoredPrivateKey = function (p3skb, passphrase) {
+function p3skbToArmoredPrivateKey(p3skb, passphrase) {
   return new Promise(function(fulfill, reject) {
-    var decoded = new Buffer(pk3skb, 'base64');
-    var p3skbJSON = purepack.unpack(s);
+    var decoded = new Buffer(p3skb, 'base64');
+    var p3skbJSON = purepack.unpack(decoded);
     if (!checkP3SKBHash(p3skbJSON)) {
       reject('P3SKB hash did not match.');
       return;
     }
     triplesec.decrypt({
-      data: privdata,
+      data: p3skbJSON.body.priv.data,
       key: new Buffer(passphrase, 'utf8')
     }, function(err, keyPlaintext) {
       if (err) {
@@ -49,8 +51,9 @@ module.exports.p3skbToArmoredPrivateKey = function (p3skb, passphrase) {
     });
   });
 }
+module.exports.p3skbToArmoredPrivateKey = p3skbToArmoredPrivateKey;
 
-module.exports.armoredPrivateKeyToP3skb = function(armoredKey, passphrase) {
+function armoredPrivateKeyToP3skb(armoredKey, passphrase) {
   return new Promise(function(fulfill, reject) {
     var unarmored = pgpUtils.decode(armoredKey);
     // console.log('unarmored! ' + unarmored.length);
@@ -72,10 +75,11 @@ module.exports.armoredPrivateKeyToP3skb = function(armoredKey, passphrase) {
       var p3skbObj = {
         body: {
           pub: new Buffer(0), // UNIMPLEMENTED.
-          priv: 
+          priv: {
             data: keyCiphertext,
-          encryption: 3,
-        }
+            encryption: 3,
+          },
+        },
         hash: {
           value: new Buffer(0),
           type: 8
@@ -83,13 +87,14 @@ module.exports.armoredPrivateKeyToP3skb = function(armoredKey, passphrase) {
         tag: 513,
         version: 1,
       };
+      p3skbObj.hash.value = computeP3SKBHash(p3skbObj);
+      var packed = purepack.pack(p3skbObj, { sort_keys: true });
+      var base64ed = packed.toString('base64');
+      fulfill(base64ed);
     });
-    p3skbObj.hash.value = computeP3SKBHash(p3skbObj);
-    var packed = purepack.pack(p3skbObj, { sort_keys: true });
-    var base64ed = packed.toString('base64');
-    fulfill(base64ed);
   });
 };
+module.exports.armoredPrivateKeyToP3skb = armoredPrivateKeyToP3skb;
 
 
 
