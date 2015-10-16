@@ -8,6 +8,7 @@
   },
   "author": "Eric Zeng",
   "dependencies": {
+    "body-parser": "^1.14.1",
     "connect-mongodb-session": "^1.0.5",
     "ejs": "^2.3.4",
     "express": "^4.13.3",
@@ -15,7 +16,8 @@
     "express-session": "^1.11.3",
     "google-auth-library": "^0.9.6",
     "googleapis": "^2.1.5",
-    "mongoose": "^4.1.9"
+    "mongoose": "^4.1.9",
+    "request": "^2.65.0"
   },
   "devDependencies": {
     "chai": "^3.3.0",
