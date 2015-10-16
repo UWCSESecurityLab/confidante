@@ -16,6 +16,7 @@
     "express-session": "^1.11.3",
     "google-auth-library": "^0.9.6",
     "googleapis": "^2.1.5",
+    "kbpgp": "^2.0.48",
     "mongoose": "^4.1.9",
     "request": "^2.65.0",
     "triplesec": "^3.0.25"
