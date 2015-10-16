@@ -1,3 +1,5 @@
+'use strict';
+
 var kbpgp = require('kbpgp');
 var purepack = require('purepack');
 var triplesec = require('triplesec');
