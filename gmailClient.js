@@ -103,6 +103,45 @@ class GmailClient {
     });
   }
 
+  sendMessage(rfcMessage, threadId) {
+    return new Promise(function(resolve, reject) {
+      var encodedMessage = btoa(rfcMessage);
+      google.gmail('v1').users.messages.send({
+        auth: this.oauth2Client,
+        userId: 'me',
+        message: {
+          raw: encodedMessage
+        }, function(err, response) {
+          if (err) reject(err);
+          resolve(response);
+        }
+      });
+    }.bind(this));
+  }
+
+  buildRfcMessage(message) {
+    var rfcMessage = [];
+    rfcMessage.push('From: ' + message.headers.from);
+    rfcMessage.push('To: ' + message.headers.to.join(', '));
+    if (message.headers.cc.length > 0) {
+      rfcMessage.push('Cc: ' + message.headers.cc.join(', '));
+    }
+    if (message.headers.bcc.length > 0) {
+      rfcMessage.push('Bcc: ' + message.headers.bcc.join(', '));
+    }
+    rfcMessage.push('Subject: ' + message.headers.subject);
+    rfcMessage.push('Date: ' + this.buildRfcDateTime(message.headers.dateTime));
+    rfcMessage.push('\r\n');
+    rfcMessage.push(message.body);
+
+    return rfcMessage.join('\r\n');
+  }
+
+  buildRfcDateTime(dateTime) {
+    return dateTime.day + " " + dateTime.month + " " + dateTime.year + " " +
+        dateTime.hour + ":" + dateTime.minute;
+  }
+
   /**
    * Get the user's labels.
    * @return a Promise containing an array of strings.
