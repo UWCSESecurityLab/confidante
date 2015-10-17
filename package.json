@@ -18,6 +18,8 @@
     "googleapis": "^2.1.5",
     "kbpgp": "^2.0.48",
     "mongoose": "^4.1.9",
+    "pgp-utils": "0.0.28",
+    "purepack": "^1.0.4",
     "request": "^2.65.0",
     "triplesec": "^3.0.25"
   },
