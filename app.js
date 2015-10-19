@@ -6,13 +6,16 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var expressLayouts = require('express-ejs-layouts');
 var session = require('express-session');
+var bodyParser = require('body-parser');
+
+var request = require('request');
 
 var mongoose = require('mongoose')
 var MongoSessionStore = require('connect-mongodb-session')(session)
 var googleAuthLibrary = require('google-auth-library');
 var googleAuth = new googleAuthLibrary();
 
-var credentials = require('./client_secret.json');
+// var credentials = require('./client_secret.json');
 var GmailClient = require('./gmailClient.js');
 var User = require('./models/user.js')
 
@@ -144,6 +147,61 @@ app.get('/auth/google/return', function(req, res) {
     console.error(error);
     res.redirect('/login');
   });
+});
+
+/**
+ * These endpoints replicate the functionality of the keybase /getsalt.json and
+ * /login.json endpoints by echoing the browser's request through to keybase
+ * and returning the results verbatim to the user -- the server acts as a
+ * proxy.
+ *
+ * The goal here is that the browser can perform the full login flow (as though
+ * it were CORS enabled) without revealing its secrets (the user passphrase) to
+ * our server. The server still gains access to the account, since it can eavesdrop
+ * the entire conversation, but it doesn't learn the user passphrase. This is
+ * critical, since the passphrase protects the private key, which the server may
+ * also later eavesdrop (in encrypted form) if it is stored in keybase.
+ */
+app.get('/getsalt.json', function(req, res) {
+  // /getsalt.json
+  // Inputs: email_or_username
+  // Outputs: guest_id, status, csrf_token, login_session, pwh_version
+  //
+  var GET_SALT_URL = 'https://keybase.io/_/api/1.0/getsalt.json';
+  request(
+    { method: 'GET',
+      url: GET_SALT_URL,
+      qs: req.query
+    },
+    function(error, response, body) {
+      if (error) {
+        res.status(500).send('Failed to contact keybase /getsalt.json endpoint.');
+        return;
+      }
+      // Echo the response with the same status code.
+      res.status(response.statusCode).send(body);
+    });
+});
+app.post('/login.json', function(req, res) {
+  // /login.json
+  // Inputs: email_or_username, hmac_pwh, login_session
+  // Outputs: status, session, me
+  //
+  var LOGIN_URL = 'https://keybase.io/_/api/1.0/login.json';
+  request(
+    { method: 'POST',
+      url: LOGIN_URL,
+      qs: req.query
+    },
+    function (error, response, body) {
+      if (error) {
+        res.status(500).send('Failed to contact keybase /login.json endpoint.');
+        return;
+      }
+      // Echo the response with the same status code.
+      res.status(response.statusCode).send(body);
+    }
+  );
 });
 
 app.get('/logout', function(req, res) {
