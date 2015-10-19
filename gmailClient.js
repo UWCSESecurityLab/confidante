@@ -104,10 +104,20 @@ class GmailClient {
   }
 
   sendMessage(jsonMessage) {
-    var rfcMessage = buildRfcMessage(jsonMessage);
     return new Promise(function(resolve, reject) {
-      console.log(rfcMessage);
+      if (!jsonMessage.headers.from) {
+        reject(new Error("Message missing \"From\" header"));
+      }
+      if (!jsonMessage.headers.to || jsonMessage.headers.to.length < 1) {
+        reject(new Error("Message missing \"To\" header"));
+      }
+      if (!jsonMessage.headers.date) {
+        reject(new Error("Message missing \"Date\" header"));
+      }
+
+      var rfcMessage = buildRfcMessage(jsonMessage);
       var encodedMessage = new Buffer(rfcMessage).toString('base64');
+
       google.gmail('v1').users.messages.send({
         auth: this.oauth2Client,
         userId: 'me',
