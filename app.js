@@ -15,7 +15,7 @@ var MongoSessionStore = require('connect-mongodb-session')(session)
 var googleAuthLibrary = require('google-auth-library');
 var googleAuth = new googleAuthLibrary();
 
-// var credentials = require('./client_secret.json');
+var credentials = require('./client_secret.json');
 var GmailClient = require('./gmailClient.js');
 var User = require('./models/user.js')
 
@@ -88,8 +88,10 @@ app.post('/sendMessage', ensureAuthenticated, function(req, res) {
     },
     body: req.body.email
   }).then(function(response) {
-    console.log('response');
+    console.log(response);
     res.redirect('/inbox');
+  }).catch(function(error) {
+    console.log(error);
   });
 });
 

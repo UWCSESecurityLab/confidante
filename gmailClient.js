@@ -115,7 +115,7 @@ class GmailClient {
         reject(new Error("Message missing \"Date\" header"));
       }
 
-      var rfcMessage = buildRfcMessage(jsonMessage);
+      var rfcMessage = this.buildRfcMessage(jsonMessage);
       var encodedMessage = new Buffer(rfcMessage).toString('base64');
 
       google.gmail('v1').users.messages.send({
