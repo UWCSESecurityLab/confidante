@@ -120,20 +120,20 @@ class GmailClient {
     }.bind(this));
   }
 
-  buildRfcMessage(message) {
+  buildRfcMessage(jsonMessage) {
     var rfcMessage = [];
-    rfcMessage.push('From: ' + message.headers.from);
-    rfcMessage.push('To: ' + message.headers.to.join(', '));
-    if (message.headers.cc && message.headers.cc.length > 0) {
-      rfcMessage.push('Cc: ' + message.headers.cc.join(', '));
+    rfcMessage.push('From: ' + jsonMessage.headers.from);
+    rfcMessage.push('To: ' + jsonMessage.headers.to.join(', '));
+    if (jsonMessage.headers.cc && jsonMessage.headers.cc.length > 0) {
+      rfcMessage.push('Cc: ' + jsonMessage.headers.cc.join(', '));
     }
-    if (message.headers.bcc && message.headers.bcc.length > 0) {
-      rfcMessage.push('Bcc: ' + message.headers.bcc.join(', '));
+    if (jsonMessage.headers.bcc && jsonMessage.headers.bcc.length > 0) {
+      rfcMessage.push('Bcc: ' + jsonMessage.headers.bcc.join(', '));
     }
-    rfcMessage.push('Subject: ' + message.headers.subject);
-    rfcMessage.push('Date: ' + message.headers.date);
+    rfcMessage.push('Subject: ' + jsonMessage.headers.subject);
+    rfcMessage.push('Date: ' + jsonMessage.headers.date);
     rfcMessage.push('');
-    rfcMessage.push(message.body);
+    rfcMessage.push(jsonMessage.body);
 
     return rfcMessage.join('\r\n');
   }
