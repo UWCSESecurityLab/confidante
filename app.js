@@ -76,7 +76,7 @@ app.get('/newMessage', ensureAuthenticated, function(req, res) {
 app.post('/sendMessage', ensureAuthenticated, function(req, res) {
   console.log(req.body);
   var gmailClient = new GmailClient(req.session.googleToken);
-  var rfcMessage = gmailClient.buildRfcMessage({
+  gmailClient.sendMessage({
     headers: {
       to: [req.body.to],
       from: req.session.email,
@@ -84,9 +84,9 @@ app.post('/sendMessage', ensureAuthenticated, function(req, res) {
       date: new Date().toString()
     },
     body: req.body.email
-  });
-  gmailClient.sendMessage(rfcMessage).then(function(response) {
+  }).then(function(response) {
     console.log('response');
+    res.redirect('/inbox');
   });
 });
 

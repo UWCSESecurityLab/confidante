@@ -103,7 +103,8 @@ class GmailClient {
     });
   }
 
-  sendMessage(rfcMessage) {
+  sendMessage(jsonMessage) {
+    var rfcMessage = buildRfcMessage(jsonMessage);
     return new Promise(function(resolve, reject) {
       console.log(rfcMessage);
       var encodedMessage = new Buffer(rfcMessage).toString('base64');
