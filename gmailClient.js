@@ -103,6 +103,52 @@ class GmailClient {
     });
   }
 
+  sendMessage(jsonMessage) {
+    return new Promise(function(resolve, reject) {
+      if (!jsonMessage.headers.from) {
+        reject(new Error("Message missing \"From\" header"));
+      }
+      if (!jsonMessage.headers.to || jsonMessage.headers.to.length < 1) {
+        reject(new Error("Message missing \"To\" header"));
+      }
+      if (!jsonMessage.headers.date) {
+        reject(new Error("Message missing \"Date\" header"));
+      }
+
+      var rfcMessage = this.buildRfcMessage(jsonMessage);
+      var encodedMessage = new Buffer(rfcMessage).toString('base64');
+
+      google.gmail('v1').users.messages.send({
+        auth: this.oauth2Client,
+        userId: 'me',
+        resource: {
+          raw: encodedMessage
+        }, function(err, response) {
+          if (err) reject(err);
+          resolve(response);
+        }
+      });
+    }.bind(this));
+  }
+
+  buildRfcMessage(jsonMessage) {
+    var rfcMessage = [];
+    rfcMessage.push('From: ' + jsonMessage.headers.from);
+    rfcMessage.push('To: ' + jsonMessage.headers.to.join(', '));
+    if (jsonMessage.headers.cc && jsonMessage.headers.cc.length > 0) {
+      rfcMessage.push('Cc: ' + jsonMessage.headers.cc.join(', '));
+    }
+    if (jsonMessage.headers.bcc && jsonMessage.headers.bcc.length > 0) {
+      rfcMessage.push('Bcc: ' + jsonMessage.headers.bcc.join(', '));
+    }
+    rfcMessage.push('Subject: ' + jsonMessage.headers.subject);
+    rfcMessage.push('Date: ' + jsonMessage.headers.date);
+    rfcMessage.push('');
+    rfcMessage.push(jsonMessage.body);
+
+    return rfcMessage.join('\r\n');
+  }
+
   /**
    * Get the user's labels.
    * @return a Promise containing an array of strings.
