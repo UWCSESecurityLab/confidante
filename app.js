@@ -97,13 +97,6 @@ app.post('/sendMessage', ensureAuthenticated, function(req, res) {
   });
 });
 
-app.post('auth/keybase', function(req, res) {
-  var keybase = new KeybaseAPI(req.username, req.passphrase, req.headers.host);
-  keybase.login().then(function(loginBody) {
-    res.json({ response: loginBody });
-  });
-});
-
 app.get('/auth/google', function(req, res) {
   var oauth2Client = new googleAuth.OAuth2(
     credentials.web.client_id,

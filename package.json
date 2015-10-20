@@ -4,6 +4,7 @@
   "description": "Hello world",
   "main": "app.js",
   "scripts": {
+    "build": "browserify keybaseAPI.js -o js/keybaseAPI-bundle.js -s KeybaseAPI",
     "test": "mocha"
   },
   "author": "Eric Zeng",
@@ -24,6 +25,7 @@
     "triplesec": "^3.0.25"
   },
   "devDependencies": {
+    "browserify": "^11.2.0",
     "chai": "^3.3.0",
     "chai-as-promised": "^5.1.0",
     "mocha": "^2.3.3",

@@ -16,7 +16,7 @@ class KeybaseAPI {
   /**
    * Perform the password hash step of the Keybase login flow by scrypting
    * the passphrase from the user and the salt from the server with the appropriate
-   * parameters and returning buf.slice(192) from that result.  
+   * parameters and returning buf.slice(192) from that result.
    * @return a Buffer containing the password hash used in the /login.json step.
    */
   static computePasswordHash(passphrase, salt) {
@@ -36,7 +36,7 @@ class KeybaseAPI {
     try {
       // var res = scrypt.hashSync(passphrase, SCRYPT_PARAMS, 224, salt);
       var res = scrypt.crypto_scrypt(passphrase,
-                                     salt, 
+                                     salt,
                                      SCRYPT_PARAMS.N,
                                      SCRYPT_PARAMS.r,
                                      SCRYPT_PARAMS.p,
@@ -53,14 +53,14 @@ class KeybaseAPI {
    * Perform the 2-step Keybase login flow using the username and password
    * with which the API was initialized. This API fulfills whether the login
    * succeeded or not.
-   * @return a Promise containing the body of the response to a login attempt. 
+   * @return a Promise containing the body of the response to a login attempt.
    */
   login() {
     return new Promise(function(fulfill, reject) {
       this._getSalt(this.username)
            .then(this._login.bind(this))
            .then(function(loginBody) {
-             fulfill(loginBody); 
+             fulfill(loginBody);
            });
     }.bind(this));
   }
@@ -77,7 +77,7 @@ class KeybaseAPI {
           url: this.serverBaseURI + '/getSalt.json',
           qs: {
             email_or_username: this.username
-          } 
+          }
         }, function(error, response, body) {
           if (!error && response.statusCode == 200) {
             body = JSON.parse(body);
@@ -95,6 +95,7 @@ class KeybaseAPI {
    */
   _login(saltDetails) {
     console.log('Login...');
+    console.log('saltDetails: ' + JSON.stringify(saltDetails, null, 4));
     return new Promise(function(fulfill, reject) {
       var salt = saltDetails.salt;
       var login_session = new Buffer(saltDetails.login_session, 'base64');
