@@ -49,6 +49,8 @@ app.use(session({
   store: store
 }));
 
+app.use(express.static('js'));
+
 app.get('/', function(req, res) {
   res.render('index', { loggedIn: !!req.session.googleToken, email: req.session.email });
 });
