@@ -1,3 +1,4 @@
 node_modules/
 client_secret.json
-*.swp 
+*.swp
+/js/keybaseAPI-bundle.js

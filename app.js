@@ -9,6 +9,7 @@ var session = require('express-session');
 var bodyParser = require('body-parser');
 
 var request = require('request');
+var Cookie = require('cookie');
 
 var mongoose = require('mongoose')
 var MongoSessionStore = require('connect-mongodb-session')(session)
@@ -192,8 +193,8 @@ app.post('/login.json', function(req, res) {
   // Outputs: status, session, me
   //
   var LOGIN_URL = 'https://keybase.io/_/api/1.0/login.json';
-  request(
-    { method: 'POST',
+  request({
+      method: 'POST',
       url: LOGIN_URL,
       qs: req.query
     },
@@ -202,6 +203,14 @@ app.post('/login.json', function(req, res) {
         res.status(500).send('Failed to contact keybase /login.json endpoint.');
         return;
       }
+
+      // Save the cookies in this user's session.
+      req.session.keybaseCookies = response.headers['set-cookie'].map(function(cookie) {
+        return Cookie.parse(cookie);
+      });
+
+      req
+
       // Echo the response with the same status code.
       res.status(response.statusCode).send(body);
     }
@@ -235,6 +244,12 @@ function getGoogleOAuthToken(authCode) {
       }
       resolve(token);
     });
+  });
+}
+
+function storeKeybaseCredentials(keybase) {
+  return new Promise(function(resolve, reject) {
+
   });
 }
 
