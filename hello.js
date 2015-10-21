@@ -71,7 +71,59 @@ var Inbox = React.createClass({
   }
 });
 
+var ComposeArea = React.createClass({
+  getInitialState: function() {
+    return {
+      to: '',
+      subject: '',
+      body: ''
+    }
+  },
+  updateTo: function(e) {
+    this.setState({
+      to: e.target.value
+    });
+  },
+  updateSubject: function(e) {
+    this.setState({
+      subject: e.target.value
+    });
+  },
+  updateBody: function(e) {
+    this.setState({
+      body: e.target.value
+    });
+  },
+  send: function(e) {
+    console.log('unimplemented!');
+    console.log(this.state);
+  },
+  render: function() {
+    return(
+      <div>
+        <label htmlFor='to'>To:</label>
+        <input type='text' name='to' id='to' onChange={this.updateTo}></input><br />
+        <label htmlFor='subject'>Subject:</label>
+        <input type='text' name='subject' id='subject' onChange={this.updateSubject}></input><br />
+        <textarea name='body' id='body' onChange={this.updateBody}></textarea><br />
+        <button onClick={this.send}> Send </button>
+      </div>
+    );
+  }
+});
+
+var EmailClient = React.createClass({
+  render: function() {
+    return (
+      <div>
+        <ComposeArea />
+        <Inbox />
+      </div>
+    );
+  }
+});
+
 // ReactDOM.render(<HelloWorld />, document.getElementById('app'));
-ReactDOM.render(<Inbox />, document.getElementById('app'));
+ReactDOM.render(<EmailClient />, document.getElementById('app'));
 // ReactDOM.render(<HelloUser />, document.getElementById('app2'));
 // React
