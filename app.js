@@ -187,6 +187,7 @@ app.get('/getsalt.json', function(req, res) {
       res.status(response.statusCode).send(body);
     });
 });
+
 app.post('/login.json', function(req, res) {
   // /login.json
   // Inputs: email_or_username, hmac_pwh, login_session
@@ -203,16 +204,30 @@ app.post('/login.json', function(req, res) {
         res.status(500).send('Failed to contact keybase /login.json endpoint.');
         return;
       }
+      var keybase = JSON.parse(body);
 
-      // Save the cookies in this user's session.
-      req.session.keybaseCookies = response.headers['set-cookie'].map(function(cookie) {
-        return Cookie.parse(cookie);
+      // Early exit if the login failed
+      if (keybase.status.code != 0) {
+        res.status(response.statusCode).send(body);
+        return;
+      }
+
+      // Save the user's id and Keybase cookies in their session.
+      req.session.keybaseId = keybase.me.id;
+      req.session.keybaseCookies = response.headers['set-cookie'].map(
+        function(cookie) {
+          return Cookie.parse(cookie);
+        }
+      );
+      // Create a User record for this user if necessary.
+      storeKeybaseCredentials(keybase).then(function() {
+        // Echo the response with the same status code on success.
+        res.status(response.statusCode).send(body);
+      }).catch(function(mongoError) {
+        req.session.destroy(function(sessionError) {
+          res.status(500).send(mongoError);
+        });
       });
-
-      req
-
-      // Echo the response with the same status code.
-      res.status(response.statusCode).send(body);
     }
   );
 });
@@ -247,9 +262,35 @@ function getGoogleOAuthToken(authCode) {
   });
 }
 
+/**
+ * Creates and stores new User from their Keybase credentials. If the user has
+ * already used our service, then nothing needs to be updated.
+ * @param keybase The login object returned from the Keybase API
+ * @return an empty promise
+ */
 function storeKeybaseCredentials(keybase) {
   return new Promise(function(resolve, reject) {
-
+    User.findOne({'keybase.id': keybase.me.id}, function(err, user) {
+      if (err) {
+        reject(err);
+        return;
+      }
+      if (user) {
+        resolve();
+      } else {
+        // Currently we only store the id. We can store other non-sensitive
+        // info here in the future, like the profile picture.
+        var user = new User({
+          keybase: {
+            id: keybase.me.id
+          }
+        });
+        user.save(function(err) {
+          if (err) reject(err);
+          else resolve();
+        });
+      }
+    });
   });
 }
 
