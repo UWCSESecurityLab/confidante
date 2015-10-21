@@ -79,12 +79,12 @@ app.get('/inbox', ensureAuthenticated, function(req, res) {
 app.get('/fakeInbox', function(req, res) {
   res.json({
     emails: [
-      { id: 0, sender: 'Jane', subject: 'Jane sent this email' },
-      { id: 1, sender: 'Janus', subject: 'Janus sent this email' },
-      { id: 2, sender: 'Jacqueline', subject: 'Jacqueline sent this email' },
-      { id: 3, sender: 'Jo', subject: 'Jo sent this email' },
-      { id: 4, sender: 'Jane', subject: 'Jane sent this email as well' },
-      { id: 5, sender: Math.random().toString(36).substring(7), 
+      { id: 0, to: 'A', from: 'Jane', subject: 'Jane sent this email' },
+      { id: 1, to: 'A', from: 'Janus', subject: 'Janus sent this email' },
+      { id: 2, to: 'A', from: 'Jacqueline', subject: 'Jacqueline sent this email' },
+      { id: 3, to: 'A', from: 'Jo', subject: 'Jo sent this email' },
+      { id: 4, to: 'A', from: 'Jane', subject: 'Jane sent this email as well' },
+      { id: 5, to: 'A', from: Math.random().toString(36).substring(7), 
                subject: Math.random().toString(36).substring(7) }
     ]
   });

@@ -15,8 +15,9 @@ var Email = React.createClass({
     return (
       <div className='emailRow'>
         <input type='checkbox' value={this.state.checked} onchange={this.handleChange}></input>
-        <span className='sender'> {this.props.sender} </span>
+        <span className='from'> {this.props.from} </span>
         <span className='subject'> {this.props.subject} </span>
+        <span className='body'> {this.props.body} </span>
       </div>
     );
   }
@@ -50,7 +51,7 @@ var Inbox = React.createClass({
 
   render: function() {
     var emails = this.state.emails.map(function(email) {
-      return <li key={email.id}> <Email sender={email.sender} subject={email.subject} /> </li>
+      return <li key={email.id}> <Email from={email.from} subject={email.subject} /> </li>
     });
     if (emails.length == 0) {
       return (
@@ -76,27 +77,32 @@ var ComposeArea = React.createClass({
     return {
       to: '',
       subject: '',
-      body: ''
+      email: ''
     }
   },
   updateTo: function(e) {
-    this.setState({
-      to: e.target.value
-    });
+    this.setState({ to: e.target.value });
   },
   updateSubject: function(e) {
-    this.setState({
-      subject: e.target.value
-    });
+    this.setState({ subject: e.target.value });
   },
-  updateBody: function(e) {
-    this.setState({
-      body: e.target.value
-    });
+  updateEmail: function(e) {
+    this.setState({ email: e.target.value });
   },
   send: function(e) {
     console.log('unimplemented!');
     console.log(this.state);
+    request( 
+      { method: 'POST',
+        url: 'http://localhost:3000/sendMessage',
+        json: true,
+        body: this.state
+      }, function(error, response, body) {
+        console.log('Done with send.');
+        console.log(error);
+        console.log(response);
+        console.log(body);
+      });
   },
   render: function() {
     return(
@@ -105,7 +111,7 @@ var ComposeArea = React.createClass({
         <input type='text' name='to' id='to' onChange={this.updateTo}></input><br />
         <label htmlFor='subject'>Subject:</label>
         <input type='text' name='subject' id='subject' onChange={this.updateSubject}></input><br />
-        <textarea name='body' id='body' onChange={this.updateBody}></textarea><br />
+        <textarea name='email' id='email' onChange={this.updateEmail}></textarea><br />
         <button onClick={this.send}> Send </button>
       </div>
     );
@@ -123,7 +129,4 @@ var EmailClient = React.createClass({
   }
 });
 
-// ReactDOM.render(<HelloWorld />, document.getElementById('app'));
 ReactDOM.render(<EmailClient />, document.getElementById('app'));
-// ReactDOM.render(<HelloUser />, document.getElementById('app2'));
-// React
