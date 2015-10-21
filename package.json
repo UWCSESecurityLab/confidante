@@ -4,7 +4,8 @@
   "description": "Hello world",
   "main": "app.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "build": "./build.sh"
   },
   "author": "Eric Zeng",
   "dependencies": {
@@ -20,10 +21,13 @@
     "mongoose": "^4.1.9",
     "pgp-utils": "0.0.28",
     "purepack": "^1.0.4",
+    "react": "^0.14.0",
+    "react-dom": "^0.14.0",
     "request": "^2.65.0",
     "triplesec": "^3.0.25"
   },
   "devDependencies": {
+    "babelify": "^6.3.0",
     "chai": "^3.3.0",
     "chai-as-promised": "^5.1.0",
     "mocha": "^2.3.3",
