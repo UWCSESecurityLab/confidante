@@ -24,7 +24,8 @@
     "react": "^0.14.0",
     "react-dom": "^0.14.0",
     "request": "^2.65.0",
-    "triplesec": "^3.0.25"
+    "triplesec": "^3.0.25",
+    "urlsafe-base64": "^1.0.0"
   },
   "devDependencies": {
     "babelify": "^6.3.0",
