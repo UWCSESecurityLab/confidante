@@ -112,7 +112,7 @@ app.post('/sendMessage', ensureAuthenticated, function(req, res) {
     body: req.body.email
   }).then(function(response) {
     console.log(response);
-    res.redirect('/inbox');
+    // res.redirect('/inbox');
   }).catch(function(error) {
     console.log(error);
   });
