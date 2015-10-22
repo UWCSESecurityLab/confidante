@@ -63,7 +63,7 @@ app.get('/account', ensureAuthenticated, function(req, res){
   gmailClient.listLabels().then(function(labels) {
     res.render('account', { labels: labels, loggedIn: !!req.session.googleToken });
   });
-}); 
+});
 
 app.get('/login', function(req, res) {
   res.render('login', { loggedIn: !!req.session.googleToken });
@@ -84,7 +84,7 @@ app.get('/fakeInbox', function(req, res) {
       { id: 2, to: 'A', from: 'Jacqueline', subject: 'Jacqueline sent this email' },
       { id: 3, to: 'A', from: 'Jo', subject: 'Jo sent this email' },
       { id: 4, to: 'A', from: 'Jane', subject: 'Jane sent this email as well' },
-      { id: 5, to: 'A', from: Math.random().toString(36).substring(7), 
+      { id: 5, to: 'A', from: Math.random().toString(36).substring(7),
                subject: Math.random().toString(36).substring(7) }
     ]
   });
@@ -248,8 +248,9 @@ function getGoogleOAuthToken(authCode) {
     oauth2Client.getToken(authCode, function(err, token) {
       if (err) {
         reject(Error('Error while tring to retrieve access token' + err));
+      } else {
+        resolve(token);
       }
-      resolve(token);
     });
   });
 }
@@ -263,12 +264,18 @@ function getGoogleOAuthToken(authCode) {
 function storeGoogleCredentials(email, refreshToken) {
   return new Promise(function(resolve, reject) {
     User.findOne({'google.email': email}, function(err, user) {
-      if (err) reject(err);
+      if (err) {
+        reject(err);
+        return;
+      }
       if (user) {
         user.google.refreshToken = refreshToken;
         user.save(function(err) {
-          if (err) reject(err);
-          resolve();
+          if (err) {
+            reject(err);
+          } else {
+            resolve();
+          }
         });
       } else {
         var user = new User({
@@ -278,8 +285,11 @@ function storeGoogleCredentials(email, refreshToken) {
           }
         });
         user.save(function(err) {
-          if (err) reject(err);
-          resolve();
+          if (err) {
+            reject(err);
+          } else {
+            resolve();
+          }
         });
       }
     });
