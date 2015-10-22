@@ -63,7 +63,7 @@ app.get('/account', ensureAuthenticated, function(req, res){
   gmailClient.listLabels().then(function(labels) {
     res.render('account', { labels: labels, loggedIn: !!req.session.googleToken });
   });
-}); 
+});
 
 app.get('/login', function(req, res) {
   res.render('login', { loggedIn: !!req.session.googleToken });
@@ -84,7 +84,7 @@ app.get('/fakeInbox', function(req, res) {
       { id: 2, to: 'A', from: 'Jacqueline', subject: 'Jacqueline sent this email' },
       { id: 3, to: 'A', from: 'Jo', subject: 'Jo sent this email' },
       { id: 4, to: 'A', from: 'Jane', subject: 'Jane sent this email as well' },
-      { id: 5, to: 'A', from: Math.random().toString(36).substring(7), 
+      { id: 5, to: 'A', from: Math.random().toString(36).substring(7),
                subject: Math.random().toString(36).substring(7) }
     ]
   });
@@ -135,6 +135,7 @@ app.get('/auth/google', function(req, res) {
           access_token: accessToken,
           refresh_token: user.google.refreshToken
         };
+        req.session.email = user.google.email;
         res.redirect('/inbox');
       }).catch(function(err) {
         // TODO: figure out how to handle this case. Delete user? Destroy session?
