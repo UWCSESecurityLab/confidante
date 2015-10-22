@@ -95,10 +95,6 @@ app.get('/fakeInbox', function(req, res) {
   });
 });
 
-app.get('/newMessage', ensureAuthenticated, function(req, res) {
-  res.render('newMessage', { emailAddress: req.session.email, loggedIn: !!req.session.googleToken});
-});
-
 app.post('/sendMessage', ensureAuthenticated, function(req, res) {
   console.log(req.body);
   var gmailClient = new GmailClient(req.session.googleToken);
