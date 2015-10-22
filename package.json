@@ -4,13 +4,14 @@
   "description": "Hello world",
   "main": "app.js",
   "scripts": {
-    "test": "mocha",
-    "build": "./build.sh"
+    "build": "./build.sh",
+    "test": "mocha"
   },
   "author": "Eric Zeng",
   "dependencies": {
     "body-parser": "^1.14.1",
     "connect-mongodb-session": "^1.0.5",
+    "cookie": "^0.2.2",
     "ejs": "^2.3.4",
     "express": "^4.13.3",
     "express-ejs-layouts": "^1.1.0",
@@ -28,6 +29,7 @@
     "urlsafe-base64": "^1.0.0"
   },
   "devDependencies": {
+    "browserify": "^11.2.0",
     "babelify": "^6.3.0",
     "chai": "^3.3.0",
     "chai-as-promised": "^5.1.0",

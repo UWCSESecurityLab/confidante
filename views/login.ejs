@@ -1,1 +1,20 @@
-<a href="/auth/google">Login with Google</a>
+<form>
+  <h2>Sign in with Keybase</h2>
+  <div>
+    <label for="username">Username:</label>
+    <input type="text" id="username"/>
+  </div>
+  <div>
+    <label for="password">Password:</label>
+    <input type="password" id="password"/>
+  </div>
+</form>
+
+<div class="button" id="submit">
+  <button>Sign In</button>
+</div>
+<div id="error"></div>
+
+<script src="login.js"></script>
+<script src="scrypt.js"></script>
+<script src="keybaseAPI-bundle.js"></script>

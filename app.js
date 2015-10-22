@@ -9,11 +9,11 @@ var session = require('express-session');
 var bodyParser = require('body-parser');
 
 var request = require('request');
+var Cookie = require('cookie');
 
 var mongoose = require('mongoose')
 var MongoSessionStore = require('connect-mongodb-session')(session)
 var googleAuthLibrary = require('google-auth-library');
-var googleAuth = new googleAuthLibrary();
 
 var credentials = require('./client_secret.json');
 var GmailClient = require('./gmailClient.js');
@@ -113,18 +113,46 @@ app.post('/sendMessage', ensureAuthenticated, function(req, res) {
   });
 });
 
+/**
+ * Authenticates the user with Google. The user must have already been
+ * authenticated with Keybase so we can identify them.
+ */
 app.get('/auth/google', function(req, res) {
-  var oauth2Client = new googleAuth.OAuth2(
-    credentials.web.client_id,
-    credentials.web.client_secret,
-    credentials.web.redirect_uris[0]
-  );
-  var authUrl = oauth2Client.generateAuthUrl({
-    access_type: 'offline',
-    scope: ['email', 'https://www.googleapis.com/auth/gmail.modify'],
-    redirect_uri: credentials.web.redirect_uris[0]
+  User.findOne({'keybase.id': req.session.keybaseId}, function(err, user) {
+    if (err) {
+      res.statusCode(500).send(err);
+    }
+    if (!user) {
+      // If there is no Keybase id, send them back to the initial login.
+      res.redirect('/login');
+    }
+
+    if (user.google.refreshToken) {
+      // If the user has logged in with Google before, get an access token
+      // using the refresh token.
+      refreshGoogleOAuthToken(user.google.refreshToken).then(function(accessToken) {
+        req.session.googleToken = {
+          access_token: accessToken,
+          refresh_token: user.google.refreshToken
+        };
+        req.session.email = user.google.email;
+        res.redirect('/inbox');
+      }).catch(function(err) {
+        // TODO: figure out how to handle this case. Delete user? Destroy session?
+        res.statusCode(500).send(err);
+      });
+
+    } else {
+      // Otherwise, we need to send them through the Google OAuth flow.
+      var oauth2Client = buildGoogleOAuthClient();
+      var authUrl = oauth2Client.generateAuthUrl({
+        access_type: 'offline',
+        scope: ['email', 'https://www.googleapis.com/auth/gmail.modify'],
+        redirect_uri: credentials.web.redirect_uris[0]
+      });
+      res.redirect(authUrl);
+    }
   });
-  res.redirect(authUrl);
 });
 
 /**
@@ -139,7 +167,7 @@ app.get('/auth/google/return', function(req, res) {
   }
 
   // Get tokens, then lookup email address.
-  var tokenPromise = getGoogleOAuthToken(code);
+  var tokenPromise = getInitialGoogleOAuthTokens(code);
   var emailPromise = tokenPromise.then(function(token) {
     var gmailClient = new GmailClient(token);
     return gmailClient.getEmailAddress();
@@ -154,7 +182,11 @@ app.get('/auth/google/return', function(req, res) {
 
     // If a refresh token was returned, we need to store it in the database.
     if (token.refresh_token) {
-      storeGoogleCredentials(email, token.refresh_token).then(function() {
+      storeGoogleCredentials(
+        req.session.keybaseId,
+        email,
+        token.refresh_token
+      ).then(function() {
         res.redirect('/')
       }).catch(function(error) {
         console.error(error);
@@ -202,14 +234,15 @@ app.get('/getsalt.json', function(req, res) {
       res.status(response.statusCode).send(body);
     });
 });
+
 app.post('/login.json', function(req, res) {
   // /login.json
   // Inputs: email_or_username, hmac_pwh, login_session
   // Outputs: status, session, me
   //
   var LOGIN_URL = 'https://keybase.io/_/api/1.0/login.json';
-  request(
-    { method: 'POST',
+  request({
+      method: 'POST',
       url: LOGIN_URL,
       qs: req.query
     },
@@ -218,8 +251,30 @@ app.post('/login.json', function(req, res) {
         res.status(500).send('Failed to contact keybase /login.json endpoint.');
         return;
       }
-      // Echo the response with the same status code.
-      res.status(response.statusCode).send(body);
+      var keybase = JSON.parse(body);
+
+      // Early exit if the login failed
+      if (keybase.status.code != 0) {
+        res.status(response.statusCode).send(body);
+        return;
+      }
+
+      // Save the user's id and Keybase cookies in their session.
+      req.session.keybaseId = keybase.me.id;
+      req.session.keybaseCookies = response.headers['set-cookie'].map(
+        function(cookie) {
+          return Cookie.parse(cookie);
+        }
+      );
+      // Create a User record for this user if necessary.
+      storeKeybaseCredentials(keybase).then(function() {
+        // Echo the response with the same status code on success.
+        res.status(response.statusCode).send(body);
+      }).catch(function(mongoError) {
+        req.session.destroy(function(sessionError) {
+          res.status(500).send(mongoError);
+        });
+      });
     }
   );
 });
@@ -233,18 +288,25 @@ app.get('/logout', function(req, res) {
 app.listen(3000);
 
 /**
+ * Constructs a Google OAuth client with the app's credentials.
+ */
+function buildGoogleOAuthClient() {
+  var googleAuth = new googleAuthLibrary();
+  return new googleAuth.OAuth2(
+    credentials.web.client_id,
+    credentials.web.client_secret,
+    credentials.web.redirect_uris[0]
+  );
+}
+
+/**
  * Requests an access token and refresh token (if applicable) from Google.
  * @param authCode the authorization code sent in the OAuth callback
- * @return Promise containing the token object
+ * @return Promise containing the access token/refresh token object
  */
-function getGoogleOAuthToken(authCode) {
+function getInitialGoogleOAuthTokens(authCode) {
   return new Promise(function(resolve, reject) {
-    var oauth2Client = new googleAuth.OAuth2(
-      credentials.web.client_id,
-      credentials.web.client_secret,
-      credentials.web.redirect_uris[0]
-    );
-
+    var oauth2Client = buildGoogleOAuthClient();
     oauth2Client.getToken(authCode, function(err, token) {
       if (err) {
         reject(Error('Error while tring to retrieve access token' + err));
@@ -256,20 +318,73 @@ function getGoogleOAuthToken(authCode) {
 }
 
 /**
+ * Get the access token given a refresh token.
+ * @param refreshToken The user's refresh token.
+ * @return Promise containing the access token.
+ */
+function refreshGoogleOAuthToken(refreshToken) {
+  return new Promise(function(resolve, reject) {
+    var oauth2Client = buildGoogleOAuthClient();
+    oauth2Client.credentials.refresh_token = refreshToken;
+    oauth2Client.getAccessToken(function(err, token, response) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(token);
+      }
+    });
+  });
+}
+
+/**
+ * Creates and stores new User from their Keybase credentials. If the user has
+ * already used our service, then nothing needs to be updated.
+ * @param keybase The login object returned from the Keybase API
+ * @return an empty promise
+ */
+function storeKeybaseCredentials(keybase) {
+  return new Promise(function(resolve, reject) {
+    User.findOne({'keybase.id': keybase.me.id}, function(err, user) {
+      if (err) {
+        reject(err);
+        return;
+      }
+      if (user) {
+        resolve();
+      } else {
+        // Currently we only store the id. We can store other non-sensitive
+        // info here in the future, like the profile picture.
+        var user = new User({
+          keybase: {
+            id: keybase.me.id
+          }
+        });
+        user.save(function(err) {
+          if (err) reject(err);
+          else resolve();
+        });
+      }
+    });
+  });
+}
+
+/**
  * Creates or updates a User's Google credentials.
+ * @param keybaseId The identifier for the user
  * @param email The user's email address
  * @param refreshToken The Google OAuth refresh Token
  * @return Empty Promise
  */
-function storeGoogleCredentials(email, refreshToken) {
+function storeGoogleCredentials(keybaseId, email, refreshToken) {
   return new Promise(function(resolve, reject) {
-    User.findOne({'google.email': email}, function(err, user) {
+    User.findOne({'keybase.id': keybaseId}, function(err, user) {
       if (err) {
         reject(err);
         return;
       }
       if (user) {
         user.google.refreshToken = refreshToken;
+        user.google.email = email;
         user.save(function(err) {
           if (err) {
             reject(err);
@@ -278,19 +393,7 @@ function storeGoogleCredentials(email, refreshToken) {
           }
         });
       } else {
-        var user = new User({
-          google: {
-            email: email,
-            refreshToken: refreshToken
-          }
-        });
-        user.save(function(err) {
-          if (err) {
-            reject(err);
-          } else {
-            resolve();
-          }
-        });
+        reject('Could not find user');
       }
     });
   });
