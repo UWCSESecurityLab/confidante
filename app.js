@@ -271,8 +271,11 @@ function storeGoogleCredentials(email, refreshToken) {
       if (user) {
         user.google.refreshToken = refreshToken;
         user.save(function(err) {
-          if (err) reject(err);
-          else resolve();
+          if (err) {
+            reject(err);
+          } else {
+            resolve();
+          }
         });
       } else {
         var user = new User({
@@ -282,8 +285,11 @@ function storeGoogleCredentials(email, refreshToken) {
           }
         });
         user.save(function(err) {
-          if (err) reject(err);
-          else resolve();
+          if (err) {
+            reject(err);
+          } else {
+            resolve();
+          }
         });
       }
     });
