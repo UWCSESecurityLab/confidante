@@ -1,4 +1,7 @@
+gen/
 node_modules/
-client_secret.json
+
+.DS_Store
 *.swp
-/js/keybaseAPI-bundle.js
+
+client_secret.json

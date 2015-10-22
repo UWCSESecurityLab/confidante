@@ -4,7 +4,8 @@
   "description": "Hello world",
   "main": "app.js",
   "scripts": {
-    "build": "./build.sh",
+    "build": "./scripts/build.sh",
+    "clean": "rm -rf gen",
     "test": "mocha"
   },
   "author": "Eric Zeng",
