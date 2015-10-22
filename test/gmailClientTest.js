@@ -6,7 +6,7 @@ chai.use(chaiAsPromised);
 var mockery = require('mockery');
 var sinon = require('sinon');
 
-var GmailClient = require('../gmailClient.js');
+var GmailClient = require('../src/gmailClient.js');
 var google = require('googleapis');
 var googleAuth = require('google-auth-library');
 var auth = new googleAuth();

@@ -3,7 +3,7 @@ var chai = require('chai');
 var should = chai.should();
 var chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
-var p3skb = require('../p3skb');
+var p3skb = require('../src/web/js/p3skb.js');
 var fs = require('fs');
 var testkey = fs.readFileSync('test/resources/testkey', 'utf8');
 

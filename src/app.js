@@ -15,7 +15,7 @@ var mongoose = require('mongoose')
 var MongoSessionStore = require('connect-mongodb-session')(session)
 var googleAuthLibrary = require('google-auth-library');
 
-var credentials = require('./client_secret.json');
+var credentials = require('../client_secret.json');
 var GmailClient = require('./gmailClient.js');
 var User = require('./models/user.js')
 
@@ -37,7 +37,7 @@ mongoose.connection.on('error', function(error) {
 // Configure Express
 var app = express();
 
-app.set('views', __dirname + '/views');
+app.set('views', __dirname + '/web/views');
 app.set('view engine', 'ejs');
 app.use(expressLayouts);
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -49,10 +49,10 @@ app.use(session({
   store: store
 }));
 
-app.use(express.static('dist'));
-app.use(express.static('js'));
-app.use(express.static('html'));
-app.use(express.static('css'));
+app.use(express.static('gen'));
+app.use(express.static(__dirname + '/web/js'));
+app.use(express.static(__dirname + '/web/html'));
+app.use(express.static(__dirname + '/web/css'));
 
 app.get('/', function(req, res) {
   res.render('index', { loggedIn: !!req.session.googleToken, email: req.session.email });

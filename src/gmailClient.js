@@ -2,7 +2,7 @@
 var google = require('googleapis');
 var googleAuth = require('google-auth-library');
 var pgp = require('./pgp.js');
-var credentials = require('./client_secret.json');
+var credentials = require('../client_secret.json');
 var URLSafeBase64 = require('urlsafe-base64');
 
 class GmailClient {
