@@ -52,7 +52,6 @@ var Inbox = React.createClass({
       function(error, response, body) {
         if (!error) {
           body = JSON.parse(body);
-          console.log(body);
           var emails = []
           body.forEach(function(thread) {
             emails.push(

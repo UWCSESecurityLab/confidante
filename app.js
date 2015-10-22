@@ -111,10 +111,9 @@ app.post('/sendMessage', ensureAuthenticated, function(req, res) {
     },
     body: req.body.email
   }).then(function(response) {
-    console.log(response);
-    // res.redirect('/inbox');
+    res.status(200).send('OK');
   }).catch(function(error) {
-    console.log(error);
+    res.status(500).send(error);
   });
 });
 
