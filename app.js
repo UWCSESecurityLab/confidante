@@ -14,7 +14,6 @@ var Cookie = require('cookie');
 var mongoose = require('mongoose')
 var MongoSessionStore = require('connect-mongodb-session')(session)
 var googleAuthLibrary = require('google-auth-library');
-var googleAuth = new googleAuthLibrary();
 
 var credentials = require('./client_secret.json');
 var GmailClient = require('./gmailClient.js');
@@ -98,18 +97,50 @@ app.post('/sendMessage', ensureAuthenticated, function(req, res) {
   });
 });
 
+/**
+ * Authenticates the user with Google. The user must have already been
+ * authenticated with Keybase so we can identify them.
+ */
 app.get('/auth/google', function(req, res) {
-  var oauth2Client = new googleAuth.OAuth2(
-    credentials.web.client_id,
-    credentials.web.client_secret,
-    credentials.web.redirect_uris[0]
-  );
-  var authUrl = oauth2Client.generateAuthUrl({
-    access_type: 'offline',
-    scope: ['email', 'https://www.googleapis.com/auth/gmail.modify'],
-    redirect_uri: credentials.web.redirect_uris[0]
+  console.log('/auth/google');
+  User.findOne({'keybase.id': req.session.keybaseId}, function(err, user) {
+    if (err) {
+      res.statusCode(500).send(err);
+    }
+    if (!user) {
+      // If there is no Keybase id, send them back to the initial login.
+      res.redirect('/login');
+    }
+
+    if (user.google.refreshToken) {
+      console.log('found user record with google');
+      console.log(util.inspect(user.google));
+      // If the user has logged in with Google before, get an access token
+      // using the refresh token.
+      refreshGoogleOAuthToken(user.google.refreshToken).then(function(accessToken) {
+        console.log('refreshed token successfully');
+        req.session.googleToken = {
+          access_token: accessToken,
+          refresh_token: user.google.refreshToken
+        };
+        res.redirect('/inbox');
+      }).catch(function(err) {
+        // TODO: figure out how to handle this case. Delete user? Destroy session?
+        res.statusCode(500).send(err);
+      });
+
+    } else {
+      console.log('found user record without google');
+      // Otherwise, we need to send them through the Google OAuth flow.
+      var oauth2Client = buildGoogleOAuthClient();
+      var authUrl = oauth2Client.generateAuthUrl({
+        access_type: 'offline',
+        scope: ['email', 'https://www.googleapis.com/auth/gmail.modify'],
+        redirect_uri: credentials.web.redirect_uris[0]
+      });
+      res.redirect(authUrl);
+    }
   });
-  res.redirect(authUrl);
 });
 
 /**
@@ -124,7 +155,7 @@ app.get('/auth/google/return', function(req, res) {
   }
 
   // Get tokens, then lookup email address.
-  var tokenPromise = getGoogleOAuthToken(code);
+  var tokenPromise = getInitialGoogleOAuthTokens(code);
   var emailPromise = tokenPromise.then(function(token) {
     var gmailClient = new GmailClient(token);
     return gmailClient.getEmailAddress();
@@ -139,7 +170,11 @@ app.get('/auth/google/return', function(req, res) {
 
     // If a refresh token was returned, we need to store it in the database.
     if (token.refresh_token) {
-      storeGoogleCredentials(email, token.refresh_token).then(function() {
+      storeGoogleCredentials(
+        req.session.keybaseId,
+        email,
+        token.refresh_token
+      ).then(function() {
         res.redirect('/')
       }).catch(function(error) {
         console.error(error);
@@ -241,23 +276,51 @@ app.get('/logout', function(req, res) {
 app.listen(3000);
 
 /**
+ * Constructs a Google OAuth client with the app's credentials.
+ */
+function buildGoogleOAuthClient() {
+  var googleAuth = new googleAuthLibrary();
+  return new googleAuth.OAuth2(
+    credentials.web.client_id,
+    credentials.web.client_secret,
+    credentials.web.redirect_uris[0]
+  );
+}
+
+/**
  * Requests an access token and refresh token (if applicable) from Google.
  * @param authCode the authorization code sent in the OAuth callback
- * @return Promise containing the token object
+ * @return Promise containing the access token/refresh token object
  */
-function getGoogleOAuthToken(authCode) {
+function getInitialGoogleOAuthTokens(authCode) {
   return new Promise(function(resolve, reject) {
-    var oauth2Client = new googleAuth.OAuth2(
-      credentials.web.client_id,
-      credentials.web.client_secret,
-      credentials.web.redirect_uris[0]
-    );
-
+    var oauth2Client = buildGoogleOAuthClient();
     oauth2Client.getToken(authCode, function(err, token) {
       if (err) {
         reject(Error('Error while tring to retrieve access token' + err));
+      } else {
+        resolve(token);
       }
-      resolve(token);
+    });
+  });
+}
+
+/**
+ * Get the access token given a refresh token.
+ * @param refreshToken The user's refresh token.
+ * @return Promise containing the access token.
+ */
+function refreshGoogleOAuthToken(refreshToken) {
+  return new Promise(function(resolve, reject) {
+    console.log('refreshing token: ' + refreshToken);
+    var oauth2Client = buildGoogleOAuthClient();
+    oauth2Client.credentials.refresh_token = refreshToken;
+    oauth2Client.getAccessToken(function(err, token, response) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(token);
+      }
     });
   });
 }
@@ -296,31 +359,33 @@ function storeKeybaseCredentials(keybase) {
 
 /**
  * Creates or updates a User's Google credentials.
+ * @param keybaseId The identifier for the user
  * @param email The user's email address
  * @param refreshToken The Google OAuth refresh Token
  * @return Empty Promise
  */
-function storeGoogleCredentials(email, refreshToken) {
+function storeGoogleCredentials(keybaseId, email, refreshToken) {
   return new Promise(function(resolve, reject) {
-    User.findOne({'google.email': email}, function(err, user) {
-      if (err) reject(err);
+    console.log('storeGoogleCredentials');
+    User.findOne({'keybase.id': keybaseId}, function(err, user) {
+      if (err) {
+        reject(err);
+        return;
+      }
       if (user) {
+        console.log('Found a user, modifying google fields');
         user.google.refreshToken = refreshToken;
+        user.google.email = email;
         user.save(function(err) {
-          if (err) reject(err);
-          resolve();
-        });
-      } else {
-        var user = new User({
-          google: {
-            email: email,
-            refreshToken: refreshToken
+          if (err) {
+            reject(err);
+          } else {
+            console.log('saved user');
+            resolve();
           }
         });
-        user.save(function(err) {
-          if (err) reject(err);
-          resolve();
-        });
+      } else {
+        reject('Could not find user');
       }
     });
   });

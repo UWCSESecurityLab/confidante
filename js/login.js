@@ -11,6 +11,7 @@ submit.onclick = function() {
       return;
     }
     localStorage.setItem('keybase', JSON.stringify(response.me));
+    window.location.href = '/auth/google';
   });
 }
 
