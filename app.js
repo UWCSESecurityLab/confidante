@@ -102,7 +102,6 @@ app.post('/sendMessage', ensureAuthenticated, function(req, res) {
  * authenticated with Keybase so we can identify them.
  */
 app.get('/auth/google', function(req, res) {
-  console.log('/auth/google');
   User.findOne({'keybase.id': req.session.keybaseId}, function(err, user) {
     if (err) {
       res.statusCode(500).send(err);
@@ -113,12 +112,9 @@ app.get('/auth/google', function(req, res) {
     }
 
     if (user.google.refreshToken) {
-      console.log('found user record with google');
-      console.log(util.inspect(user.google));
       // If the user has logged in with Google before, get an access token
       // using the refresh token.
       refreshGoogleOAuthToken(user.google.refreshToken).then(function(accessToken) {
-        console.log('refreshed token successfully');
         req.session.googleToken = {
           access_token: accessToken,
           refresh_token: user.google.refreshToken
@@ -130,7 +126,6 @@ app.get('/auth/google', function(req, res) {
       });
 
     } else {
-      console.log('found user record without google');
       // Otherwise, we need to send them through the Google OAuth flow.
       var oauth2Client = buildGoogleOAuthClient();
       var authUrl = oauth2Client.generateAuthUrl({
@@ -312,7 +307,6 @@ function getInitialGoogleOAuthTokens(authCode) {
  */
 function refreshGoogleOAuthToken(refreshToken) {
   return new Promise(function(resolve, reject) {
-    console.log('refreshing token: ' + refreshToken);
     var oauth2Client = buildGoogleOAuthClient();
     oauth2Client.credentials.refresh_token = refreshToken;
     oauth2Client.getAccessToken(function(err, token, response) {
@@ -366,21 +360,18 @@ function storeKeybaseCredentials(keybase) {
  */
 function storeGoogleCredentials(keybaseId, email, refreshToken) {
   return new Promise(function(resolve, reject) {
-    console.log('storeGoogleCredentials');
     User.findOne({'keybase.id': keybaseId}, function(err, user) {
       if (err) {
         reject(err);
         return;
       }
       if (user) {
-        console.log('Found a user, modifying google fields');
         user.google.refreshToken = refreshToken;
         user.google.email = email;
         user.save(function(err) {
           if (err) {
             reject(err);
           } else {
-            console.log('saved user');
             resolve();
           }
         });
