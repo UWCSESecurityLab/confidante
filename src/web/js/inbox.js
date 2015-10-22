@@ -10,12 +10,14 @@ var Message = React.createClass({
     var from = getMessageHeader(this.props.message, 'From');
     var to = getMessageHeader(this.props.message, 'To');
     var body = getMessageBody(this.props.message);
+    console.log(body);
+    
     return (
       <div className='message'>
-        <span className='to'> To: {to} </span>
-        <span className='from'> From: {from} </span>
-        <span className='subject'> Subject: {subject} </span>
-        <span className='body'> Body: {body} </span>
+        <div className='to'> To: {to} </div>
+        <div className='from'> From: {from} </div>
+        <div className='subject'> Subject: {subject} </div>
+        <div className='body'> Body: {body} </div>
       </div>
     );
   }
