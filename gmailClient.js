@@ -138,14 +138,15 @@ class GmailClient {
         userId: 'me',
         resource: {
           raw: encodedMessage
-        }, function(err, response) {
+        }
+      }, function(err, response) {
           if (err) {
             reject(err);
             return;
           }
           resolve(response);
         }
-      });
+      );
     }.bind(this));
   }
 
