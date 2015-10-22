@@ -5,7 +5,7 @@ var buffer = require('buffer');
 var crypto = require('crypto');
 var purepack = require('purepack');
 var kbpgp = require('kbpgp');
-// var scrypt = scrypt_module_factory(67108864);
+var scrypt = scrypt_module_factory(67108864);
 
 class KeybaseAPI {
   constructor(username, passphrase, serverBaseURI) {
