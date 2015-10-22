@@ -69,10 +69,15 @@ app.get('/login', function(req, res) {
   res.render('login', { loggedIn: !!req.session.googleToken });
 });
 
+app.get('/mail', ensureAuthenticated, function(req, res) {
+  res.render('mail', { loggedIn: !!req.session.googleToken });
+});
+
 app.get('/inbox', ensureAuthenticated, function(req, res) {
   var gmailClient = new GmailClient(req.session.googleToken);
   gmailClient.getEncryptedInbox().then(function(threads) {
-    res.render('inbox', { threads: threads, loggedIn: !!req.session.googleToken })
+    res.json(threads);
+    // res.render('inbox', { threads: threads, loggedIn: !!req.session.googleToken })
   });
 });
 
@@ -90,10 +95,6 @@ app.get('/fakeInbox', function(req, res) {
   });
 });
 
-app.get('/newMessage', ensureAuthenticated, function(req, res) {
-  res.render('newMessage', { emailAddress: req.session.email, loggedIn: !!req.session.googleToken});
-});
-
 app.post('/sendMessage', ensureAuthenticated, function(req, res) {
   console.log(req.body);
   var gmailClient = new GmailClient(req.session.googleToken);
@@ -106,10 +107,9 @@ app.post('/sendMessage', ensureAuthenticated, function(req, res) {
     },
     body: req.body.email
   }).then(function(response) {
-    console.log(response);
-    res.redirect('/inbox');
+    res.status(200).send('OK');
   }).catch(function(error) {
-    console.log(error);
+    res.status(500).send(error);
   });
 });
 
