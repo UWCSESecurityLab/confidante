@@ -30,8 +30,8 @@ class GmailClient {
         auth: this.oauth2Client,
         userId: 'me'
       }, function(err, response) {
-        if (err) { 
-          reject(err); 
+        if (err) {
+          reject(err);
           return;
         }
         resolve(response.emailAddress);
@@ -50,7 +50,7 @@ class GmailClient {
         q: 'BEGIN PGP',
         userId: 'me'
       }, function(err, response) {
-        if (err) { 
+        if (err) {
           reject(err);
           return;
         }
@@ -92,21 +92,23 @@ class GmailClient {
     return threads.filter(function(thread) {
       for (var i = 0; i < thread.messages.length; i++) {
         var message = thread.messages[i];
-        // Each email message has multiple message parts, usually one is HTML
-        // formatted and the other is plaintext. Find the plaintext message.
-        var messagePart = message.payload.parts.find(function(messagePart) {
-          var plainTextHeader = messagePart.headers.find(function(header) {
-            return header.name == 'Content-Type' &&
-                   header.value.includes('text/plain');
+        if (message.payload.mimeType == 'text/plain') {
+          var encodedBody = new Buffer(message.payload.body.data, 'base64');
+          if (pgp.containsPGPMessage(encodedBody.toString())) {
+            return true;
+          }
+        } else if (message.payload.mimeType = 'multipart/alternative') {
+          // For multipart messages, we need to find the plaintext part to
+          // search for PGP armor.
+          var messagePart = message.payload.parts.find(function(messagePart) {
+            return messagePart.mimeType == 'text/plain';
           });
-          return plainTextHeader !== undefined;
-        });
-        if (messagePart == undefined) {
-          continue;
-        }
-        var encodedBody = new Buffer(messagePart.body.data, 'base64');
-        if (pgp.containsPGPMessage(encodedBody.toString())) {
-          return true;
+          if (messagePart !== undefined) {
+            var encodedBody = new Buffer(messagePart.body.data, 'base64');
+            if (pgp.containsPGPMessage(encodedBody.toString())) {
+              return true;
+            }
+          }
         }
       }
       return false;
@@ -137,8 +139,8 @@ class GmailClient {
         resource: {
           raw: encodedMessage
         }, function(err, response) {
-          if (err) { 
-            reject(err); 
+          if (err) {
+            reject(err);
             return;
           }
           resolve(response);
