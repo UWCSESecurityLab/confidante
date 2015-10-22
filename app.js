@@ -50,6 +50,8 @@ app.use(session({
 }));
 
 app.use(express.static('js'));
+app.use(express.static('html'));
+app.use(express.static('css'));
 
 app.get('/', function(req, res) {
   res.render('index', { loggedIn: !!req.session.googleToken, email: req.session.email });
@@ -61,7 +63,7 @@ app.get('/account', ensureAuthenticated, function(req, res){
   gmailClient.listLabels().then(function(labels) {
     res.render('account', { labels: labels, loggedIn: !!req.session.googleToken });
   });
-});
+}); 
 
 app.get('/login', function(req, res) {
   res.render('login', { loggedIn: !!req.session.googleToken });
@@ -71,6 +73,20 @@ app.get('/inbox', ensureAuthenticated, function(req, res) {
   var gmailClient = new GmailClient(req.session.googleToken);
   gmailClient.getEncryptedInbox().then(function(threads) {
     res.render('inbox', { threads: threads, loggedIn: !!req.session.googleToken })
+  });
+});
+
+app.get('/fakeInbox', function(req, res) {
+  res.json({
+    emails: [
+      { id: 0, to: 'A', from: 'Jane', subject: 'Jane sent this email' },
+      { id: 1, to: 'A', from: 'Janus', subject: 'Janus sent this email' },
+      { id: 2, to: 'A', from: 'Jacqueline', subject: 'Jacqueline sent this email' },
+      { id: 3, to: 'A', from: 'Jo', subject: 'Jo sent this email' },
+      { id: 4, to: 'A', from: 'Jane', subject: 'Jane sent this email as well' },
+      { id: 5, to: 'A', from: Math.random().toString(36).substring(7), 
+               subject: Math.random().toString(36).substring(7) }
+    ]
   });
 });
 

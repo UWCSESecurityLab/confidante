@@ -1,0 +1,14 @@
+.emailRow {
+  width: 100%;
+  height: 40px;
+  background-color: #d3d3d3;
+  margin: 5px;
+
+}
+
+.sender {
+  width: 20%;
+}
+.subject {
+  width: 50%;
+}
