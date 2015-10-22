@@ -14,6 +14,7 @@ var auth = new googleAuth();
 // Test data
 var nonPgpThread = require('./resources/nonPgpThread.json');
 var pgpThread = require('./resources/pgpThread.json');
+var pgpThreadNoParts = require('./resources/pgpThreadNoParts');
 var threadList = require('./resources/threadList.json');
 
 var gmailStub = sinon.stub(google.gmail('v1'));
@@ -73,6 +74,12 @@ describe('GmailClient', function() {
       var result = gmail.filterPGPThreads(mixedThreads);
       result.length.should.equal(1);
       result[0].should.equal(mixedThreads[1]);
+    });
+    it('should be able to process threads with non multipart bodies', function() {
+      var gmail = new GmailClient(mockToken);
+      var result = gmail.filterPGPThreads([pgpThreadNoParts]);
+      result.length.should.equal(1);
+      result[0].should.equal(pgpThreadNoParts);
     });
   });
 
