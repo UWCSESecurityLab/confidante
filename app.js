@@ -69,10 +69,15 @@ app.get('/login', function(req, res) {
   res.render('login', { loggedIn: !!req.session.googleToken });
 });
 
+app.get('/mail', function(req, res) {
+  res.render('mail', { loggedIn: !!req.session.googleToken });
+});
+
 app.get('/inbox', ensureAuthenticated, function(req, res) {
   var gmailClient = new GmailClient(req.session.googleToken);
   gmailClient.getEncryptedInbox().then(function(threads) {
-    res.render('inbox', { threads: threads, loggedIn: !!req.session.googleToken })
+    res.json(threads);
+    // res.render('inbox', { threads: threads, loggedIn: !!req.session.googleToken })
   });
 });
 
