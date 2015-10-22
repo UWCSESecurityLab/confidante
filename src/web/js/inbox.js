@@ -4,42 +4,56 @@ var request = require('request');
 var keybaseAPI = require('./keybaseAPI');
 var kbpgp = require('kbpgp');
 
-var Email = React.createClass({
-  getInitialState: function() {
-    return {
-      checked: false,
-    } 
-  },
-  handleChange: function(e) {
-    console.log(e);
-  },
+var Message = React.createClass({
   render: function() {
+    var subject = getMessageHeader(this.props.message, 'Subject');
+    var from = getMessageHeader(this.props.message, 'From');
+    var to = getMessageHeader(this.props.message, 'To');
+    var body = getMessageBody(this.props.message);
     return (
-      <div className='emailRow'>
-        <input type='checkbox' value={this.state.checked} onchange={this.handleChange}></input>
-        <span className='from'> {this.props.from} </span>
-        <span className='subject'> {this.props.subject} </span>
-        <span className='body'> {this.props.body} </span>
+      <div className='message'>
+        <span className='to'> To: {to} </span>
+        <span className='from'> From: {from} </span>
+        <span className='subject'> Subject: {subject} </span>
+        <span className='body'> Body: {body} </span>
       </div>
     );
   }
 });
 
-function getHeader(thread, header) {
-  var headers = thread.messages[0].payload.headers;
-  for (var i=0; i<headers.length; i++) {
-    var h = headers[i];
-    if (h.name === header) {
-      return h.value;
+var Thread = React.createClass({
+  getInitialState: function() {
+    return {
+      messages: [],
+      checked: false,
     }
+  },
+  render: function() {
+    var messages = this.props.thread.messages.map(function(message) {
+      return <li key={message.id}> <Message message={message} /> </li>
+    });
+    var threadSubject = getThreadHeader(this.props.thread, 'Subject');
+    var threadFrom = getThreadHeader(this.props.thread, 'From');
+    var threadTo = getThreadHeader(this.props.thread, 'To');
+    return (
+      <div className='emailRow'>
+        <input type='checkbox' value={this.state.checked} onchange={this.handleChange}></input>
+        <span> {messages.length} messages. </span>
+        <span className='to'> To: {threadTo} </span>
+        <span className='from'> From: {threadFrom} </span>
+        <span className='subject'> Subject: {threadSubject} </span>
+        <ul>
+        {messages}
+        </ul>
+      </div>
+    );
   }
-  return '<<NO ' + header + 'FOUND>>';
-
-}
+});
+                            
 var Inbox = React.createClass({
   getInitialState: function() {
     return {
-      emails: [ ],
+      threads: [ ],
       listname: 'Inbox',
     }
   },
@@ -52,17 +66,7 @@ var Inbox = React.createClass({
       function(error, response, body) {
         if (!error) {
           body = JSON.parse(body);
-          var emails = []
-          body.forEach(function(thread) {
-            emails.push(
-              { subject: getHeader(thread, 'Subject'),
-                from: getHeader(thread, 'From'),
-                id: thread.id,
-                to: getHeader(thread, 'To')
-              }
-            );
-          });
-          this.setState({emails: emails});
+          this.setState({'threads':  body});
         }
       }.bind(this));
   },
@@ -73,10 +77,10 @@ var Inbox = React.createClass({
   },
 
   render: function() {
-    var emails = this.state.emails.map(function(email) {
-      return <li key={email.id}> <Email from={email.from} subject={email.subject} /> </li>
+    var threads = this.state.threads.map(function(thread) {
+      return <li key={thread.id}> <Thread thread={thread}/> </li>
     });
-    if (emails.length == 0) {
+    if (threads.length == 0) {
       return (
         <div>
           <h3> {this.state.listname} </h3>
@@ -88,7 +92,7 @@ var Inbox = React.createClass({
       <div>
         <h3> {this.state.listname} </h3>
         <ul>
-          {emails}
+          {threads}
         </ul>
       </div>
     );
@@ -191,5 +195,42 @@ var EmailClient = React.createClass({
     );
   }
 });
+
+function getMessageHeader(message, header) {
+  var headers = message.payload.headers;
+  for (var i=0; i<headers.length; i++) {
+    var h = headers[i];
+    if (h.name === header) {
+      return h.value;
+    }
+  }
+  return '<<NO MESSAGE HEADER ' + header + 'FOUND>>';
+
+}
+function getThreadHeader(thread, header) {
+  var headers = thread.messages[0].payload.headers;
+  for (var i=0; i<headers.length; i++) {
+    var h = headers[i];
+    if (h.name === header) {
+      return h.value;
+    }
+  }
+  return '<<NO THREAD HEADER ' + header + 'FOUND>>';
+}
+
+function getMessageBody(message) {
+  if (message.payload.mimeType == 'text/plain') {
+    return new Buffer(message.payload.body.data, 'base64').toString();
+  } else if (message.payload.mimeType = 'multipart/alternative') {
+    // For multipart messages, we need to find the plaintext part.
+    var messagePart = message.payload.parts.find(function(messagePart) {
+      return messagePart.mimeType == 'text/plain';
+    });
+    if (messagePart !== undefined) {
+      return new Buffer(messagePart.body.data, 'base64').toString();
+    }
+  }
+  return '<<NO MESSAGE BODY>>';
+}
 
 ReactDOM.render(<EmailClient />, document.getElementById('app'));
