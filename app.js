@@ -69,7 +69,7 @@ app.get('/login', function(req, res) {
   res.render('login', { loggedIn: !!req.session.googleToken });
 });
 
-app.get('/mail', function(req, res) {
+app.get('/mail', ensureAuthenticated, function(req, res) {
   res.render('mail', { loggedIn: !!req.session.googleToken });
 });
 
