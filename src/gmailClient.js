@@ -167,26 +167,6 @@ class GmailClient {
 
     return rfcMessage.join('\r\n');
   }
-
-  /**
-   * Get the user's labels.
-   * @return a Promise containing an array of strings.
-   */
-  listLabels() {
-    return new Promise(function(resolve, reject) {
-      google.gmail('v1').users.labels.list({
-        auth: this.oauth2Client,
-        userId: 'me',
-      }, function(err, response) {
-        if (err) {
-          reject(err);
-          return;
-        }
-        var labels = response.labels;
-        resolve(labels.map(function(label) { return label.name }));
-      });
-    }.bind(this));
-  }
 }
 
 module.exports = GmailClient;

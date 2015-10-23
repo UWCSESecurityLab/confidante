@@ -59,16 +59,6 @@ app.get('/', function(req, res) {
   });
 });
 
-app.get('/account', ensureAuthenticated, function(req, res){
-  var gmailClient = new GmailClient(req.session.googleToken);
-  gmailClient.listLabels().then(function(labels) {
-    res.render('account', {
-      labels: labels,
-      loggedIn: true
-    });
-  });
-});
-
 app.get('/login', function(req, res) {
   if (isAuthenticated(req.session)) {
     res.redirect('/mail');
