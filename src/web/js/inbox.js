@@ -201,8 +201,9 @@ var ComposeArea = React.createClass({
                );
       }.bind(this))
       .catch(function(err) {
-        this.setState({ feedback: err });
-      });
+        console.log(err);
+        this.setState({ feedback: err.toString() });
+      }.bind(this));
   },
   render: function() {
     return (
