@@ -15,7 +15,6 @@
     "cookie": "^0.2.2",
     "ejs": "^2.3.4",
     "express": "^4.13.3",
-    "express-ejs-layouts": "^1.1.0",
     "express-session": "^1.11.3",
     "google-auth-library": "^0.9.6",
     "googleapis": "^2.1.5",

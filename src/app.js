@@ -4,7 +4,6 @@ var util = require('util');
 
 var express = require('express');
 var bodyParser = require('body-parser');
-var expressLayouts = require('express-ejs-layouts');
 var session = require('express-session');
 var bodyParser = require('body-parser');
 
@@ -39,7 +38,6 @@ var app = express();
 
 app.set('views', __dirname + '/web/views');
 app.set('view engine', 'ejs');
-app.use(expressLayouts);
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(session({
@@ -55,30 +53,38 @@ app.use(express.static(__dirname + '/web/html'));
 app.use(express.static(__dirname + '/web/css'));
 
 app.get('/', function(req, res) {
-  res.render('index', { loggedIn: !!req.session.googleToken, email: req.session.email });
+  res.render('index', {
+    email: req.session.email,
+    loggedIn: isAuthenticated(req.session)
+  });
 });
 
 app.get('/account', ensureAuthenticated, function(req, res){
   var gmailClient = new GmailClient(req.session.googleToken);
-
   gmailClient.listLabels().then(function(labels) {
-    res.render('account', { labels: labels, loggedIn: !!req.session.googleToken });
+    res.render('account', {
+      labels: labels,
+      loggedIn: true
+    });
   });
 });
 
 app.get('/login', function(req, res) {
-  res.render('login', { loggedIn: !!req.session.googleToken });
+  if (isAuthenticated(req.session)) {
+    res.redirect('/mail');
+  } else {
+    res.render('login', { loggedIn: false });
+  }
 });
 
 app.get('/mail', ensureAuthenticated, function(req, res) {
-  res.render('mail', { loggedIn: !!req.session.googleToken });
+  res.render('mail', { loggedIn: true });
 });
 
 app.get('/inbox', ensureAuthenticated, function(req, res) {
   var gmailClient = new GmailClient(req.session.googleToken);
   gmailClient.getEncryptedInbox().then(function(threads) {
     res.json(threads);
-    // res.render('inbox', { threads: threads, loggedIn: !!req.session.googleToken })
   });
 });
 
@@ -97,7 +103,6 @@ app.get('/fakeInbox', function(req, res) {
 });
 
 app.post('/sendMessage', ensureAuthenticated, function(req, res) {
-  console.log(req.body);
   var gmailClient = new GmailClient(req.session.googleToken);
   gmailClient.sendMessage({
     headers: {
@@ -137,7 +142,7 @@ app.get('/auth/google', function(req, res) {
           refresh_token: user.google.refreshToken
         };
         req.session.email = user.google.email;
-        res.redirect('/inbox');
+        res.redirect('/mail');
       }).catch(function(err) {
         // TODO: figure out how to handle this case. Delete user? Destroy session?
         res.statusCode(500).send(err);
@@ -264,7 +269,9 @@ app.post('/login.json', function(req, res) {
       req.session.keybaseId = keybase.me.id;
       req.session.keybaseCookies = response.headers['set-cookie'].map(
         function(cookie) {
-          return Cookie.parse(cookie);
+          var parsed = Cookie.parse(cookie);
+          console.log(util.inspect(parsed));
+          return parsed;
         }
       );
       // Create a User record for this user if necessary.
@@ -400,19 +407,48 @@ function storeGoogleCredentials(keybaseId, email, refreshToken) {
   });
 }
 
+function isAuthenticated(session) {
+  return isAuthenticatedWithKeybase(session) && isAuthenticatedWithGoogle(session);
+}
+
+function isAuthenticatedWithKeybase(session) {
+  if (!session.keybaseId || !session.keybaseCookies) {
+    return false;
+  }
+  for (var i = 0; i < session.keybaseCookies.length; i++) {
+    var cookie = session.keybaseCookies[i];
+    var now = new Date();
+    var expires = new Date(cookie.Expires);
+    if (expires - now <= 0) {
+      delete session.keybaseId;
+      delete session.keybaseCookies;
+      return false;
+    }
+  }
+  return true;
+}
+
+function isAuthenticatedWithGoogle(session) {
+  if (!session.googleToken || !session.email) {
+    return false;
+  }
+  var expires = new Date(session.googleToken.expiry_date);
+  var now = new Date();
+  if (expires - now <= 0) {
+    delete session.googleToken;
+    delete session.email;
+    return false;
+  }
+  return true;
+}
+
 // Simple route middleware to ensure user is authenticated.
 //   Use this route middleware on any resource that needs to be protected.  If
 //   the request is authenticated (typically via a persistent login session),
 //   the request will proceed.  Otherwise, the user will be redirected to the
 //   login page.
 function ensureAuthenticated(req, res, next) {
-  if (req.session.googleToken) {
-    var tokenExpiry = new Date(req.session.googleToken.expiry_date);
-    var now = new Date();
-    if (tokenExpiry - now <= 0) {
-      delete req.session.googleToken;
-      res.redirect('/login');
-    }
+  if (isAuthenticated(req.session)) {
     return next();
   }
   res.redirect('/login')
