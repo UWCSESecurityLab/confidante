@@ -3,21 +3,78 @@ var ReactDOM = require('react-dom');
 var request = require('request');
 var keybaseAPI = require('./keybaseAPI');
 var kbpgp = require('kbpgp');
+var p3skb = require('./p3skb');
 
+function getPrivateManager() {
+  return new Promise(function(fulfill, reject) {
+    var me = JSON.parse(localStorage.getItem('keybase'));
+    if (!me) {
+      throw new Error('Nothing stored in local storage for me.');
+    }
+    console.log(me);
+    var bundle = me.private_keys.primary.bundle;
+    p3skb.p3skbToArmoredPrivateKey(bundle, 'HXFsWyhBWrs2uuQRnp4Anqnz')
+      .then(function(armoredKey) {
+        kbpgp.KeyManager.import_from_armored_pgp({
+          armored: armoredKey
+        }, function(err, manager) {
+          if (!err) {
+            fulfill(manager);
+          } else{
+            reject(err);
+          }
+        });
+      });
+  });
+}
+function decrypt(ciphertext) {
+  return new Promise(function(fulfill, reject) {
+    getPrivateManager()
+      .then(function(privateManager) {
+        var ring = new kbpgp.keyring.KeyRing();
+        ring.add_key_manager(privateManager);
+        kbpgp.unbox(
+          { 
+            keyfetch: ring,
+            armored: ciphertext 
+          }, 
+          function(err, literals) {
+            if (err !== null) {
+              reject(err);
+            } else {
+              fulfill(literals[0].toString());
+            }
+          });
+      });
+  });
+}
 var Message = React.createClass({
+  getInitialState: function() {
+    return {
+      body: 'NOT YET LOADED'
+    }
+  },
+  componentDidMount: function() {
+    decrypt(getMessageBody(this.props.message))
+      .then(function(decryptedBody) {
+        this.setState({body: decryptedBody});
+      }.bind(this)).catch(function(err) {
+        console.log(err);
+        this.setState({body: 'Could not decrypt body.'});
+      }.bind(this));
+  },
+
   render: function() {
     var subject = getMessageHeader(this.props.message, 'Subject');
     var from = getMessageHeader(this.props.message, 'From');
     var to = getMessageHeader(this.props.message, 'To');
-    var body = getMessageBody(this.props.message);
-    console.log(body);
-    
+
     return (
       <div className='message'>
         <div className='to'> To: {to} </div>
         <div className='from'> From: {from} </div>
         <div className='subject'> Subject: {subject} </div>
-        <div className='body'> Body: {body} </div>
+        <div className='body'> {this.state.body} </div>
       </div>
     );
   }
@@ -68,7 +125,8 @@ var Inbox = React.createClass({
       function(error, response, body) {
         if (!error) {
           body = JSON.parse(body);
-          this.setState({'threads':  body});
+          console.log(body);
+          this.setState({threads: body});
         }
       }.bind(this));
   },
