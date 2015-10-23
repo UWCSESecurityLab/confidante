@@ -5,6 +5,17 @@ var keybaseAPI = require('./keybaseAPI');
 var kbpgp = require('kbpgp');
 var p3skb = require('./p3skb');
 
+var ourPublicKeyManager = Promise.reject(new Error('Key manager for local public key not yet created.'));
+(function() {
+  try { 
+    var me = JSON.parse(localStorage.getItem('keybase'))
+    var pubkey = me.public_keys.primary.bundle;
+    ourPublicKeyManager = keybaseAPI.managerFromPublicKey(pubkey)
+  } catch(err) {
+    ourPublicKeyManager = Promise.reject(new Error(err));
+  }
+})();
+
 var Message = React.createClass({
   getInitialState: function() {
     return {
@@ -140,11 +151,11 @@ var ComposeArea = React.createClass({
   updateEmail: function(e) {
     this.setState({ email: e.target.value });
   },
-  encryptEmail: function(keyManager) {
+  encryptEmail: function(keyManagers) {
     return new Promise(function(fulfill, reject) {
       var params = {
         msg: this.state.email,
-        encrypt_for: keyManager
+        encrypt_for: keyManagers,
       };
       kbpgp.box(params, function(err, result_string, result_buffer) {
         if (!err) {
@@ -156,9 +167,12 @@ var ComposeArea = React.createClass({
     }.bind(this));
   },
   send: function(e) {
-    keybaseAPI.publicKeyForUser(this.state.KBto).then(keybaseAPI.managerFromPublicKey)
-                                                .then(this.encryptEmail)
-                                                .then(function(encryptedEmail) {
+    var toManager = keybaseAPI.publicKeyForUser(this.state.KBto)
+      .then(keybaseAPI.managerFromPublicKey);
+
+    Promise.all([toManager, ourPublicKeyManager])
+      .then(this.encryptEmail)
+      .then(function(encryptedEmail) {
         var email = {
           to: this.state.to,
           subject: this.state.subject,
@@ -185,7 +199,10 @@ var ComposeArea = React.createClass({
                   }
                 }.bind(this)
                );
-      }.bind(this));
+      }.bind(this))
+      .catch(function(err) {
+        this.setState({ feedback: err });
+      });
   },
   render: function() {
     return (
