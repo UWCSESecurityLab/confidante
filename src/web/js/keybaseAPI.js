@@ -126,6 +126,11 @@ class KeybaseAPI {
     }.bind(this));
   }
 
+  /**
+   * publicKeyForUser retrieves the given user's public key from Keybase.
+   *
+   * @return key.asc for the given user (an ASCII armored public key).
+   */
   static publicKeyForUser(user) {
     return new Promise(function(fulfill, reject) {
       request(
@@ -145,6 +150,12 @@ class KeybaseAPI {
     });
   }
 
+  /**
+   * managerFromPublicKey takes a public key and returns a kbpgp.KeyManager
+   * for that public key.
+   *
+   * @return A promise containing a kbpgp.KeyManager for the given public key.
+   */
   static managerFromPublicKey(pubkey) {
     return new Promise(function(fulfill, reject) {
       kbpgp.KeyManager.import_from_armored_pgp({
@@ -159,6 +170,14 @@ class KeybaseAPI {
     });
   }
 
+  /**
+   * getPrivateManager retreives the Keybase user bundle and passphrase from
+   * localstorage and returns a promise containing a kbpgp.KeyManager for the
+   * private key.
+   *
+   * @return A promise containing a kbpgp.KeyManager for the user's private
+   * key.
+   */
   static getPrivateManager() {
     return new Promise(function(fulfill, reject) {
       var me = JSON.parse(localStorage.getItem('keybase'));
@@ -188,7 +207,13 @@ class KeybaseAPI {
   /**
    * Takes a ciphertext and curries a decryption function that
    * decrypts that ciphertext given a private manager.
-   * This is kind of backwards...
+   * This is kind of backwards, in that it would make more sense
+   * to load the private key once and then decrypt many messages
+   * with it. This will happen down the line once we cache the
+   * private key manager.
+   *
+   * @return A function which returns a promise which contains the 
+   * decryption of the ciphertext under the given private key.
    */
   static decrypt(ciphertext) {
     return function(privateManager) {
@@ -230,10 +255,10 @@ class KeybaseAPI {
 //     );
 // });
 
-getKeyBundleFromLoginBody(loginBody) {
-  var buf = new Buffer(loginBody.me.private_keys.primary.bundle, 'base64');
-  var p3skbObj = purepack.unpack(buf);
-  return p3skbObj;
-}
+  getKeyBundleFromLoginBody(loginBody) {
+    var buf = new Buffer(loginBody.me.private_keys.primary.bundle, 'base64');
+    var p3skbObj = purepack.unpack(buf);
+    return p3skbObj;
+  }
 }
 module.exports = KeybaseAPI;
