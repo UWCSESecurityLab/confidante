@@ -125,13 +125,11 @@ app.get('/auth/google', function(req, res) {
     if (user.google.refreshToken) {
       // If the user has logged in with Google before, get an access token
       // using the refresh token.
-      refreshGoogleOAuthToken(user.google.refreshToken).then(function(accessToken) {
-        req.session.googleToken = {
-          access_token: accessToken,
-          refresh_token: user.google.refreshToken
-        };
-        req.session.email = user.google.email;
-        res.redirect('/mail');
+      refreshGoogleOAuthToken(user.google.refreshToken).then(
+        function(token) {
+          req.session.googleToken = token;
+          req.session.email = user.google.email;
+          res.redirect('/mail');
       }).catch(function(err) {
         // TODO: figure out how to handle this case. Delete user? Destroy session?
         res.statusCode(500).send(err);
@@ -256,13 +254,14 @@ app.post('/login.json', function(req, res) {
 
       // Save the user's id and Keybase cookies in their session.
       req.session.keybaseId = keybase.me.id;
-      req.session.keybaseCookies = response.headers['set-cookie'].map(
+      var parsedCookies = response.headers['set-cookie'].map(
         function(cookie) {
-          var parsed = Cookie.parse(cookie);
-          console.log(util.inspect(parsed));
-          return parsed;
+          return Cookie.parse(cookie);
         }
       );
+      req.session.keybaseCookie = parsedCookies.find(function(cookie) {
+        return cookie.session !== undefined;
+      });
       // Create a User record for this user if necessary.
       storeKeybaseCredentials(keybase).then(function() {
         // Echo the response with the same status code on success.
@@ -327,7 +326,7 @@ function refreshGoogleOAuthToken(refreshToken) {
       if (err) {
         reject(err);
       } else {
-        resolve(token);
+        resolve(response.body);
       }
     });
   });
@@ -401,18 +400,15 @@ function isAuthenticated(session) {
 }
 
 function isAuthenticatedWithKeybase(session) {
-  if (!session.keybaseId || !session.keybaseCookies) {
+  if (!session.keybaseId || !session.keybaseCookie) {
     return false;
   }
-  for (var i = 0; i < session.keybaseCookies.length; i++) {
-    var cookie = session.keybaseCookies[i];
-    var now = new Date();
-    var expires = new Date(cookie.Expires);
-    if (expires - now <= 0) {
-      delete session.keybaseId;
-      delete session.keybaseCookies;
-      return false;
-    }
+  var now = new Date();
+  var expires = new Date(session.keybaseCookie.Expires);
+  if (expires - now <= 0) {
+    delete session.keybaseId;
+    delete session.keybaseCookie;
+    return false;
   }
   return true;
 }
@@ -421,6 +417,7 @@ function isAuthenticatedWithGoogle(session) {
   if (!session.googleToken || !session.email) {
     return false;
   }
+
   var expires = new Date(session.googleToken.expiry_date);
   var now = new Date();
   if (expires - now <= 0) {
