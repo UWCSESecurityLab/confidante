@@ -1,20 +1,28 @@
-<form>
-  <h2>Sign in with Keybase</h2>
-  <div>
-    <label for="username">Username:</label>
-    <input type="text" id="username"/>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+	<title>Login - Keybase Mail</title>
+</head>
+<body>
+  <%- include('header', { loggedIn: loggedIn }); %>
+  <form>
+    <h2>Sign in with Keybase</h2>
+    <div>
+      <label for="username">Username:</label>
+      <input type="text" id="username"/>
+    </div>
+    <div>
+      <label for="password">Password:</label>
+      <input type="password" id="password"/>
+    </div>
+  </form>
+  <div class="button">
+    <button id="submit">Sign In</button>
   </div>
-  <div>
-    <label for="password">Password:</label>
-    <input type="password" id="password"/>
-  </div>
-</form>
-
-<div class="button" id="submit">
-  <button>Sign In</button>
-</div>
-<div id="error"></div>
-
-<script src="login.js"></script>
-<script src="scrypt.js"></script>
-<script src="keybaseAPI-bundle.js"></script>
+  <div id="error"></div>
+  <script src="login.js"></script>
+  <script src="scrypt.js"></script>
+  <script src="keybaseAPI-bundle.js"></script>
+</body>
+</html>

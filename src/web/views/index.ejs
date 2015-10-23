@@ -1,5 +1,15 @@
-<% if (!loggedIn) { %>
-	<h2>Welcome! Please log in.</h2>
-<% } else { %>
-	<h2>Hello, your email is <%= email %>!</h2>
-<% } %>
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Keybase Mail</title>
+</head>
+<body>
+	<%- include('header', { loggedIn: loggedIn }); %>
+	<% if (!loggedIn) { %>
+		<h2>Welcome! Please log in.</h2>
+	<% } else { %>
+		<h2>Hello, your email is <%= email %>!</h2>
+	<% } %>
+</body>
+</html>
