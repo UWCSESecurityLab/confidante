@@ -5,6 +5,7 @@ var buffer = require('buffer');
 var crypto = require('crypto');
 var purepack = require('purepack');
 var kbpgp = require('kbpgp');
+var p3skb = require('./p3skb');
 var scrypt = scrypt_module_factory(67108864);
 
 class KeybaseAPI {
@@ -156,6 +157,58 @@ class KeybaseAPI {
         }
       });
     });
+  }
+
+  static getPrivateManager() {
+    return new Promise(function(fulfill, reject) {
+      var me = JSON.parse(localStorage.getItem('keybase'));
+      if (!me) {
+        reject('Nothing stored in local storage for me.');
+        return;
+      }
+      var bundle = me.private_keys.primary.bundle;
+      var passphrase = localStorage.getItem('keybasePassphrase');
+      p3skb.p3skbToArmoredPrivateKey(bundle, passphrase)
+      .then(function(armoredKey) {
+        kbpgp.KeyManager.import_from_armored_pgp({
+          armored: armoredKey
+        }, function(err, manager) {
+          if (!err) {
+            fulfill(manager);
+          } else{
+            console.log(err);
+            reject(err);
+          }
+        });
+      });
+    });
+  }
+
+
+  /**
+   * Takes a ciphertext and curries a decryption function that
+   * decrypts that ciphertext given a private manager.
+   * This is kind of backwards...
+   */
+  static decrypt(ciphertext) {
+    return function(privateManager) {
+      return new Promise(function(fulfill, reject) {
+        var ring = new kbpgp.keyring.KeyRing();
+        ring.add_key_manager(privateManager);
+        kbpgp.unbox(
+          { 
+            keyfetch: ring,
+            armored: ciphertext 
+          }, 
+          function(err, literals) {
+            if (err !== null) {
+              reject(err);
+            } else {
+              fulfill(literals[0].toString());
+            }
+          });
+      });
+    };
   }
 
 // static autocomplete(q) {
