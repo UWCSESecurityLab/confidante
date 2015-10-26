@@ -131,22 +131,24 @@ app.get('/auth/google', function(req, res) {
           req.session.email = user.google.email;
           res.redirect('/mail');
       }).catch(function(err) {
-        // TODO: figure out how to handle this case. Delete user? Destroy session?
-        res.statusCode(500).send(err);
+        redirectToGoogleOAuthUrl(res, req);
       });
-
     } else {
-      // Otherwise, we need to send them through the Google OAuth flow.
-      var oauth2Client = buildGoogleOAuthClient();
-      var authUrl = oauth2Client.generateAuthUrl({
-        access_type: 'offline',
-        scope: ['email', 'https://www.googleapis.com/auth/gmail.modify'],
-        redirect_uri: credentials.web.redirect_uris[0]
-      });
-      res.redirect(authUrl);
+      redirectToGoogleOAuthUrl(res, req);
     }
   });
 });
+
+function redirectToGoogleOAuthUrl(res, req) {
+  // Otherwise, we need to send them through the Google OAuth flow.
+  var oauth2Client = buildGoogleOAuthClient();
+  var authUrl = oauth2Client.generateAuthUrl({
+    access_type: 'offline',
+    scope: ['email', 'https://www.googleapis.com/auth/gmail.modify'],
+    redirect_uri: credentials.web.redirect_uris[0]
+  });
+  res.redirect(authUrl);
+}
 
 /**
  * Exchanges an authorization code for tokens from Google, and updates the
