@@ -1,5 +1,6 @@
 gen/
 node_modules/
+src/web/*/3rdparty
 
 .DS_Store
 *.swp

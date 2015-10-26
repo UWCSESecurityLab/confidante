@@ -5,12 +5,14 @@
   "main": "app.js",
   "scripts": {
     "build": "./scripts/build.sh",
-    "clean": "rm -rf gen",
+    "clean": "./scripts/clean.sh",
+    "postinstall": "./scripts/postinstall.sh",
     "test": "mocha"
   },
   "author": "Eric Zeng",
   "dependencies": {
     "body-parser": "^1.14.1",
+    "bootstrap": "^3.3.5",
     "connect-mongodb-session": "^1.0.5",
     "cookie": "^0.2.2",
     "ejs": "^2.3.4",
