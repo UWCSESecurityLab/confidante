@@ -1,5 +1,4 @@
 #!/bin/bash
-pwd
 mkdir -p src/web/css/3rdparty
 mkdir -p src/web/fonts/3rdparty
 mkdir -p src/web/js/3rdparty

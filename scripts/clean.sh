@@ -1,5 +1,4 @@
 #!/bin/bash
-pwd
 # Remove transpiled JS
 rm -rf gen/
 
