@@ -4,7 +4,6 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Login - Keybase Mail</title>
-  <%- include('includeBootstrap'); %>
 </head>
 <body>
   <%- include('header', { loggedIn: loggedIn }); %>
@@ -21,10 +20,12 @@
       </div>
     </form>
     <button class="btn btn-default" id="submit">Sign In</button>
-    <div class="alert alert-danger alert-dismissible" role="alert" id="error">
+    <div class="alert alert-danger" role="alert" id="error">
       Could not find a Keybase account with that username and password combination.
     </div>
   </div>
+  <%- include('includeBootstrap'); %>
+  <link rel="stylesheet" href="login.css">
   <script src="login.js"></script>
   <script src="scrypt.js"></script>
   <script src="keybaseAPI-bundle.js"></script>
