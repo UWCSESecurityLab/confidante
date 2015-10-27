@@ -7,10 +7,16 @@
 </head>
 <body>
 	<%- include('header', { loggedIn: loggedIn }); %>
-	<% if (!loggedIn) { %>
-		<h2>Welcome! Please log in.</h2>
-	<% } else { %>
-		<h2>Hello, your email is <%= email %>!</h2>
-	<% } %>
+	<div class="container">
+		<div class="jumbotron">
+			<h1>Keymail</h1>
+			<p>
+				Securely send encrypted emails straight from the browser.
+				All you need is a <a href="https://keybase.io/">Keybase</a> account
+				and <a href="https://mail.google.com/">Gmail</a> account!
+			 </p>
+			<p><a class="btn btn-primary" href="/login" role="button">Sign In</a>
+		</div>
+	</div>
 </body>
 </html>
