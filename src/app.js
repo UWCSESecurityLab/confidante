@@ -62,12 +62,12 @@ app.get('/login', function(req, res) {
   if (isAuthenticated(req.session)) {
     res.redirect('/mail');
   } else {
-    res.render('login', { loggedIn: false });
+    res.render('login', { email: req.session.email, loggedIn: false });
   }
 });
 
 app.get('/mail', ensureAuthenticated, function(req, res) {
-  res.render('mail', { loggedIn: true });
+  res.render('mail', { email: req.session.email, loggedIn: true });
 });
 
 app.get('/inbox', ensureAuthenticated, function(req, res) {
