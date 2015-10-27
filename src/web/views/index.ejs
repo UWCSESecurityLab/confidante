@@ -6,7 +6,7 @@
 	<%- include('includeBootstrap'); %>
 </head>
 <body>
-	<%- include('header', { loggedIn: loggedIn }); %>
+	<%- include('header', { email: email, loggedIn: loggedIn }); %>
 	<div class="container">
 		<div class="jumbotron">
 			<h1>Keymail</h1>
@@ -15,7 +15,13 @@
 				All you need is a <a href="https://keybase.io/">Keybase</a> account
 				and <a href="https://mail.google.com/">Gmail</a> account!
 			 </p>
-			<p><a class="btn btn-primary" href="/login" role="button">Sign In</a>
+			<p>
+				<% if (loggedIn) { %>
+					<a class="btn btn-primary" href="/mail" role="button">Go to Inbox</a>
+				<% } else { %>
+					<a class="btn btn-primary" href="/login" role="button">Sign In</a>
+				<% } %>
+			</p>
 		</div>
 	</div>
 </body>
