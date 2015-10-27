@@ -8,20 +8,35 @@
 <body>
   <%- include('header', { email: email, loggedIn: loggedIn }); %>
   <div class="container">
-    <form>
-      <h2>Sign in with Keybase</h2>
-      <div class="form-group">
-        <label for="username">Username:</label>
-        <input type="text" class="form-control" id="username"/>
-      </div>
-      <div class="form-group">
-        <label for="password">Password:</label>
-        <input type="password" class="form-control" id="password"/>
-      </div>
-    </form>
-    <button class="btn btn-default" id="submit">Sign In</button>
-    <div class="alert alert-danger" role="alert" id="error">
-      Could not find a Keybase account with that username and password combination.
+    <div class="row">
+      <div class="col-md-6">
+        <form>
+          <h2>Sign in with your Keybase Account</h2>
+          <div class="form-group">
+            <label for="username">Username:</label>
+            <input type="text" class="form-control" id="username"/>
+          </div>
+          <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" class="form-control" id="password"/>
+          </div>
+        </form>
+        <button class="btn btn-default" id="submit">Sign In</button>
+        <br/>
+        <br/>
+        <div class="alert alert-danger" role="alert" id="error">
+          We could not find a Keybase account with that username and password combination.
+        </div>
+    </div>
+    <div class="col-md-1"></div>
+    <div class="col-md-5">
+      <h3>Don't have a Keybase Account?</h3>
+      <p>
+        Keybase is a directory of people and their PGP encryption keys. We use Keybase to encrypt and decrypt your email.
+      </p>
+      <a class="btn btn-primary" href="https://keybase.io/">
+        Sign up for an account at keybase.io
+      </a>
     </div>
   </div>
   <%- include('includeBootstrap'); %>
