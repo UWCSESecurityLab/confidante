@@ -7,7 +7,7 @@ var p3skb = require('./p3skb');
 
 var ourPublicKeyManager = Promise.reject(new Error('Key manager for local public key not yet created.'));
 (function() {
-  try { 
+  try {
     var me = JSON.parse(localStorage.getItem('keybase'))
     var pubkey = me.public_keys.primary.bundle;
     ourPublicKeyManager = keybaseAPI.managerFromPublicKey(pubkey)
@@ -79,7 +79,7 @@ var Thread = React.createClass({
     );
   }
 });
-                            
+
 var Inbox = React.createClass({
   getInitialState: function() {
     return {
@@ -91,8 +91,8 @@ var Inbox = React.createClass({
   loadMail: function() {
     request(
       { method: 'GET',
-        url: 'http://localhost:3000/inbox' 
-      }, 
+        url: 'http://localhost:3000/inbox'
+      },
       function(error, response, body) {
         if (!error) {
           body = JSON.parse(body);
@@ -136,7 +136,7 @@ var ComposeArea = React.createClass({
       KBto: '',
       subject: '',
       email: '',
-      feedback: 'Hello',
+      feedback: '',
     }
   },
   updateTo: function(e) {
@@ -180,7 +180,7 @@ var ComposeArea = React.createClass({
         }
 
         console.log('Sending encrypted mail to ' + this.state.to);
-        request( 
+        request(
                 { method: 'POST',
                   url: 'http://localhost:3000/sendMessage',
                   json: true,
@@ -208,15 +208,44 @@ var ComposeArea = React.createClass({
   render: function() {
     return (
       <div>
-        <label htmlFor='to'>To:</label>
-        <input type='text' name='to' id='to' onChange={this.updateTo}></input><br />
-        <label htmlFor='kbto'>Keybase ID of Recipient:</label>
-        <input type='text' name='kbto' id='kbto' onChange={this.updateKBTo}></input><br />
-        <label htmlFor='subject'>Subject:</label>
-        <input type='text' name='subject' id='subject' onChange={this.updateSubject}></input><br />
-        <textarea name='email' id='email' onChange={this.updateEmail}></textarea><br />
-        <button onClick={this.send}> Send </button>
-        <span className='error'>{this.state.feedback}</span>
+        <button type="button" className="btn btn-primary" data-toggle="modal" data-target="#composeMessage">
+          Compose Message
+        </button>
+        <div className="modal fade" id="composeMessage">
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 className="modal-title">Compose Email</h4>
+              </div>
+              <div className="modal-body">
+                <form className="form-horizontal">
+                  <div className="form-group">
+                    <label htmlFor='to'>To:</label>
+                    <input type='text' name='to' id='to' onChange={this.updateTo} className="form-control"></input><br />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor='kbto'>Keybase ID of Recipient:</label>
+                    <input type='text' name='kbto' id='kbto' onChange={this.updateKBTo} className="form-control"></input><br />
+                  </div>
+                  <div className="form-group">
+                  <label htmlFor='subject'>Subject:</label>
+                  <input type='text' name='subject' id='subject' onChange={this.updateSubject} className="form-control"></input><br />
+                  </div>
+                  <div className="form-group">
+                    <textarea name='email' id='email' onChange={this.updateEmail} className="form-control"></textarea><br />
+                  </div>
+                </form>
+              </div>
+              <div className="modal-footer">
+                <button onClick={this.send} className="btn btn-primary"> Send </button>
+                <span className='error'>{this.state.feedback}</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

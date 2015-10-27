@@ -15,3 +15,7 @@
 .body {
   white-space: pre;
 }
+
+.form-horizontal {
+  margin: 2em;
+}
