@@ -1,5 +1,6 @@
 var submit = document.getElementById('submit');
 submit.onclick = function() {
+  removeError();
   var username = document.getElementById('username').value;
   var password = document.getElementById('password').value;
   var keybase = new KeybaseAPI(username, password, window.location.origin);
@@ -7,7 +8,7 @@ submit.onclick = function() {
   keybase.login().then(function(response) {
     console.log(response.me);
     if (response.status.code != 0) {
-      addError(response.status.name);
+      addError();
       return;
     }
     localStorage.setItem('keybase', JSON.stringify(response.me));
@@ -17,8 +18,12 @@ submit.onclick = function() {
 }
 
 
-function addError(message) {
-  var error = document.createTextNode(message);
-  var div = document.getElementById('error');
-  div.appendChild(error);
+function addError() {
+  var error = document.getElementById('error');
+  error.style.visibility = "visible";
+}
+
+function removeError() {
+  var error = document.getElementById('error');
+  error.style.visibility = "hidden";
 }

@@ -1,26 +1,31 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Login - Keybase Mail</title>
 </head>
 <body>
   <%- include('header', { loggedIn: loggedIn }); %>
-  <form>
-    <h2>Sign in with Keybase</h2>
-    <div>
-      <label for="username">Username:</label>
-      <input type="text" id="username"/>
+  <div class="container">
+    <form>
+      <h2>Sign in with Keybase</h2>
+      <div class="form-group">
+        <label for="username">Username:</label>
+        <input type="text" class="form-control" id="username"/>
+      </div>
+      <div class="form-group">
+        <label for="password">Password:</label>
+        <input type="password" class="form-control" id="password"/>
+      </div>
+    </form>
+    <button class="btn btn-default" id="submit">Sign In</button>
+    <div class="alert alert-danger" role="alert" id="error">
+      Could not find a Keybase account with that username and password combination.
     </div>
-    <div>
-      <label for="password">Password:</label>
-      <input type="password" id="password"/>
-    </div>
-  </form>
-  <div class="button">
-    <button id="submit">Sign In</button>
   </div>
-  <div id="error"></div>
+  <%- include('includeBootstrap'); %>
+  <link rel="stylesheet" href="login.css">
   <script src="login.js"></script>
   <script src="scrypt.js"></script>
   <script src="keybaseAPI-bundle.js"></script>
