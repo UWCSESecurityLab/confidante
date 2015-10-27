@@ -54,6 +54,10 @@ class GmailClient {
           reject(err);
           return;
         }
+        if (response.threads === undefined) {
+          resolve([]);
+          return;
+        }
         var threadRequestPromises = [];
         response.threads.forEach(function(threadSnippet) {
           threadRequestPromises.push(this.getThread(threadSnippet.id));
