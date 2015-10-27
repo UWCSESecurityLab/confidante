@@ -129,6 +129,16 @@ var Inbox = React.createClass({
   }
 });
 
+var ComposeButton = React.createClass({
+  render: function() {
+    return (
+      <button type="button" className="btn btn-primary" data-toggle="modal" data-target="#composeMessage">
+        Compose Message
+      </button>
+    )
+  }
+})
+
 var ComposeArea = React.createClass({
   getInitialState: function() {
     return {
@@ -192,7 +202,7 @@ var ComposeArea = React.createClass({
                     this.setState({ feedback: 'Sending encountered an error.' });
                   } else if (response.statusCode == 200) {
                     console.log('Done with send successfully. Mail should have been sent.');
-                    this.setState({ feedback: 'Sent!' });
+                    $('#composeMessage').modal('hide');
                   } else {
                     console.log('Done with send but server not happy. Mail should not have been sent.');
                     this.setState({ feedback: 'Sending encountered a server error.' });
@@ -207,42 +217,37 @@ var ComposeArea = React.createClass({
   },
   render: function() {
     return (
-      <div>
-        <button type="button" className="btn btn-primary" data-toggle="modal" data-target="#composeMessage">
-          Compose Message
-        </button>
-        <div className="modal fade" id="composeMessage">
-          <div className="modal-dialog">
-            <div className="modal-content">
-              <div className="modal-header">
-                <button type="button" className="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-                </button>
-                <h4 className="modal-title">Compose Email</h4>
-              </div>
-              <div className="modal-body">
-                <form className="form-horizontal">
-                  <div className="form-group">
-                    <label htmlFor='to'>To:</label>
-                    <input type='text' name='to' id='to' onChange={this.updateTo} className="form-control"></input><br />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor='kbto'>Keybase ID of Recipient:</label>
-                    <input type='text' name='kbto' id='kbto' onChange={this.updateKBTo} className="form-control"></input><br />
-                  </div>
-                  <div className="form-group">
-                  <label htmlFor='subject'>Subject:</label>
-                  <input type='text' name='subject' id='subject' onChange={this.updateSubject} className="form-control"></input><br />
-                  </div>
-                  <div className="form-group">
-                    <textarea name='email' id='email' onChange={this.updateEmail} className="form-control"></textarea><br />
-                  </div>
-                </form>
-              </div>
-              <div className="modal-footer">
-                <button onClick={this.send} className="btn btn-primary"> Send </button>
-                <span className='error'>{this.state.feedback}</span>
-              </div>
+      <div className="modal fade" id="composeMessage">
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-header">
+              <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+              <h4 className="modal-title">Compose Email</h4>
+            </div>
+            <div className="modal-body">
+              <form className="form-horizontal">
+                <div className="form-group">
+                  <label htmlFor='to'>To:</label>
+                  <input type='text' name='to' id='to' onChange={this.updateTo} className="form-control"></input><br />
+                </div>
+                <div className="form-group">
+                  <label htmlFor='kbto'>Keybase ID of Recipient:</label>
+                  <input type='text' name='kbto' id='kbto' onChange={this.updateKBTo} className="form-control"></input><br />
+                </div>
+                <div className="form-group">
+                <label htmlFor='subject'>Subject:</label>
+                <input type='text' name='subject' id='subject' onChange={this.updateSubject} className="form-control"></input><br />
+                </div>
+                <div className="form-group">
+                  <textarea name='email' id='email' onChange={this.updateEmail} className="form-control"></textarea><br />
+                </div>
+              </form>
+            </div>
+            <div className="modal-footer">
+              <button onClick={this.send} className="btn btn-primary">Send</button>
+              <span className='error'>{this.state.feedback}</span>
             </div>
           </div>
         </div>
@@ -255,6 +260,7 @@ var EmailClient = React.createClass({
   render: function() {
     return (
       <div>
+        <ComposeButton />
         <ComposeArea />
         <Inbox />
       </div>
