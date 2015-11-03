@@ -1,5 +1,13 @@
 var submit = document.getElementById('submit');
-submit.onclick = function() {
+submit.onclick = login;
+
+document.onkeydown = function(event) {
+  if (event.keyCode == 13) {
+    login();
+  }
+};
+
+function login() {
   removeError();
   var username = document.getElementById('username').value;
   var password = document.getElementById('password').value;
@@ -16,7 +24,6 @@ submit.onclick = function() {
     window.location.href = '/auth/google';
   });
 }
-
 
 function addError() {
   var error = document.getElementById('error');
