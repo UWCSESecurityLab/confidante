@@ -1,15 +1,19 @@
-/* Margin in compose window */
-.form-horizontal {
-  margin: 2em;
-}
-
 ul {
   list-style-type: none;
   padding: 0;
+}
+
+/* Margin in compose window */
+.form-horizontal {
+  margin: 2em;
 }
 
 .thread {
   background-color: #EFEFEF;
   border: 1px solid #E5E5E5;
   padding: 0.5em;
+}
+
+#composeButton {
+  float: right;
 }

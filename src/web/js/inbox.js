@@ -66,19 +66,17 @@ var Thread = React.createClass({
     var threadFrom = getThreadHeader(this.props.thread, 'From');
     var threadTo = getThreadHeader(this.props.thread, 'To');
     return (
-      <li>
-        <div className='row thread'>
-          <div className="col-md-1">
-            <input type='checkbox' value={this.state.checked} onchange={this.handleChange}></input>
-          </div>
-          <div className="col-md-3">
-            <strong>{threadFrom}</strong>
-          </div>
-          <div className="col-md-8">
-            {threadSubject}
-          </div>
+      <div className='row thread'>
+        <div className="col-md-1">
+          <input type='checkbox' value={this.state.checked} onchange={this.handleChange}></input>
         </div>
-      </li>
+        <div className="col-md-3">
+          <strong>{threadFrom}</strong>
+        </div>
+        <div className="col-md-8">
+          {threadSubject}
+        </div>
+      </div>
     );
   }
 });
@@ -116,14 +114,14 @@ var Inbox = React.createClass({
     if (threads.length == 0) {
       return (
         <div>
-          <h3> {this.state.listname} </h3>
-          No email!
+          <h1> {this.state.listname} </h1>
+          <div className="row thread">No encrypted emails!</div>
         </div>
       )
     }
     return (
       <div>
-        <h3> {this.state.listname} </h3>
+        <h1> {this.state.listname} </h1>
         <ul>
           {threads}
         </ul>
@@ -135,7 +133,7 @@ var Inbox = React.createClass({
 var ComposeButton = React.createClass({
   render: function() {
     return (
-      <button type="button" className="btn btn-primary" data-toggle="modal" data-target="#composeMessage">
+      <button type="button" className="btn btn-primary" id="composeButton" data-toggle="modal" data-target="#composeMessage">
         Compose Message
       </button>
     )
@@ -193,25 +191,25 @@ var ComposeArea = React.createClass({
         }
 
         console.log('Sending encrypted mail to ' + this.state.to);
-        request(
-                { method: 'POST',
-                  url: 'http://localhost:3000/sendMessage',
-                  json: true,
-                  body: email
-                }, function(error, response, body) {
-                  if (error) {
-                    // Tell the user about the error.
-                    console.log('Error send (network error, server down, etc.).');
-                    this.setState({ feedback: 'Sending encountered an error.' });
-                  } else if (response.statusCode == 200) {
-                    console.log('Done with send successfully. Mail should have been sent.');
-                    $('#composeMessage').modal('hide');
-                  } else {
-                    console.log('Done with send but server not happy. Mail should not have been sent.');
-                    this.setState({ feedback: 'Sending encountered a server error.' });
-                  }
-                }.bind(this)
-               );
+        request({
+            method: 'POST',
+            url: 'http://localhost:3000/sendMessage',
+            json: true,
+            body: email
+          }, function(error, response, body) {
+            if (error) {
+              // Tell the user about the error.
+              console.log('Error send (network error, server down, etc.).');
+              this.setState({ feedback: 'Sending encountered an error.' });
+            } else if (response.statusCode == 200) {
+              console.log('Done with send successfully. Mail should have been sent.');
+              $('#composeMessage').modal('hide');
+            } else {
+              console.log('Done with send but server not happy. Mail should not have been sent.');
+              this.setState({ feedback: 'Sending encountered a server error.' });
+            }
+          }.bind(this)
+        );
       }.bind(this))
       .catch(function(err) {
         console.log(err);
