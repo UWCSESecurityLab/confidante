@@ -8,9 +8,10 @@ ul {
   margin: 2em;
 }
 
-.thread {
+.snippet {
   background-color: #EFEFEF;
   border: 1px solid #E5E5E5;
+  cursor: pointer;
   padding: 0.5em;
 }
 
