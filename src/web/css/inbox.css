@@ -1,21 +1,15 @@
-.emailRow {
-  width: 100%;
-  background-color: #d3d3d3;
-  margin: 5px;
-
-}
-
-.sender {
-  width: 20%;
-}
-.subject {
-  width: 50%;
-}
-
-.body {
-  white-space: pre;
-}
-
+/* Margin in compose window */
 .form-horizontal {
   margin: 2em;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.thread {
+  background-color: #EFEFEF;
+  border: 1px solid #E5E5E5;
+  padding: 0.5em;
 }

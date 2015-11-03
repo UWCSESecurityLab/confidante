@@ -66,16 +66,19 @@ var Thread = React.createClass({
     var threadFrom = getThreadHeader(this.props.thread, 'From');
     var threadTo = getThreadHeader(this.props.thread, 'To');
     return (
-      <div className='emailRow'>
-        <input type='checkbox' value={this.state.checked} onchange={this.handleChange}></input>
-        <span> {messages.length} messages. </span>
-        <span className='to'> To: {threadTo} </span>
-        <span className='from'> From: {threadFrom} </span>
-        <span className='subject'> Subject: {threadSubject} </span>
-        <ul>
-        {messages}
-        </ul>
-      </div>
+      <li>
+        <div className='row thread'>
+          <div className="col-md-1">
+            <input type='checkbox' value={this.state.checked} onchange={this.handleChange}></input>
+          </div>
+          <div className="col-md-3">
+            <strong>{threadFrom}</strong>
+          </div>
+          <div className="col-md-8">
+            {threadSubject}
+          </div>
+        </div>
+      </li>
     );
   }
 });
