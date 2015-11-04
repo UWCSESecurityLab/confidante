@@ -101,7 +101,7 @@ app.post('/sendMessage', ensureAuthenticated, function(req, res) {
       date: new Date().toString()
     },
     body: req.body.email
-  }).then(function(response) {
+  }, req.body.inReplyTo.threadId).then(function(response) {
     res.status(200).send('OK');
   }).catch(function(error) {
     res.status(500).send(error);

@@ -4,7 +4,7 @@ var InboxDispatcher = require('../dispatcher/InboxDispatcher');
 var EventEmitter = require('events').EventEmitter;
 var assign = require('object-assign');
 
-var _inReplyTo = null;
+var _inReplyTo = {};
 
 var InReplyToStore = assign({}, EventEmitter.prototype, {
   emitChange: function() {
