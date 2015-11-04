@@ -4,6 +4,10 @@ var React = require('react');
 var keybaseAPI = require('../keybaseAPI');
 var messageParsing = require('../messageParsing');
 
+/**
+ * A message is one email message inside a thread, displayed in the inbox.
+ * It decrypts its contents.
+ */
 var Message = React.createClass({
   getInitialState: function() {
     return {

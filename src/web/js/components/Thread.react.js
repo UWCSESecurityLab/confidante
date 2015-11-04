@@ -4,6 +4,10 @@ var React = require('react');
 var Message = require('./Message.react');
 var messageParsing = require('../messageParsing');
 
+/**
+ * A Thread is 1 or more messages, displayed in full. It's what you see in
+ * the app when you click on a thread snippet.
+ */
 var Thread = React.createClass({
   getInitialState: function() {
     return {
