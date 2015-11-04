@@ -1,6 +1,7 @@
 'use strict';
 
 var React = require('react');
+var InReplyToStore = require('../stores/InReplyToStore'); 
 
 /**
  * The ComposeArea is the UI for writing a new email, whether a reply
@@ -14,6 +15,7 @@ var ComposeArea = React.createClass({
       subject: '',
       email: '',
       feedback: '',
+      inReplyTo: InReplyToStore.get()
     }
   },
   updateTo: function(e) {
@@ -27,6 +29,15 @@ var ComposeArea = React.createClass({
   },
   updateEmail: function(e) {
     this.setState({ email: e.target.value });
+  },
+  componentDidMount: function() {
+    InReplyToStore.addChangeListener(this._onInReplyToChange);
+  },
+  _onInReplyToChange: function() {
+    console.log('_onInReplyToChange');
+    let inReplyTo = InReplyToStore.get();
+    console.log('inReplyTo is: ' + inReplyTo);
+    this.setState( { inReplyTo: inReplyTo } );
   },
   encryptEmail: function(keyManagers) {
     return new Promise(function(fulfill, reject) {
@@ -83,6 +94,7 @@ var ComposeArea = React.createClass({
       }.bind(this));
   },
   render: function() {
+    let reply = this.state.inReplyTo ? 'Reply' : 'Not Reply';
     return (
       <div className="modal fade" id="composeMessage">
         <div className="modal-dialog">
@@ -91,7 +103,7 @@ var ComposeArea = React.createClass({
               <button type="button" className="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
-              <h4 className="modal-title">Compose Email</h4>
+              <h4 className="modal-title">Compose {reply} Email</h4>
             </div>
             <div className="modal-body">
               <form className="form-horizontal">
