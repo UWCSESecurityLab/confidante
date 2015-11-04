@@ -8,7 +8,7 @@ var InboxActions = require('../actions/InboxActions');
  */
 var ComposeButton = React.createClass({
   setNullReply: function() {
-    InboxActions.setInReplyTo(null);
+    InboxActions.setInReplyTo({});
   },
 
   render: function() {

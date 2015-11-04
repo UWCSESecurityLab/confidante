@@ -3,6 +3,24 @@
 var React = require('react');
 var InReplyToStore = require('../stores/InReplyToStore'); 
 var messageParsing = require('../messageParsing');
+var keybaseAPI = require('../keybaseAPI');
+var kbpgp = require('kbpgp');
+var request = require('request');
+
+var ourPublicKeyManager = 
+  Promise
+    .reject(new Error('Key manager for local public key not yet created.'))
+    .catch(function() {});
+
+(function() {
+  try {
+    var me = JSON.parse(localStorage.getItem('keybase'))
+    var pubkey = me.public_keys.primary.bundle;
+    ourPublicKeyManager = keybaseAPI.managerFromPublicKey(pubkey)
+  } catch(err) {
+    ourPublicKeyManager = Promise.reject(new Error(err));
+  }
+})();
 
 /**
  * The ComposeArea is the UI for writing a new email, whether a reply
@@ -12,7 +30,7 @@ var ComposeArea = React.createClass({
   getInitialState: function() {
     return {
       to: '',
-      KBto: '',
+      kbto: '',
       subject: '',
       email: '',
       feedback: '',
@@ -23,7 +41,7 @@ var ComposeArea = React.createClass({
     this.setState({ to: e.target.value });
   },
   updateKBTo: function(e) {
-    this.setState({ KBto: e.target.value });
+    this.setState({ kbto: e.target.value });
   },
   updateSubject: function(e) {
     this.setState({ subject: e.target.value });
@@ -38,7 +56,7 @@ var ComposeArea = React.createClass({
     let inReplyTo = InReplyToStore.get();
     let defaultTo = '';
     let defaultSubject = '';
-    if (inReplyTo !== null) {
+    if (Object.keys(inReplyTo).length !== 0) {
       let to = messageParsing.getMessageHeader(inReplyTo, 'To');
       let from = messageParsing.getMessageHeader(inReplyTo, 'From');
       let me = document.getElementById('myEmail').innerHTML;
@@ -73,7 +91,7 @@ var ComposeArea = React.createClass({
     }.bind(this));
   },
   send: function(e) {
-    var toManager = keybaseAPI.publicKeyForUser(this.state.KBto)
+    var toManager = keybaseAPI.publicKeyForUser(this.state.kbto)
       .then(keybaseAPI.managerFromPublicKey);
 
     Promise.all([toManager, ourPublicKeyManager])
@@ -82,7 +100,8 @@ var ComposeArea = React.createClass({
         var email = {
           to: this.state.to,
           subject: this.state.subject,
-          email: encryptedEmail
+          email: encryptedEmail,
+          parentMessage: this.state.inReplyTo
         }
 
         console.log('Sending encrypted mail to ' + this.state.to);
@@ -98,6 +117,7 @@ var ComposeArea = React.createClass({
               this.setState({ feedback: 'Sending encountered an error.' });
             } else if (response.statusCode == 200) {
               console.log('Done with send successfully. Mail should have been sent.');
+              this.setState(this.getInitialState());
               $('#composeMessage').modal('hide');
             } else {
               console.log('Done with send but server not happy. Mail should not have been sent.');

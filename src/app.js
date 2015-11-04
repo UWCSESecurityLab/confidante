@@ -17,6 +17,8 @@ var credentials = require('../client_secret.json');
 var GmailClient = require('./gmailClient.js');
 var User = require('./models/user.js')
 
+var messageParsing = require('./web/js/messageParsing');
+
 // Mongo session store setup.
 var store = new MongoSessionStore({
   uri: 'mongodb://localhost:27017/test',
@@ -93,15 +95,22 @@ app.get('/fakeInbox', function(req, res) {
 
 app.post('/sendMessage', ensureAuthenticated, function(req, res) {
   var gmailClient = new GmailClient(req.session.googleToken);
+  let parent = req.body.parentMessage;
+  let parentId = messageParsing.getMessageHeader(parent, 'Message-ID');
+  let parentReferences = messageParsing.getMessageHeader(parent, 'References');
+  let ourReferences = [parentReferences, parentId].join(' ');
+
   gmailClient.sendMessage({
     headers: {
       to: [req.body.to],
       from: req.session.email,
       subject: req.body.subject,
-      date: new Date().toString()
+      date: new Date().toString(),
+      inReplyTo: parentId,
+      references: ourReferences
     },
     body: req.body.email
-  }, req.body.inReplyTo.threadId).then(function(response) {
+  }, req.body.parentMessage.threadId).then(function(response) {
     res.status(200).send('OK');
   }).catch(function(error) {
     res.status(500).send(error);
