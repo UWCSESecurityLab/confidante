@@ -2,6 +2,7 @@
 
 var React = require('react');
 var InReplyToStore = require('../stores/InReplyToStore'); 
+var messageParsing = require('../messageParsing');
 
 /**
  * The ComposeArea is the UI for writing a new email, whether a reply
@@ -34,10 +35,27 @@ var ComposeArea = React.createClass({
     InReplyToStore.addChangeListener(this._onInReplyToChange);
   },
   _onInReplyToChange: function() {
-    console.log('_onInReplyToChange');
     let inReplyTo = InReplyToStore.get();
-    console.log('inReplyTo is: ' + inReplyTo);
-    this.setState( { inReplyTo: inReplyTo } );
+    let defaultTo = '';
+    let defaultSubject = '';
+    if (inReplyTo !== null) {
+      let to = messageParsing.getMessageHeader(inReplyTo, 'To');
+      let from = messageParsing.getMessageHeader(inReplyTo, 'From');
+      let me = document.getElementById('myEmail').innerHTML;
+      defaultTo = (from !== me) ? from : to;
+
+      let subject = messageParsing.getMessageHeader(inReplyTo, 'Subject');
+      if (!subject.startsWith('Re:')) {
+        subject = 'Re: ' + subject;
+      }
+      defaultSubject = subject;
+    }
+    console.log('_onInReplyToChange, to is: ' + defaultTo);
+    this.setState({ 
+      to: defaultTo,
+      inReplyTo: inReplyTo,
+      subject: defaultSubject,
+    });
   },
   encryptEmail: function(keyManagers) {
     return new Promise(function(fulfill, reject) {
@@ -94,7 +112,6 @@ var ComposeArea = React.createClass({
       }.bind(this));
   },
   render: function() {
-    let reply = this.state.inReplyTo ? 'Reply' : 'Not Reply';
     return (
       <div className="modal fade" id="composeMessage">
         <div className="modal-dialog">
@@ -103,24 +120,24 @@ var ComposeArea = React.createClass({
               <button type="button" className="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
-              <h4 className="modal-title">Compose {reply} Email</h4>
+              <h4 className="modal-title">Compose Email</h4>
             </div>
             <div className="modal-body">
               <form className="form-horizontal">
                 <div className="form-group">
                   <label htmlFor="to">To:</label>
-                  <input type="text" name="to" id="to" onChange={this.updateTo} className="form-control"></input><br />
+                  <input type="text" value={this.state.to} name="to" id="to" onChange={this.updateTo} className="form-control"></input><br />
                 </div>
                 <div className="form-group">
                   <label htmlFor="kbto">Keybase ID of Recipient:</label>
-                  <input type="text" name="kbto" id="kbto" onChange={this.updateKBTo} className="form-control"></input><br />
+                  <input type="text" value={this.state.kbto} name="kbto" id="kbto" onChange={this.updateKBTo} className="form-control"></input><br />
                 </div>
                 <div className="form-group">
                 <label htmlFor="subject">Subject:</label>
-                <input type="text" name="subject" id="subject" onChange={this.updateSubject} className="form-control"></input><br />
+                <input type="text" value={this.state.subject} name="subject" id="subject" onChange={this.updateSubject} className="form-control"></input><br />
                 </div>
                 <div className="form-group">
-                  <textarea name="email" id="email" onChange={this.updateEmail} className="form-control"></textarea><br />
+                  <textarea value={this.state.email} name="email" id="email" onChange={this.updateEmail} className="form-control"></textarea><br />
                 </div>
               </form>
             </div>

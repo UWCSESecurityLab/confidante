@@ -27,7 +27,6 @@ var InReplyToStore = assign({}, EventEmitter.prototype, {
   },
 
   dispatchToken: InboxDispatcher.register(function(action) {
-    console.log(action);
     if (action.type === 'SET_IN_REPLY_TO') {
       _inReplyTo = action.message;
       InReplyToStore.emitChange();

@@ -29,7 +29,6 @@ var Message = React.createClass({
   },
 
   reply: function() {
-    console.log('In message reply(), setting in reply to to: ' + this.props.message);
     InboxActions.setInReplyTo(this.props.message);
   },
 
