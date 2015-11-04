@@ -8,11 +8,33 @@ ul {
   margin: 2em;
 }
 
+.message {
+  border-bottom: 1px solid #EFEFEF;
+  padding: 1.5em 3em;
+}
+
 .snippet {
   background-color: #EFEFEF;
   border: 1px solid #E5E5E5;
   cursor: pointer;
   padding: 0.5em;
+}
+
+.thread {
+  border: 1px solid #E5E5E5;
+  box-shadow: 0px 2px 5px 3px #EEEEEE;
+  margin: 1em 0em;
+}
+
+.threadHeader {
+  border-bottom: 1px solid #E5E5E5;
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5em;
+}
+
+.subjectLine {
+  padding-left: 1.5em;
 }
 
 #composeButton {

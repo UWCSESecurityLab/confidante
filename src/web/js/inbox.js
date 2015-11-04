@@ -19,7 +19,7 @@ var ourPublicKeyManager = Promise.reject(new Error('Key manager for local public
 var Message = React.createClass({
   getInitialState: function() {
     return {
-      body: 'NOT YET LOADED'
+      body: 'Decrypting...'
     }
   },
   componentDidMount: function() {
@@ -42,10 +42,13 @@ var Message = React.createClass({
 
     return (
       <div className="message">
-        <div className="to"> To: {to} </div>
-        <div className="from"> From: {from} </div>
-        <div className="subject"> Subject: {subject} </div>
-        <div className="body"> {this.state.body} </div>
+        <div className="messageHeader">
+          <strong>{from}</strong>
+          <p>To: {to}</p>
+        </div>
+        <div className="messageBody">
+          {this.state.body}
+        </div>
       </div>
     );
   }
@@ -58,6 +61,9 @@ var Thread = React.createClass({
       checked: false,
     }
   },
+  close: function() {
+    this.props.closeCallback();
+  },
   render: function() {
     var messages = this.props.thread.messages.map(function(message) {
       return <li key={message.id}> <Message message={message} /> </li>
@@ -65,7 +71,10 @@ var Thread = React.createClass({
     var subject = getThreadHeader(this.props.thread, 'Subject');
     return (
       <div className="row thread">
-        <h3>{subject}</h3>
+        <div className="threadHeader">
+          <h4 className="subjectLine">{subject}</h4>
+          <button type="button" className="close threadClose" onClick={this.close}>&times;</button>
+        </div>
         <ul>{messages}</ul>
       </div>
     );
@@ -109,7 +118,7 @@ var ThreadSnippet = React.createClass({
         </div>
       );
     } else {
-      return <Thread thread={this.props.thread} />
+      return <Thread thread={this.props.thread} closeCallback={this.closeThread}/>
     }
   }
 });
