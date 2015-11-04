@@ -19,7 +19,7 @@ var ourPublicKeyManager = Promise.reject(new Error('Key manager for local public
 var Message = React.createClass({
   getInitialState: function() {
     return {
-      body: 'NOT YET LOADED'
+      body: 'Decrypting...'
     }
   },
   componentDidMount: function() {
@@ -41,11 +41,14 @@ var Message = React.createClass({
     var to = getMessageHeader(this.props.message, 'To');
 
     return (
-      <div className='message'>
-        <div className='to'> To: {to} </div>
-        <div className='from'> From: {from} </div>
-        <div className='subject'> Subject: {subject} </div>
-        <div className='body'> {this.state.body} </div>
+      <div className="message">
+        <div className="messageHeader">
+          <strong>{from}</strong>
+          <p>To: {to}</p>
+        </div>
+        <div className="messageBody">
+          {this.state.body}
+        </div>
       </div>
     );
   }
@@ -58,32 +61,72 @@ var Thread = React.createClass({
       checked: false,
     }
   },
+  close: function() {
+    this.props.closeCallback();
+  },
   render: function() {
     var messages = this.props.thread.messages.map(function(message) {
       return <li key={message.id}> <Message message={message} /> </li>
     });
-    var threadSubject = getThreadHeader(this.props.thread, 'Subject');
-    var threadFrom = getThreadHeader(this.props.thread, 'From');
-    var threadTo = getThreadHeader(this.props.thread, 'To');
+    var subject = getThreadHeader(this.props.thread, 'Subject');
     return (
-      <div className='emailRow'>
-        <input type='checkbox' value={this.state.checked} onchange={this.handleChange}></input>
-        <span> {messages.length} messages. </span>
-        <span className='to'> To: {threadTo} </span>
-        <span className='from'> From: {threadFrom} </span>
-        <span className='subject'> Subject: {threadSubject} </span>
-        <ul>
-        {messages}
-        </ul>
+      <div className="row thread">
+        <div className="threadHeader">
+          <h4 className="subjectLine">{subject}</h4>
+          <button type="button" className="close threadClose" onClick={this.close}>&times;</button>
+        </div>
+        <ul>{messages}</ul>
       </div>
     );
+  }
+})
+
+/**
+ * A thread snippet is a preview of the email, which is displayed in the inbox
+ * or other mailboxes. When clicked, it shows the content of the whole thread.
+ */
+var ThreadSnippet = React.createClass({
+  getInitialState: function() {
+    return {
+      messages: [],
+      checked: false,
+      fullThread: false,
+    }
+  },
+  openThread: function(event) {
+    this.state.fullThread = true;
+  },
+  closeThread: function(event) {
+    this.state.fullThread = false;
+  },
+  render: function() {
+    if (!this.state.fullThread) {
+      var threadSubject = getThreadHeader(this.props.thread, 'Subject');
+      var threadFrom = getThreadHeader(this.props.thread, 'From');
+      var threadTo = getThreadHeader(this.props.thread, 'To');
+      return (
+        <div className="row snippet" onClick={this.openThread}>
+          <div className="col-md-1">
+            <input type="checkbox" value={this.state.checked} onchange={this.handleChange}></input>
+          </div>
+          <div className="col-md-3">
+            <strong>{threadFrom}</strong>
+          </div>
+          <div className="col-md-8">
+            {threadSubject}
+          </div>
+        </div>
+      );
+    } else {
+      return <Thread thread={this.props.thread} closeCallback={this.closeThread}/>
+    }
   }
 });
 
 var Inbox = React.createClass({
   getInitialState: function() {
     return {
-      threads: [ ],
+      threads: [],
       listname: 'Inbox',
     }
   },
@@ -107,22 +150,22 @@ var Inbox = React.createClass({
   },
 
   render: function() {
-    var threads = this.state.threads.map(function(thread) {
-      return <li key={thread.id}> <Thread thread={thread}/> </li>
+    var snippets = this.state.threads.map(function(thread) {
+      return <li key={thread.id}> <ThreadSnippet thread={thread}/> </li>
     });
-    if (threads.length == 0) {
+    if (snippets.length == 0) {
       return (
         <div>
-          <h3> {this.state.listname} </h3>
-          No email!
+          <h1> {this.state.listname} </h1>
+          <div className="row snippet">No encrypted emails!</div>
         </div>
       )
     }
     return (
       <div>
-        <h3> {this.state.listname} </h3>
+        <h1> {this.state.listname} </h1>
         <ul>
-          {threads}
+          {snippets}
         </ul>
       </div>
     );
@@ -132,7 +175,7 @@ var Inbox = React.createClass({
 var ComposeButton = React.createClass({
   render: function() {
     return (
-      <button type="button" className="btn btn-primary" data-toggle="modal" data-target="#composeMessage">
+      <button type="button" className="btn btn-primary" id="composeButton" data-toggle="modal" data-target="#composeMessage">
         Compose Message
       </button>
     )
@@ -190,25 +233,25 @@ var ComposeArea = React.createClass({
         }
 
         console.log('Sending encrypted mail to ' + this.state.to);
-        request(
-                { method: 'POST',
-                  url: 'http://localhost:3000/sendMessage',
-                  json: true,
-                  body: email
-                }, function(error, response, body) {
-                  if (error) {
-                    // Tell the user about the error.
-                    console.log('Error send (network error, server down, etc.).');
-                    this.setState({ feedback: 'Sending encountered an error.' });
-                  } else if (response.statusCode == 200) {
-                    console.log('Done with send successfully. Mail should have been sent.');
-                    $('#composeMessage').modal('hide');
-                  } else {
-                    console.log('Done with send but server not happy. Mail should not have been sent.');
-                    this.setState({ feedback: 'Sending encountered a server error.' });
-                  }
-                }.bind(this)
-               );
+        request({
+            method: 'POST',
+            url: 'http://localhost:3000/sendMessage',
+            json: true,
+            body: email
+          }, function(error, response, body) {
+            if (error) {
+              // Tell the user about the error.
+              console.log('Error send (network error, server down, etc.).');
+              this.setState({ feedback: 'Sending encountered an error.' });
+            } else if (response.statusCode == 200) {
+              console.log('Done with send successfully. Mail should have been sent.');
+              $('#composeMessage').modal('hide');
+            } else {
+              console.log('Done with send but server not happy. Mail should not have been sent.');
+              this.setState({ feedback: 'Sending encountered a server error.' });
+            }
+          }.bind(this)
+        );
       }.bind(this))
       .catch(function(err) {
         console.log(err);
@@ -229,25 +272,25 @@ var ComposeArea = React.createClass({
             <div className="modal-body">
               <form className="form-horizontal">
                 <div className="form-group">
-                  <label htmlFor='to'>To:</label>
-                  <input type='text' name='to' id='to' onChange={this.updateTo} className="form-control"></input><br />
+                  <label htmlFor="to">To:</label>
+                  <input type="text" name="to" id="to" onChange={this.updateTo} className="form-control"></input><br />
                 </div>
                 <div className="form-group">
-                  <label htmlFor='kbto'>Keybase ID of Recipient:</label>
-                  <input type='text' name='kbto' id='kbto' onChange={this.updateKBTo} className="form-control"></input><br />
+                  <label htmlFor="kbto">Keybase ID of Recipient:</label>
+                  <input type="text" name="kbto" id="kbto" onChange={this.updateKBTo} className="form-control"></input><br />
                 </div>
                 <div className="form-group">
-                <label htmlFor='subject'>Subject:</label>
-                <input type='text' name='subject' id='subject' onChange={this.updateSubject} className="form-control"></input><br />
+                <label htmlFor="subject">Subject:</label>
+                <input type="text" name="subject" id="subject" onChange={this.updateSubject} className="form-control"></input><br />
                 </div>
                 <div className="form-group">
-                  <textarea name='email' id='email' onChange={this.updateEmail} className="form-control"></textarea><br />
+                  <textarea name="email" id="email" onChange={this.updateEmail} className="form-control"></textarea><br />
                 </div>
               </form>
             </div>
             <div className="modal-footer">
               <button onClick={this.send} className="btn btn-primary">Send</button>
-              <span className='error'>{this.state.feedback}</span>
+              <span className="error">{this.state.feedback}</span>
             </div>
           </div>
         </div>
