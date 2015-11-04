@@ -21,9 +21,10 @@
             <input type="password" class="form-control" id="password"/>
           </div>
         </form>
-        <button class="btn btn-default" id="submit">Sign In</button>
-        <br/>
-        <br/>
+        <div>
+          <button class="btn btn-default" id="submit">Sign In</button>
+          <span class="glyphicon glyphicon-refresh spinner" id="spinner" aria-hidden="true"></span>
+        </div>
         <div class="alert alert-danger" role="alert" id="error">
           We could not find a Keybase account with that username and password combination.
         </div>
@@ -41,6 +42,7 @@
   </div>
   <%- include('includeBootstrap'); %>
   <link rel="stylesheet" href="login.css">
+  <link rel="stylesheet" href="spinner.css">
   <script src="login.js"></script>
   <script src="scrypt.js"></script>
   <script src="keybaseAPI-bundle.js"></script>

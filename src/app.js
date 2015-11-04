@@ -47,6 +47,7 @@ app.use(session({
 }));
 
 app.use(express.static('gen'));
+app.use('/fonts', express.static(__dirname + '/web/fonts/3rdparty'));
 app.use(express.static(__dirname + '/web/js'));
 app.use(express.static(__dirname + '/web/html'));
 app.use(express.static(__dirname + '/web/css'));
