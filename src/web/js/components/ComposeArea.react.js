@@ -68,7 +68,6 @@ var ComposeArea = React.createClass({
       }
       defaultSubject = subject;
     }
-    console.log('_onInReplyToChange, to is: ' + defaultTo);
     this.setState({ 
       to: defaultTo,
       inReplyTo: inReplyTo,
