@@ -1,0 +1,9 @@
+.spinner {
+  animation:spin 4s linear infinite;
+  padding: 1em;
+}
+
+@keyframes spin {
+  from { transform: scale(1) rotate(0deg); }
+  to { transform: scale(1) rotate(360deg); }
+}

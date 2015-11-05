@@ -1,6 +1,10 @@
 var submit = document.getElementById('submit');
 submit.onclick = login;
 
+var spinner = document.getElementById('spinner');
+spinner.style.display = 'none';
+
+// Submit on enter key
 document.onkeydown = function(event) {
   if (event.keyCode == 13) {
     login();
@@ -9,6 +13,8 @@ document.onkeydown = function(event) {
 
 function login() {
   removeError();
+  spinner.style.display = 'inline';
+
   var username = document.getElementById('username').value;
   var password = document.getElementById('password').value;
   var keybase = new KeybaseAPI(username, password, window.location.origin);
@@ -16,6 +22,7 @@ function login() {
   keybase.login().then(function(response) {
     console.log(response.me);
     if (response.status.code != 0) {
+      spinner.style.display = 'none';
       addError();
       return;
     }
