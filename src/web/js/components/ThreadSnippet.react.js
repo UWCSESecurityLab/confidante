@@ -17,18 +17,18 @@ var ThreadSnippet = React.createClass({
     }
   },
   openThread: function(event) {
-    this.state.fullThread = true;
+    this.setState({fullThread: true});
   },
   closeThread: function(event) {
-    this.state.fullThread = false;
+    this.setState({fullThread: false});
   },
   render: function() {
     if (!this.state.fullThread) {
-      var threadSubject = messageParsing.getThreadHeader(this.props.thread, 
+      var threadSubject = messageParsing.getThreadHeader(this.props.thread,
                                                          'Subject');
-      var threadFrom = messageParsing.getThreadHeader(this.props.thread, 
+      var threadFrom = messageParsing.getThreadHeader(this.props.thread,
                                                       'From');
-      var threadTo = messageParsing.getThreadHeader(this.props.thread, 
+      var threadTo = messageParsing.getThreadHeader(this.props.thread,
                                                     'To');
       return (
         <div className="row snippet" onClick={this.openThread}>
