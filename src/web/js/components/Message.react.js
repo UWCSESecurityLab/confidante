@@ -3,6 +3,7 @@
 var React = require('react');
 var keybaseAPI = require('../keybaseAPI');
 var messageParsing = require('../messageParsing');
+var InboxActions = require('../actions/InboxActions');
 
 /**
  * A message is one email message inside a thread, displayed in the inbox.
@@ -27,6 +28,10 @@ var Message = React.createClass({
       }.bind(this));
   },
 
+  reply: function() {
+    InboxActions.setInReplyTo(this.props.message);
+  },
+
   render: function() {
     var subject = messageParsing.getMessageHeader(this.props.message, 'Subject');
     var from = messageParsing.getMessageHeader(this.props.message, 'From');
@@ -41,6 +46,9 @@ var Message = React.createClass({
         <div className="messageBody">
           {this.state.body}
         </div>
+        <button type="button" className="btn btn-primary" data-toggle="modal" data-target="#composeMessage" onClick={this.reply}>
+          Reply
+        </button>
       </div>
     );
   }

@@ -119,7 +119,7 @@ class GmailClient {
     });
   }
 
-  sendMessage(jsonMessage) {
+  sendMessage(jsonMessage, threadId) {
     return new Promise(function(resolve, reject) {
       if (!jsonMessage.headers.from) {
         reject(new Error("Message missing \"From\" header"));
@@ -141,7 +141,8 @@ class GmailClient {
         auth: this.oauth2Client,
         userId: 'me',
         resource: {
-          raw: encodedMessage
+          raw: encodedMessage,
+          threadId: threadId
         }
       }, function(err, response) {
           if (err) {
@@ -163,6 +164,12 @@ class GmailClient {
     }
     if (jsonMessage.headers.bcc && jsonMessage.headers.bcc.length > 0) {
       rfcMessage.push('Bcc: ' + jsonMessage.headers.bcc.join(', '));
+    }
+    if (jsonMessage.headers.inReplyTo) {
+      rfcMessage.push('In-Reply-To: ' + jsonMessage.headers.inReplyTo);
+    }
+    if (jsonMessage.headers.references) {
+      rfcMessage.push('References: ' + jsonMessage.headers.references);
     }
     rfcMessage.push('Subject: ' + jsonMessage.headers.subject);
     rfcMessage.push('Date: ' + jsonMessage.headers.date);
