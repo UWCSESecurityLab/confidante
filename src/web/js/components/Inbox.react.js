@@ -17,9 +17,9 @@ var Inbox = React.createClass({
   },
 
   loadMail: function() {
-    request(
-      { method: 'GET',
-        url: 'http://localhost:3000/inbox'
+    request({
+        method: 'GET',
+        url: window.location.origin + '/inbox'
       },
       function(error, response, body) {
         if (!error) {
@@ -57,4 +57,4 @@ var Inbox = React.createClass({
   }
 });
 
-module.exports = Inbox; 
+module.exports = Inbox;

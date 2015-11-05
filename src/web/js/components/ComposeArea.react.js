@@ -1,13 +1,13 @@
 'use strict';
 
 var React = require('react');
-var InReplyToStore = require('../stores/InReplyToStore'); 
+var InReplyToStore = require('../stores/InReplyToStore');
 var messageParsing = require('../messageParsing');
 var keybaseAPI = require('../keybaseAPI');
 var kbpgp = require('kbpgp');
 var request = require('request');
 
-var ourPublicKeyManager = 
+var ourPublicKeyManager =
   Promise
     .reject(new Error('Key manager for local public key not yet created.'))
     .catch(function() {});
@@ -68,7 +68,7 @@ var ComposeArea = React.createClass({
       }
       defaultSubject = subject;
     }
-    this.setState({ 
+    this.setState({
       to: defaultTo,
       inReplyTo: inReplyTo,
       subject: defaultSubject,
@@ -106,7 +106,7 @@ var ComposeArea = React.createClass({
         console.log('Sending encrypted mail to ' + this.state.to);
         request({
             method: 'POST',
-            url: 'http://localhost:3000/sendMessage',
+            url: window.location.origin + '/sendMessage',
             json: true,
             body: email
           }, function(error, response, body) {
