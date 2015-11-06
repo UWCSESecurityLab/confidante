@@ -3,6 +3,7 @@
 var React = require('react');
 var request =  require('request');
 var ThreadSnippet = require('./ThreadSnippet.react');
+var MessageStore = require('../stores/MessageStore');
 
 /**
  * An Inbox represent's the user's encrypted inbox, consisting of a list
@@ -16,28 +17,22 @@ var Inbox = React.createClass({
     }
   },
 
-  loadMail: function() {
-    request({
-        method: 'GET',
-        url: window.location.origin + '/inbox'
-      },
-      function(error, response, body) {
-        if (!error) {
-          body = JSON.parse(body);
-          this.setState({threads: body});
-        }
-      }.bind(this));
+  getMail: function() {
+    this.setState(MessageStore.getAll());
   },
 
   componentDidMount: function() {
-    this.loadMail();
-    setInterval(this.loadMail, 5000);
+    MessageStore.addChangeListener(this.getMail);
   },
 
   render: function() {
     var snippets = this.state.threads.map(function(thread) {
-      return <li key={thread.id}> <ThreadSnippet thread={thread}/> </li>
-    });
+      return (<li key={thread.id}> 
+                <ThreadSnippet thread={thread}
+                               errors={this.state.errors}
+                               plaintexts={this.state.plaintexts} /> 
+              </li>)
+    }.bind(this));
     if (snippets.length == 0) {
       return (
         <div>

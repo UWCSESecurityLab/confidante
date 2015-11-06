@@ -36,6 +36,13 @@ var Message = React.createClass({
     var subject = messageParsing.getMessageHeader(this.props.message, 'Subject');
     var from = messageParsing.getMessageHeader(this.props.message, 'From');
     var to = messageParsing.getMessageHeader(this.props.message, 'To');
+    var body = 'HI';
+
+    if (this.props.error) {
+      body = this.props.error.toString();
+    } else {
+      body = this.props.plaintext;
+    }
 
     return (
       <div className="message">
@@ -44,7 +51,7 @@ var Message = React.createClass({
           <p>To: {to}</p>
         </div>
         <div className="messageBody">
-          {this.state.body}
+          {body}
         </div>
         <button type="button" className="btn btn-primary" data-toggle="modal" data-target="#composeMessage" onClick={this.reply}>
           Reply

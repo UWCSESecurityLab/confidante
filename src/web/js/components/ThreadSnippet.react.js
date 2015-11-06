@@ -44,7 +44,9 @@ var ThreadSnippet = React.createClass({
         </div>
       );
     } else {
-      return <Thread thread={this.props.thread} closeCallback={this.closeThread}/>
+      return <Thread plaintexts={this.props.plaintexts}
+                     errors={this.props.errors}
+                     thread={this.props.thread} closeCallback={this.closeThread}/>
     }
   }
 });

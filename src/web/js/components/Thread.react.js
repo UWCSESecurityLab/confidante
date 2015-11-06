@@ -20,8 +20,10 @@ var Thread = React.createClass({
   },
   render: function() {
     var messages = this.props.thread.messages.map(function(message) {
-      return <li key={message.id}> <Message message={message} /> </li>
-    });
+      return <li key={message.id}> <Message plaintext={this.props.plaintexts[message.id]} 
+                                            message={message} 
+                                            error={this.props.errors[message.id]}/> </li>
+    }.bind(this));
     var subject = messageParsing.getThreadHeader(this.props.thread, 'Subject');
     return (
       <div className="row thread">
