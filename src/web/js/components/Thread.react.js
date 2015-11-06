@@ -19,7 +19,6 @@ var Thread = React.createClass({
     this.props.closeCallback();
   },
   render: function() {
-    console.log(this.props);
     var messages = this.props.thread.messages.map(function(message) {
       return <li key={message.id}> <Message plaintext={this.props.plaintexts[message.id]} 
                                             message={message} 

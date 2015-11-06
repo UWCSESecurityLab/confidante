@@ -14,11 +14,11 @@ var _errors = {};
 var _privateManager = keybaseAPI.getPrivateManager();
 
 function _decryptThread(thread) {
-  for (let message in thread.messages) {
+  thread.messages.forEach(function(message) {
     if (_plaintexts[message.id] === undefined) {
       _decryptMessage(message);
     } 
-  }
+  });
 }
 function _decryptMessage(message) {
   var body = messageParsing.getMessageBody(message);
@@ -42,11 +42,10 @@ function loadMail() {
   function(error, response, body) {
     if (!error) {
       _threads = JSON.parse(body);
-      for (let thread in _threads) {
+      _threads.forEach(function(thread) {
         _decryptThread(thread);
-      }
+      });
       MessageStore.emitChange();
-      console.log(_threads.length + ' threads loaded');
     }
   }.bind(this));
 }

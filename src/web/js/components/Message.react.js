@@ -37,11 +37,12 @@ var Message = React.createClass({
     var from = messageParsing.getMessageHeader(this.props.message, 'From');
     var to = messageParsing.getMessageHeader(this.props.message, 'To');
     var body = 'HI';
-    // if (this.props.error) {
-    //   body = this.props.error;
-    // } else {
-    //   body = this.props.plaintext;
-    // }
+
+    if (this.props.error) {
+      body = this.props.error.toString();
+    } else {
+      body = this.props.plaintext;
+    }
 
     return (
       <div className="message">
