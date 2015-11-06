@@ -4,6 +4,7 @@ var React = require('react');
 var keybaseAPI = require('../keybaseAPI');
 var messageParsing = require('../messageParsing');
 var InboxActions = require('../actions/InboxActions');
+var ErrorBody = require('./ErrorBody.react');
 
 /**
  * A message is one email message inside a thread, displayed in the inbox.
@@ -36,12 +37,23 @@ var Message = React.createClass({
     var subject = messageParsing.getMessageHeader(this.props.message, 'Subject');
     var from = messageParsing.getMessageHeader(this.props.message, 'From');
     var to = messageParsing.getMessageHeader(this.props.message, 'To');
-    var body = 'HI';
 
-    if (this.props.error) {
-      body = this.props.error.toString();
-    } else {
-      body = this.props.plaintext;
+    var body;
+    if (!this.props.error && this.props.plaintext) {
+      body = (
+        <div className="messageBody">
+          {this.props.plaintext}
+        </div>
+      );
+    } else if (!this.props.error && this.props.plaintext === undefined) {
+      body = (
+        <div className="messageBody alert alert-info">
+          Decrypting...
+          <span className="glyphicon glyphicon-refresh spinner"></span>
+        </div>
+      );
+    } else if (this.props.error) {
+      body = <ErrorBody error={this.props.error} message={this.props.message} />
     }
 
     return (
@@ -50,9 +62,7 @@ var Message = React.createClass({
           <strong>{from}</strong>
           <p>To: {to}</p>
         </div>
-        <div className="messageBody">
-          {body}
-        </div>
+        {body}
         <button type="button" className="btn btn-primary" data-toggle="modal" data-target="#composeMessage" onClick={this.reply}>
           Reply
         </button>
