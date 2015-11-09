@@ -33,7 +33,7 @@ exports.parsePGPType = function(text) {
     }
   }
   return '';
-}
+};
 
 /**
  * Returns whether the string 'text' contains a PGP message.
@@ -42,4 +42,4 @@ exports.parsePGPType = function(text) {
  */
 exports.containsPGPMessage = function(text) {
   return text.includes(header(ARMOR_TYPES.MESSAGE)) && text.includes(footer(ARMOR_TYPES.MESSAGE));
-}
+};

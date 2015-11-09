@@ -13,23 +13,19 @@ var ThreadSnippet = React.createClass({
     return {
       messages: [],
       checked: false,
-      fullThread: false,
-    }
+      fullThread: false
+    };
   },
-  openThread: function(event) {
+  openThread: function() {
     this.setState({fullThread: true});
   },
-  closeThread: function(event) {
+  closeThread: function() {
     this.setState({fullThread: false});
   },
   render: function() {
     if (!this.state.fullThread) {
-      var threadSubject = messageParsing.getThreadHeader(this.props.thread,
-                                                         'Subject');
-      var threadFrom = messageParsing.getThreadHeader(this.props.thread,
-                                                      'From');
-      var threadTo = messageParsing.getThreadHeader(this.props.thread,
-                                                    'To');
+      var threadSubject = messageParsing.getThreadHeader(this.props.thread, 'Subject');
+      var threadFrom = messageParsing.getThreadHeader(this.props.thread, 'From');
       return (
         <div className="row snippet" onClick={this.openThread}>
           <div className="col-md-1">
@@ -44,9 +40,10 @@ var ThreadSnippet = React.createClass({
         </div>
       );
     } else {
-      return <Thread plaintexts={this.props.plaintexts}
-                     errors={this.props.errors}
-                     thread={this.props.thread} closeCallback={this.closeThread}/>
+      return (<Thread plaintexts={this.props.plaintexts}
+                      errors={this.props.errors}
+                      thread={this.props.thread}
+                      closeCallback={this.closeThread}/>);
     }
   }
 });

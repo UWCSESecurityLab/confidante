@@ -29,7 +29,7 @@ class KeybaseAPI {
       blockSize: 8,
       p: 1,
       parallel: 1,
-      size: 224,
+      size: 224
     };
 
     passphrase = new Buffer(passphrase);
@@ -75,19 +75,22 @@ class KeybaseAPI {
     console.log('Get salt...');
     return new Promise(function(fulfill, reject) {
       request(
-        { method: 'GET',
+        {
+          method: 'GET',
           url: this.serverBaseURI + '/getSalt.json',
           qs: {
             email_or_username: this.username
           }
-        }, function(error, response, body) {
+        },
+        function(error, response, body) {
           if (!error && response.statusCode == 200) {
             body = JSON.parse(body);
             fulfill(body);
           } else {
             reject(error);
           }
-        });
+        }
+      );
     }.bind(this));
   }
 
@@ -134,8 +137,9 @@ class KeybaseAPI {
   static publicKeyForUser(user) {
     return new Promise(function(fulfill, reject) {
       request(
-        { method: 'GET',
-          url: 'https://keybase.io/' + user + '/key.asc',
+        {
+          method: 'GET',
+          url: 'https://keybase.io/' + user + '/key.asc'
         },
         function(error, response, body) {
           if (error) {
@@ -212,7 +216,7 @@ class KeybaseAPI {
    * with it. This will happen down the line once we cache the
    * private key manager.
    *
-   * @return A function which returns a promise which contains the 
+   * @return A function which returns a promise which contains the
    * decryption of the ciphertext under the given private key.
    */
   static decrypt(ciphertext) {
@@ -221,10 +225,10 @@ class KeybaseAPI {
         var ring = new kbpgp.keyring.KeyRing();
         ring.add_key_manager(privateManager);
         kbpgp.unbox(
-          { 
+          {
             keyfetch: ring,
-            armored: ciphertext 
-          }, 
+            armored: ciphertext
+          },
           function(err, literals) {
             if (err !== null) {
               reject(err);

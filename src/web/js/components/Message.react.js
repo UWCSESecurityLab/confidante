@@ -13,7 +13,7 @@ var Message = React.createClass({
   getInitialState: function() {
     return {
       body: 'Decrypting...'
-    }
+    };
   },
   componentDidMount: function() {
     var message = messageParsing.getMessageBody(this.props.message);
@@ -33,7 +33,6 @@ var Message = React.createClass({
   },
 
   render: function() {
-    var subject = messageParsing.getMessageHeader(this.props.message, 'Subject');
     var from = messageParsing.getMessageHeader(this.props.message, 'From');
     var to = messageParsing.getMessageHeader(this.props.message, 'To');
     var body = 'HI';

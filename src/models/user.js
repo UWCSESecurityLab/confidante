@@ -1,5 +1,5 @@
 var mongoose = require('mongoose');
-var Schema = mongoose.Schema
+var Schema = mongoose.Schema;
 
 var userSchema = new Schema({
   keybase: {
@@ -11,4 +11,4 @@ var userSchema = new Schema({
   }
 });
 
-module.exports = mongoose.model('User', userSchema)
+module.exports = mongoose.model('User', userSchema);

@@ -103,13 +103,13 @@ class GmailClient {
             return messagePart.mimeType == 'text/plain';
           });
           if (messagePart !== undefined) {
-            var encodedBody = new Buffer(messagePart.body.data, 'base64');
+            let encodedBody = new Buffer(messagePart.body.data, 'base64');
             if (pgp.containsPGPMessage(encodedBody.toString())) {
               return true;
             }
           }
         } else {
-          var encodedBody = new Buffer(message.payload.body.data, 'base64');
+          let encodedBody = new Buffer(message.payload.body.data, 'base64');
           if (pgp.containsPGPMessage(encodedBody.toString())) {
             return true;
           }
@@ -122,20 +122,20 @@ class GmailClient {
   sendMessage(jsonMessage, threadId) {
     return new Promise(function(resolve, reject) {
       if (!jsonMessage.headers.from) {
-        reject(new Error("Message missing \"From\" header"));
+        reject(new Error('Message missing \"From\" header'));
         return;
       }
       if (!jsonMessage.headers.to || jsonMessage.headers.to.length < 1) {
-        reject(new Error("Message missing \"To\" header"));
+        reject(new Error('Message missing \"To\" header'));
         return;
       }
       if (!jsonMessage.headers.date) {
-        reject(new Error("Message missing \"Date\" header"));
+        reject(new Error('Message missing \"Date\" header'));
         return;
       }
 
       var rfcMessage = this.buildRfcMessage(jsonMessage);
-      var encodedMessage = URLSafeBase64.encode(new Buffer(rfcMessage))
+      var encodedMessage = URLSafeBase64.encode(new Buffer(rfcMessage));
 
       google.gmail('v1').users.messages.send({
         auth: this.oauth2Client,
@@ -145,13 +145,12 @@ class GmailClient {
           threadId: threadId
         }
       }, function(err, response) {
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve(response);
+        if (err) {
+          reject(err);
+          return;
         }
-      );
+        resolve(response);
+      });
     }.bind(this));
   }
 
