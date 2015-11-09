@@ -38,9 +38,7 @@ module.exports = {
   },
 
   getMessageBody: function(message) {
-    if (message.payload.mimeType == 'text/plain') {
-      return new Buffer(message.payload.body.data, 'base64').toString();
-    } else if (message.payload.mimeType = 'multipart/alternative') {
+    if (message.payload.mimeType == 'multipart/alternative') {
       // For multipart messages, we need to find the plaintext part.
       var messagePart = message.payload.parts.find(function(messagePart) {
         return messagePart.mimeType == 'text/plain';
@@ -48,7 +46,9 @@ module.exports = {
       if (messagePart !== undefined) {
         return new Buffer(messagePart.body.data, 'base64').toString();
       }
+    } else {
+      return new Buffer(message.payload.body.data, 'base64').toString();
     }
     return '<<NO MESSAGE BODY>>';
   }
-}
+};

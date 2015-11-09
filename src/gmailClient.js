@@ -96,12 +96,7 @@ class GmailClient {
     return threads.filter(function(thread) {
       for (var i = 0; i < thread.messages.length; i++) {
         var message = thread.messages[i];
-        if (message.payload.mimeType == 'text/plain') {
-          var encodedBody = new Buffer(message.payload.body.data, 'base64');
-          if (pgp.containsPGPMessage(encodedBody.toString())) {
-            return true;
-          }
-        } else if (message.payload.mimeType = 'multipart/alternative') {
+        if (message.payload.mimeType == 'multipart/alternative') {
           // For multipart messages, we need to find the plaintext part to
           // search for PGP armor.
           var messagePart = message.payload.parts.find(function(messagePart) {
@@ -112,6 +107,11 @@ class GmailClient {
             if (pgp.containsPGPMessage(encodedBody.toString())) {
               return true;
             }
+          }
+        } else {
+          var encodedBody = new Buffer(message.payload.body.data, 'base64');
+          if (pgp.containsPGPMessage(encodedBody.toString())) {
+            return true;
           }
         }
       }
