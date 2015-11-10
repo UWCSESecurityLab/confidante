@@ -72,9 +72,12 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
     };
   },
 
+  // Remove this disable when the below function does something.
+  /*eslint-disable no-unused-vars*/
   dispatchToken: InboxDispatcher.register(function(action) {
     // Respond to some actions.
   })
+  /*eslint-enable no-unused-vars*/
 });
 
 module.exports = MessageStore;

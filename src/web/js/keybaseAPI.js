@@ -1,7 +1,7 @@
 'use strict';
 
 var request = require('request');
-var buffer = require('buffer');
+// var buffer = require('buffer');
 var crypto = require('crypto');
 var purepack = require('purepack');
 var kbpgp = require('kbpgp');
@@ -63,6 +63,8 @@ class KeybaseAPI {
            .then(this._login.bind(this))
            .then(function(loginBody) {
              fulfill(loginBody);
+           }).catch(function(err) {
+             reject(err);
            });
     }.bind(this));
   }

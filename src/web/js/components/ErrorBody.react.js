@@ -1,7 +1,10 @@
 'use strict';
 
+// Disable no-unused-vars since linter can't catch references that are only used in JSX.
+/*eslint-disable no-unused-vars*/
 var React = require('react');
-var keybaseAPI = require('../keybaseAPI');
+/*eslint-enable no-unused-vars*/
+
 var messageParsing = require('../messageParsing');
 
 /**
@@ -11,12 +14,12 @@ var ErrorBody = React.createClass({
   getInitialState: function() {
     return {
       hover: false
-    }
+    };
   },
-  onMouseOver: function(e) {
+  onMouseOver: function() {
     this.setState( {hover: true} );
   },
-  onMouseOut: function(e) {
+  onMouseOut: function() {
     this.setState( {hover: false} );
   },
   render: function() {
@@ -32,7 +35,7 @@ var ErrorBody = React.createClass({
         {text}
       </div>
     );
-  },
+  }
 });
 
 module.exports = ErrorBody;

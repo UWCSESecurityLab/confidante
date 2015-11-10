@@ -25,5 +25,13 @@
     "extends": "eslint:recommended",
     "ecmaFeatures": {
         "jsx": true
+    },
+    "globals": {
+        "$": true,
+        "KeybaseAPI": true,
+        "scrypt_module_factory": true
+    },
+    "rules": {
+        "no-console": 0
     }
 }
