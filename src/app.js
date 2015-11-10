@@ -9,13 +9,13 @@ var bodyParser = require('body-parser');
 var request = require('request');
 var Cookie = require('cookie');
 
-var mongoose = require('mongoose')
-var MongoSessionStore = require('connect-mongodb-session')(session)
+var mongoose = require('mongoose');
+var MongoSessionStore = require('connect-mongodb-session')(session);
 var googleAuthLibrary = require('google-auth-library');
 
 var credentials = require('../client_secret.json');
 var GmailClient = require('./gmailClient.js');
-var User = require('./models/user.js')
+var User = require('./models/user.js');
 
 var messageParsing = require('./web/js/messageParsing');
 
@@ -111,7 +111,7 @@ app.post('/sendMessage', ensureAuthenticated, function(req, res) {
       references: ourReferences
     },
     body: req.body.email
-  }, req.body.parentMessage.threadId).then(function(response) {
+  }, req.body.parentMessage.threadId).then(function() {
     res.status(200).send('OK');
   }).catch(function(error) {
     res.status(500).send(error);
@@ -135,21 +135,20 @@ app.get('/auth/google', function(req, res) {
     if (user.google.refreshToken) {
       // If the user has logged in with Google before, get an access token
       // using the refresh token.
-      refreshGoogleOAuthToken(user.google.refreshToken).then(
-        function(token) {
-          req.session.googleToken = token;
-          req.session.email = user.google.email;
-          res.redirect('/mail');
-      }).catch(function(err) {
-        redirectToGoogleOAuthUrl(res, req);
+      refreshGoogleOAuthToken(user.google.refreshToken).then(function(token) {
+        req.session.googleToken = token;
+        req.session.email = user.google.email;
+        res.redirect('/mail');
+      }).catch(function() {
+        redirectToGoogleOAuthUrl(req, res);
       });
     } else {
-      redirectToGoogleOAuthUrl(res, req);
+      redirectToGoogleOAuthUrl(req, res);
     }
   });
 });
 
-function redirectToGoogleOAuthUrl(res, req) {
+function redirectToGoogleOAuthUrl(req, res) {
   // Otherwise, we need to send them through the Google OAuth flow.
   var oauth2Client = buildGoogleOAuthClient();
   var authUrl = oauth2Client.generateAuthUrl({
@@ -192,7 +191,7 @@ app.get('/auth/google/return', function(req, res) {
         email,
         token.refresh_token
       ).then(function() {
-        res.redirect('/')
+        res.redirect('/');
       }).catch(function(error) {
         console.error(error);
         res.redirect('/login');
@@ -246,7 +245,8 @@ app.post('/login.json', function(req, res) {
   // Outputs: status, session, me
   //
   var LOGIN_URL = 'https://keybase.io/_/api/1.0/login.json';
-  request({
+  request(
+    {
       method: 'POST',
       url: LOGIN_URL,
       qs: req.query
@@ -280,7 +280,11 @@ app.post('/login.json', function(req, res) {
         res.status(response.statusCode).send(body);
       }).catch(function(mongoError) {
         req.session.destroy(function(sessionError) {
-          res.status(500).send(mongoError);
+          if (sessionError) {
+            res.status(500).send(sessionError + mongoError);
+          } else {
+            res.status(500).send(mongoError);
+          }
         });
       });
     }
@@ -362,7 +366,7 @@ function storeKeybaseCredentials(keybase) {
       } else {
         // Currently we only store the id. We can store other non-sensitive
         // info here in the future, like the profile picture.
-        var user = new User({
+        user = new User({
           keybase: {
             id: keybase.me.id
           }
@@ -449,5 +453,5 @@ function ensureAuthenticated(req, res, next) {
   if (isAuthenticated(req.session)) {
     return next();
   }
-  res.redirect('/login')
+  res.redirect('/login');
 }

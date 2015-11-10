@@ -1,7 +1,6 @@
 'use strict';
 
 var React = require('react');
-var request =  require('request');
 var ThreadSnippet = require('./ThreadSnippet.react');
 var MessageStore = require('../stores/MessageStore');
 
@@ -13,8 +12,8 @@ var Inbox = React.createClass({
   getInitialState: function() {
     return {
       threads: [],
-      listname: 'Inbox',
-    }
+      listname: 'Inbox'
+    };
   },
 
   getMail: function() {
@@ -27,11 +26,11 @@ var Inbox = React.createClass({
 
   render: function() {
     var snippets = this.state.threads.map(function(thread) {
-      return (<li key={thread.id}> 
+      return (<li key={thread.id}>
                 <ThreadSnippet thread={thread}
                                errors={this.state.errors}
-                               plaintexts={this.state.plaintexts} /> 
-              </li>)
+                               plaintexts={this.state.plaintexts} />
+              </li>);
     }.bind(this));
     if (snippets.length == 0) {
       return (
@@ -39,7 +38,7 @@ var Inbox = React.createClass({
           <h1> {this.state.listname} </h1>
           <div className="row snippet">No encrypted emails!</div>
         </div>
-      )
+      );
     }
     return (
       <div>

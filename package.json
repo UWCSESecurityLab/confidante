@@ -6,6 +6,7 @@
   "scripts": {
     "build": "./scripts/build.sh",
     "clean": "./scripts/clean.sh",
+    "lint": "eslint src/* || true",
     "postinstall": "./scripts/postinstall.sh",
     "test": "mocha"
   },
@@ -34,10 +35,11 @@
     "urlsafe-base64": "^1.0.0"
   },
   "devDependencies": {
-    "browserify": "^11.2.0",
     "babelify": "^6.3.0",
+    "browserify": "^11.2.0",
     "chai": "^3.3.0",
     "chai-as-promised": "^5.1.0",
+    "eslint": "^1.9.0",
     "mocha": "^2.3.3",
     "mockery": "^1.4.0",
     "sinon": "^1.17.1"

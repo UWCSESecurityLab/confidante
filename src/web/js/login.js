@@ -20,7 +20,6 @@ function login() {
   var keybase = new KeybaseAPI(username, password, window.location.origin);
 
   keybase.login().then(function(response) {
-    console.log(response.me);
     if (response.status.code != 0) {
       spinner.style.display = 'none';
       addError();
@@ -34,10 +33,10 @@ function login() {
 
 function addError() {
   var error = document.getElementById('error');
-  error.style.visibility = "visible";
+  error.style.visibility = 'visible';
 }
 
 function removeError() {
   var error = document.getElementById('error');
-  error.style.visibility = "hidden";
+  error.style.visibility = 'hidden';
 }

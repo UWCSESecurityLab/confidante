@@ -14,10 +14,10 @@ var ourPublicKeyManager =
 
 (function() {
   try {
-    var me = JSON.parse(localStorage.getItem('keybase'))
+    var me = JSON.parse(localStorage.getItem('keybase'));
     var pubkey = me.public_keys.primary.bundle;
-    ourPublicKeyManager = keybaseAPI.managerFromPublicKey(pubkey)
-  } catch(err) {
+    ourPublicKeyManager = keybaseAPI.managerFromPublicKey(pubkey);
+  } catch (err) {
     ourPublicKeyManager = Promise.reject(new Error(err));
   }
 })();
@@ -35,7 +35,7 @@ var ComposeArea = React.createClass({
       email: '',
       feedback: '',
       inReplyTo: InReplyToStore.get()
-    }
+    };
   },
   updateTo: function(e) {
     this.setState({ to: e.target.value });
@@ -71,16 +71,16 @@ var ComposeArea = React.createClass({
     this.setState({
       to: defaultTo,
       inReplyTo: inReplyTo,
-      subject: defaultSubject,
+      subject: defaultSubject
     });
   },
   encryptEmail: function(keyManagers) {
     return new Promise(function(fulfill, reject) {
       var params = {
         msg: this.state.email,
-        encrypt_for: keyManagers,
+        encrypt_for: keyManagers
       };
-      kbpgp.box(params, function(err, result_string, result_buffer) {
+      kbpgp.box(params, function(err, result_string) {
         if (!err) {
           fulfill(result_string);
         } else {
@@ -89,7 +89,7 @@ var ComposeArea = React.createClass({
       });
     }.bind(this));
   },
-  send: function(e) {
+  send: function() {
     var toManager = keybaseAPI.publicKeyForUser(this.state.kbto)
       .then(keybaseAPI.managerFromPublicKey);
 
@@ -101,15 +101,16 @@ var ComposeArea = React.createClass({
           subject: this.state.subject,
           email: encryptedEmail,
           parentMessage: this.state.inReplyTo
-        }
+        };
 
         console.log('Sending encrypted mail to ' + this.state.to);
-        request({
+        request(
+          {
             method: 'POST',
             url: window.location.origin + '/sendMessage',
             json: true,
             body: email
-          }, function(error, response, body) {
+          }, function(error, response) {
             if (error) {
               // Tell the user about the error.
               console.log('Error send (network error, server down, etc.).');

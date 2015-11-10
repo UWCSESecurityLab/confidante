@@ -12,17 +12,19 @@ var Thread = React.createClass({
   getInitialState: function() {
     return {
       messages: [],
-      checked: false,
-    }
+      checked: false
+    };
   },
   close: function() {
     this.props.closeCallback();
   },
   render: function() {
     var messages = this.props.thread.messages.map(function(message) {
-      return <li key={message.id}> <Message plaintext={this.props.plaintexts[message.id]} 
-                                            message={message} 
-                                            error={this.props.errors[message.id]}/> </li>
+      return (<li key={message.id}>
+                <Message plaintext={this.props.plaintexts[message.id]}
+                         message={message}
+                         error={this.props.errors[message.id]}/>
+              </li>);
     }.bind(this));
     var subject = messageParsing.getThreadHeader(this.props.thread, 'Subject');
     return (
@@ -35,6 +37,6 @@ var Thread = React.createClass({
       </div>
     );
   }
-})
+});
 
 module.exports = Thread;

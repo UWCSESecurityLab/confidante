@@ -1,6 +1,6 @@
 'use strict';
 
-var InboxDispatcher = require('../dispatcher/InboxDispatcher'); 
+var InboxDispatcher = require('../dispatcher/InboxDispatcher');
 var EventEmitter = require('events').EventEmitter;
 var keybaseAPI = require('../keybaseAPI');
 var messageParsing = require('../messageParsing');
@@ -17,7 +17,7 @@ function _decryptThread(thread) {
   thread.messages.forEach(function(message) {
     if (_plaintexts[message.id] === undefined) {
       _decryptMessage(message);
-    } 
+    }
   });
 }
 function _decryptMessage(message) {
@@ -68,15 +68,13 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
     return {
       errors: _errors,
       threads: _threads,
-      plaintexts: _plaintexts,
-    }
+      plaintexts: _plaintexts
+    };
   },
 
   dispatchToken: InboxDispatcher.register(function(action) {
     // Respond to some actions.
   })
-
-
 });
 
 module.exports = MessageStore;

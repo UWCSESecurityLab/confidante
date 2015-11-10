@@ -1,6 +1,5 @@
 'use strict';
 
-var kbpgp = require('kbpgp');
 var purepack = require('purepack');
 var triplesec = require('triplesec');
 var pgpUtils = require('pgp-utils').armor;
@@ -11,7 +10,7 @@ function checkP3SKBHash(json) {
   var given = json.hash.value.toString('hex');
   json.hash.value = new Buffer([]);
   var newbuf = purepack.pack(json, { sort_keys : true });
-  var computed = crypto.createHash('SHA256').update(newbuf).digest().toString('hex')
+  var computed = crypto.createHash('SHA256').update(newbuf).digest().toString('hex');
   return given === computed;
 }
 module.exports.checkP3SKBHash = checkP3SKBHash;
@@ -19,7 +18,7 @@ module.exports.checkP3SKBHash = checkP3SKBHash;
 function computeP3SKBHash(obj) {
   obj.hash.body = new Buffer(0);
   var packed = purepack.pack(obj, { sort_keys : true });
-  var computed = crypto.createHash('SHA256').update(packed).digest().toString('hex')
+  var computed = crypto.createHash('SHA256').update(packed).digest().toString('hex');
   return computed;
 }
 module.exports.computeP3SKBHash = computeP3SKBHash;
@@ -42,7 +41,7 @@ function p3skbToArmoredPrivateKey(p3skb, passphrase) {
         var armored = pgpUtils.encode({
           header: {
             comment: 'none',
-            version: '0',
+            version: '0'
           }
         }, 'PRIVATE KEY BLOCK', keyPlaintext);
         fulfill(armored);
@@ -77,15 +76,15 @@ function armoredPrivateKeyToP3skb(armoredKey, passphrase) {
           pub: new Buffer(0), // UNIMPLEMENTED.
           priv: {
             data: keyCiphertext,
-            encryption: 3,
-          },
+            encryption: 3
+          }
         },
         hash: {
           value: new Buffer(0),
           type: 8
         },
         tag: 513,
-        version: 1,
+        version: 1
       };
       p3skbObj.hash.value = computeP3SKBHash(p3skbObj);
       var packed = purepack.pack(p3skbObj, { sort_keys: true });
@@ -93,8 +92,5 @@ function armoredPrivateKeyToP3skb(armoredKey, passphrase) {
       fulfill(base64ed);
     });
   });
-};
+}
 module.exports.armoredPrivateKeyToP3skb = armoredPrivateKeyToP3skb;
-
-
-
