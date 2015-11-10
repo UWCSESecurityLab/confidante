@@ -212,7 +212,7 @@ class KeybaseAPI {
    * with it. This will happen down the line once we cache the
    * private key manager.
    *
-   * @return A function which returns a promise which contains the 
+   * @return A function which returns a promise which contains the
    * decryption of the ciphertext under the given private key.
    */
   static decrypt(ciphertext) {
@@ -221,10 +221,10 @@ class KeybaseAPI {
         var ring = new kbpgp.keyring.KeyRing();
         ring.add_key_manager(privateManager);
         kbpgp.unbox(
-          { 
+          {
             keyfetch: ring,
-            armored: ciphertext 
-          }, 
+            armored: ciphertext
+          },
           function(err, literals) {
             if (err !== null) {
               reject(err);
@@ -236,24 +236,26 @@ class KeybaseAPI {
     };
   }
 
-// static autocomplete(q) {
-//   return new Promise(function(fulfill, reject) {
-//     request(
-//       { method: 'POST',
-//         url: 'https://keybase.io/_/api/1.0/user/autocomplete.json'
-//         qs: {
-//           q: q
-//         }
-//       },
-//       function (error, response, body) {
-//         if (!error && response.statusCode == 200) {
-//           fulfill(body);
-//         } else {
-//           reject(error);
-//         }
-//       }
-//     );
-// });
+  static autocomplete(q) {
+    return new Promise(function(fulfill, reject) {
+      request(
+        {
+          method: 'GET',
+          url: 'https://keybase.io/_/api/1.0/user/autocomplete.json',
+          qs: {
+            q: q
+          }
+        },
+        function (error, response, body) {
+          if (!error && response.statusCode == 200) {
+            fulfill(body);
+          } else {
+            reject(error);
+          }
+        }
+      );
+    });
+  }
 
   getKeyBundleFromLoginBody(loginBody) {
     var buf = new Buffer(loginBody.me.private_keys.primary.bundle, 'base64');
