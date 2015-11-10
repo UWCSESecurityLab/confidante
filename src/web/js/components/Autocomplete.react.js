@@ -16,21 +16,22 @@ var Autocomplete = React.createClass({
       this.setState({ results: JSON.parse(body) });
     }.bind(this));
   },
+  resultClicked: function(e) {
+    console.log(e);
+    this.setState({ kbto: e.target.innerText });
+    this.setState({ results: {} });
+  },
   render: function() {
     var renderedResults = [];
-    console.log('Current results: ');
-    console.log(this.state.results.completions);
     if (this.state.results.completions) {
-      console.log('Yes we have completions, we should render them');
       renderedResults = this.state.results.completions.map(function(result) {
         return (
-          <li>
-            <p><strong>{result.components.full_name.val}</strong> {result.components.username.val}</p>
+          <li key={result.components.username.val} onClick={this.resultClicked}>
+            {result.components.username.val}
           </li>
-        )
-      });
+        );
+      }.bind(this));
     }
-    console.log(renderedResults);
 
     return (
       <div>
