@@ -1,6 +1,7 @@
 'use strict';
 
 var React = require('react');
+var Autocomplete = require('./Autocomplete.react');
 var InReplyToStore = require('../stores/InReplyToStore');
 var messageParsing = require('../messageParsing');
 var keybaseAPI = require('../keybaseAPI');
@@ -39,9 +40,6 @@ var ComposeArea = React.createClass({
   },
   updateTo: function(e) {
     this.setState({ to: e.target.value });
-  },
-  updateKBTo: function(e) {
-    this.setState({ kbto: e.target.value });
   },
   updateSubject: function(e) {
     this.setState({ subject: e.target.value });
@@ -147,13 +145,10 @@ var ComposeArea = React.createClass({
                   <label htmlFor="to">To:</label>
                   <input type="text" value={this.state.to} name="to" id="to" onChange={this.updateTo} className="form-control"></input><br />
                 </div>
+                <Autocomplete />
                 <div className="form-group">
-                  <label htmlFor="kbto">Keybase ID of Recipient:</label>
-                  <input type="text" value={this.state.kbto} name="kbto" id="kbto" onChange={this.updateKBTo} className="form-control"></input><br />
-                </div>
-                <div className="form-group">
-                <label htmlFor="subject">Subject:</label>
-                <input type="text" value={this.state.subject} name="subject" id="subject" onChange={this.updateSubject} className="form-control"></input><br />
+                  <label htmlFor="subject">Subject:</label>
+                  <input type="text" value={this.state.subject} name="subject" id="subject" onChange={this.updateSubject} className="form-control"></input><br />
                 </div>
                 <div className="form-group">
                   <textarea value={this.state.email} name="email" id="email" onChange={this.updateEmail} className="form-control"></textarea><br />
