@@ -3,8 +3,11 @@
 var React = require('react');
 var keybaseAPI = require('../keybaseAPI');
 var messageParsing = require('../messageParsing');
+
+/*eslint-disable no-unused-vars*/
 var InboxActions = require('../actions/InboxActions');
 var ErrorBody = require('./ErrorBody.react');
+/*eslint-enable no-unused-vars*/
 
 /**
  * A message is one email message inside a thread, displayed in the inbox.

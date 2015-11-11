@@ -1,7 +1,10 @@
 'use strict';
 
-var React = require('react');
+/*eslint-disable no-unused-vars*/
 var Thread = require('./Thread.react');
+/*eslint-enable no-unused-vars*/
+
+var React = require('react');
 var messageParsing = require('../messageParsing');
 
 /**
