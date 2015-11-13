@@ -10,22 +10,31 @@ var Autocomplete = React.createClass({
       results: {}
     };
   },
+  hideCompletions: function() {
+    this.setState({results: {}});
+  },
+  resultClicked: function(username) {
+    this.setState({ kbto: username });
+    this.hideCompletions();
+  },
   updateKBTo: function(e) {
     this.setState({ kbto: e.target.value });
     keybaseAPI.autocomplete(this.state.kbto).then(function(body) {
       this.setState({ results: JSON.parse(body) });
     }.bind(this));
   },
-  resultClicked: function(username) {
-    this.setState({ kbto: username });
-    this.setState({ results: {} });
-  },
+
   render: function() {
     return (
       <div>
         <div className="form-group">
           <label htmlFor="kbto">Keybase ID of Recipient:</label>
-          <input type="text" value={this.state.kbto} name="kbto" onChange={this.updateKBTo} className="form-control"></input>
+          <input type="text"
+                 value={this.state.kbto}
+                 name="kbto"
+                 onChange={this.updateKBTo}
+                 onBlur={this.hideCompletions}
+                 className="form-control"></input>
         </div>
         <ul className="autocompletions">
           { this.state.results.completions ?
