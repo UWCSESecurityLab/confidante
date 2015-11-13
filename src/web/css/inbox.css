@@ -3,6 +3,26 @@ ul {
   padding: 0;
 }
 
+.autocompletions {
+  background-color: #FFFFFF;
+  border: 1px solid #DDDDDD;
+  margin-top: -16px;
+  padding: 1em 0em;
+  position: absolute;
+}
+
+.autocompletions:empty {
+  display: none;
+}
+
+.completion {
+  padding: 0em 1em;
+}
+.completion:hover {
+  background-color: #CCF2FF;
+  padding: 0em 1em;
+}
+
 /* Margin in compose window */
 .form-horizontal {
   margin: 2em;
@@ -22,7 +42,7 @@ ul {
 
 .thread {
   border: 1px solid #E5E5E5;
-  box-shadow: 0px 2px 5px 3px #EEEEEE;
+  box-shadow: 0px 0px 5px 3px #EEEEEE;
   margin: 1em 0em;
 }
 

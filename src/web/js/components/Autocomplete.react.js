@@ -27,7 +27,7 @@ var Autocomplete = React.createClass({
           <label htmlFor="kbto">Keybase ID of Recipient:</label>
           <input type="text" value={this.state.kbto} name="kbto" onChange={this.updateKBTo} className="form-control"></input>
         </div>
-        <ul>
+        <ul className="autocompletions">
           { this.state.results.completions ?
             this.state.results.completions.map(function(completion) {
               var username = completion.components.username.val;
@@ -47,7 +47,7 @@ var Completion = React.createClass({
   render: function() {
     let components = this.props.components;
     return (
-      <li onClick={this.props.onClick}>
+      <li onClick={this.props.onClick} className="completion">
         { components.full_name ?
           <strong>{ components.full_name.val } </strong>
           : null }
