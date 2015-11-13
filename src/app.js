@@ -154,7 +154,11 @@ function redirectToGoogleOAuthUrl(res, req) {
   var oauth2Client = buildGoogleOAuthClient();
   var authUrl = oauth2Client.generateAuthUrl({
     access_type: 'offline',
-    scope: ['email', 'https://www.googleapis.com/auth/gmail.modify'],
+    scope: [
+      'email',
+      'https://www.googleapis.com/auth/contacts.readonly',
+      'https://www.googleapis.com/auth/gmail.modify'
+    ],
     redirect_uri: credentials.web.redirect_uris[0]
   });
   res.redirect(authUrl);
@@ -203,6 +207,20 @@ app.get('/auth/google/return', function(req, res) {
   }).catch(function(error) {
     console.error(error);
     res.redirect('/login');
+  });
+});
+
+app.get('/contacts.json', ensureAuthenticated, function(req, res) {
+  console.log('GET /contacts.json');
+  let gmailClient = new GmailClient(req.session.googleToken);
+  gmailClient.getAllContacts().then(function(body) {
+    console.log('Success?');
+    console.log(body);
+    res.json(body);
+  }).catch(function(err) {
+    console.log('Error');
+    console.log(util.inspect(err));
+    res.send(err);
   });
 });
 

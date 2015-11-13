@@ -1,9 +1,11 @@
 'use strict';
+var credentials = require('../client_secret.json');
 var google = require('googleapis');
 var googleAuth = require('google-auth-library');
 var pgp = require('./pgp.js');
-var credentials = require('../client_secret.json');
+var request = require('request');
 var URLSafeBase64 = require('urlsafe-base64');
+
 
 class GmailClient {
   /**
@@ -177,6 +179,28 @@ class GmailClient {
     rfcMessage.push(jsonMessage.body);
 
     return rfcMessage.join('\r\n');
+  }
+
+  getAllContacts() {
+    return new Promise(function(resolve, reject) {
+      request({
+        method: 'GET',
+        url: 'https://www.google.com/m8/feeds/contacts/default/full',
+        headers: {
+          'GData-Version': 3.0,
+          'Authorization': 'Bearer ' + this.oauth2Client.credentials.access_token
+        },
+        qs: {
+          'alt': 'json'
+        }
+      }, function(error, response, body) {
+        if (!error && response.statusCode == 200) {
+          resolve(body);
+        } else {
+          reject(body);
+        }
+      })
+    }.bind(this));
   }
 }
 
