@@ -16,23 +16,11 @@ var Autocomplete = React.createClass({
       this.setState({ results: JSON.parse(body) });
     }.bind(this));
   },
-  resultClicked: function(e) {
-    console.log(e);
-    this.setState({ kbto: e.target.innerText });
+  resultClicked: function(username) {
+    this.setState({ kbto: username });
     this.setState({ results: {} });
   },
   render: function() {
-    var renderedResults = [];
-    if (this.state.results.completions) {
-      renderedResults = this.state.results.completions.map(function(result) {
-        return (
-          <li key={result.components.username.val} onClick={this.resultClicked}>
-            {result.components.username.val}
-          </li>
-        );
-      }.bind(this));
-    }
-
     return (
       <div>
         <div className="form-group">
@@ -40,11 +28,32 @@ var Autocomplete = React.createClass({
           <input type="text" value={this.state.kbto} name="kbto" onChange={this.updateKBTo} className="form-control"></input>
         </div>
         <ul>
-          {renderedResults}
+          {this.state.results.completions ?
+            this.state.results.completions.map(function(completion) {
+              var username = completion.components.username.val;
+              return (
+                <Completion key={username}
+                            onClick={this.resultClicked.bind(this, username)}
+                            components={completion.components} />
+              );
+            }.bind(this)) : null }
         </ul>
       </div>
     );
   }
 });
+
+var Completion = React.createClass({
+  render: function() {
+    let components = this.props.components;
+    return (
+      <li onClick={this.props.onClick}>
+        <span><strong>{components.username.val}</strong></span>
+      </li>
+    );
+  }
+});
+
+
 
 module.exports = Autocomplete;
