@@ -214,12 +214,8 @@ app.get('/contacts.json', ensureAuthenticated, function(req, res) {
   console.log('GET /contacts.json');
   let gmailClient = new GmailClient(req.session.googleToken);
   gmailClient.getAllContacts().then(function(body) {
-    console.log('Success?');
-    console.log(body);
     res.json(body);
   }).catch(function(err) {
-    console.log('Error');
-    console.log(util.inspect(err));
     res.send(err);
   });
 });

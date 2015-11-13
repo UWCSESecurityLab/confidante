@@ -195,12 +195,42 @@ class GmailClient {
         }
       }, function(error, response, body) {
         if (!error && response.statusCode == 200) {
-          resolve(body);
+          let raw = JSON.parse(body);
+          let contacts = raw['feed']['entry']
+            .map(this.toSmallContact)
+            .reduce(function(flat, next) {
+              return flat.concat(next);
+            });
+          resolve(contacts);
         } else {
           reject(body);
         }
-      })
+      }.bind(this))
     }.bind(this));
+  }
+
+  /**
+   * Converts a GData contact to a simple JSON object with the contact's name
+   * and email address. Since there may be multiple email addresses, it returns
+   * one or more objects in an array.
+   */
+  toSmallContact(gDataContact) {
+    let emails = gDataContact['gd$email'];
+    if (!emails) {
+      return [];
+    }
+
+    let name = gDataContact['title']['$t'];
+    if (!name) {
+      name = '';
+    }
+
+    return emails.map(function(email) {
+      return {
+        name: name,
+        email: email.address
+      }
+    });
   }
 }
 
