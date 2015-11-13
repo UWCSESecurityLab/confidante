@@ -28,7 +28,7 @@ var Autocomplete = React.createClass({
           <input type="text" value={this.state.kbto} name="kbto" onChange={this.updateKBTo} className="form-control"></input>
         </div>
         <ul>
-          {this.state.results.completions ?
+          { this.state.results.completions ?
             this.state.results.completions.map(function(completion) {
               var username = completion.components.username.val;
               return (
@@ -48,7 +48,23 @@ var Completion = React.createClass({
     let components = this.props.components;
     return (
       <li onClick={this.props.onClick}>
-        <span><strong>{components.username.val}</strong></span>
+        { components.full_name ?
+          <strong>{ components.full_name.val } </strong>
+          : null }
+
+        <a href={'https://keybase.io/' + components.username.val} target="_blank">
+          <span>{ components.username.val } </span>
+        </a>
+
+        { components.twitter ?
+          <a href={'https://twitter.com/' + components.twitter.val} target="_blank">
+            <span>@{ components.twitter.val } </span>
+          </a> : null }
+
+        { components.github ?
+          <a href={'https://github.com/' + components.github.val} target="_blank">
+          <span>{ components.github.val } </span>
+          </a> : null }
       </li>
     );
   }
