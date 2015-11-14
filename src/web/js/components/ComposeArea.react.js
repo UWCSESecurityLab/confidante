@@ -41,6 +41,9 @@ var ComposeArea = React.createClass({
   updateTo: function(e) {
     this.setState({ to: e.target.value });
   },
+  updateKBTo: function(kbto) {
+    this.setState({ kbto: kbto });
+  },
   updateSubject: function(e) {
     this.setState({ subject: e.target.value });
   },
@@ -147,7 +150,7 @@ var ComposeArea = React.createClass({
                 </div>
                 <div className="form-group">
                   <label htmlFor="kbto">Keybase ID of Recipient:</label>
-                  <KeybaseAutocomplete />
+                  <KeybaseAutocomplete updateParent={this.updateKBTo}/>
                 </div>
                 <div className="form-group">
                   <label htmlFor="subject">Subject:</label>
