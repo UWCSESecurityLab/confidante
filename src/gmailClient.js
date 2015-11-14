@@ -183,6 +183,10 @@ class GmailClient {
 
   searchContacts(query) {
     return new Promise(function(resolve, reject) {
+      if (query.length < 2) {
+        resolve([]);
+        return;
+      }
       request({
         method: 'GET',
         url: 'https://www.google.com/m8/feeds/contacts/default/full',
@@ -198,12 +202,15 @@ class GmailClient {
       }, function(error, response, body) {
         if (!error && response.statusCode == 200) {
           let raw = JSON.parse(body);
-          let contacts = raw['feed']['entry']
-            .map(this.toSmallContact)
-            .reduce(function(flat, next) {
-              return flat.concat(next);
-            });
-          resolve(contacts);
+          let contacts = raw['feed']['entry'];
+          if (!contacts) {
+            resolve([]);
+            return;
+          }
+          resolve(contacts.map(this.toSmallContact)
+          .reduce(function(flat, next) {
+            return flat.concat(next);
+          }));
         } else {
           reject(body);
         }
