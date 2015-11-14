@@ -35,18 +35,19 @@ var KeybaseAutocomplete = React.createClass({
                  onChange={this.updateKBTo}
                  onBlur={this.hideCompletions}
                  className="form-control"></input>
+          <ul className="autocompletions">
+            { this.state.results.completions ?
+              this.state.results.completions.map(function(completion) {
+                var username = completion.components.username.val;
+                return (
+                   <KeybaseCompletion key={username}
+                      onClick={this.resultClicked.bind(this, username)}
+                     components={completion.components} />
+                );
+              }.bind(this)) : null }
+          </ul>
         </div>
-        <ul className="autocompletions">
-          { this.state.results.completions ?
-            this.state.results.completions.map(function(completion) {
-              var username = completion.components.username.val;
-              return (
-                <KeybaseCompletion key={username}
-                    onClick={this.resultClicked.bind(this, username)}
-                    components={completion.components} />
-              );
-            }.bind(this)) : null }
-        </ul>
+
       </div>
     );
   }
@@ -79,4 +80,4 @@ var KeybaseCompletion = React.createClass({
   }
 });
 
-module.exports = Autocomplete;
+module.exports = KeybaseAutocomplete;
