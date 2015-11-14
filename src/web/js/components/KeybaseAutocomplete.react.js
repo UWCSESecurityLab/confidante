@@ -3,7 +3,7 @@
 var React = require('react');
 var keybaseAPI = require('../keybaseAPI');
 
-var Autocomplete = React.createClass({
+var KeybaseAutocomplete = React.createClass({
   getInitialState: function() {
     return {
       kbto: '',
@@ -41,9 +41,9 @@ var Autocomplete = React.createClass({
             this.state.results.completions.map(function(completion) {
               var username = completion.components.username.val;
               return (
-                <Completion key={username}
-                            onClick={this.resultClicked.bind(this, username)}
-                            components={completion.components} />
+                <KeybaseCompletion key={username}
+                    onClick={this.resultClicked.bind(this, username)}
+                    components={completion.components} />
               );
             }.bind(this)) : null }
         </ul>
@@ -52,7 +52,7 @@ var Autocomplete = React.createClass({
   }
 });
 
-var Completion = React.createClass({
+var KeybaseCompletion = React.createClass({
   render: function() {
     let components = this.props.components;
     return (
@@ -78,7 +78,5 @@ var Completion = React.createClass({
     );
   }
 });
-
-
 
 module.exports = Autocomplete;
