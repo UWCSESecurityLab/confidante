@@ -211,7 +211,6 @@ app.get('/auth/google/return', function(req, res) {
 });
 
 app.get('/contacts.json', ensureAuthenticated, function(req, res) {
-  console.log('GET /contacts.json');
   let gmailClient = new GmailClient(req.session.googleToken);
   gmailClient.searchContacts(req.query.q).then(function(body) {
     res.json(body);
