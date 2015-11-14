@@ -145,7 +145,10 @@ var ComposeArea = React.createClass({
                   <label htmlFor="to">To:</label>
                   <input type="text" value={this.state.to} name="to" id="to" onChange={this.updateTo} className="form-control"></input><br />
                 </div>
-                <KeybaseAutocomplete />
+                <div className="form-group">
+                  <label htmlFor="kbto">Keybase ID of Recipient:</label>
+                  <KeybaseAutocomplete />
+                </div>
                 <div className="form-group">
                   <label htmlFor="subject">Subject:</label>
                   <input type="text" value={this.state.subject} name="subject" id="subject" onChange={this.updateSubject} className="form-control"></input><br />
