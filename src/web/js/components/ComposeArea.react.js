@@ -1,7 +1,7 @@
 'use strict';
 
 var React = require('react');
-var Autocomplete = require('./Autocomplete.react');
+var KeybaseAutocomplete = require('./KeybaseAutocomplete.react');
 var InReplyToStore = require('../stores/InReplyToStore');
 var messageParsing = require('../messageParsing');
 var keybaseAPI = require('../keybaseAPI');
@@ -145,7 +145,7 @@ var ComposeArea = React.createClass({
                   <label htmlFor="to">To:</label>
                   <input type="text" value={this.state.to} name="to" id="to" onChange={this.updateTo} className="form-control"></input><br />
                 </div>
-                <Autocomplete />
+                <KeybaseAutocomplete />
                 <div className="form-group">
                   <label htmlFor="subject">Subject:</label>
                   <input type="text" value={this.state.subject} name="subject" id="subject" onChange={this.updateSubject} className="form-control"></input><br />
