@@ -181,7 +181,7 @@ class GmailClient {
     return rfcMessage.join('\r\n');
   }
 
-  getAllContacts() {
+  searchContacts(query) {
     return new Promise(function(resolve, reject) {
       request({
         method: 'GET',
@@ -191,7 +191,9 @@ class GmailClient {
           'Authorization': 'Bearer ' + this.oauth2Client.credentials.access_token
         },
         qs: {
-          'alt': 'json'
+          'alt': 'json',
+          'max-results': 10,
+          'q': query
         }
       }, function(error, response, body) {
         if (!error && response.statusCode == 200) {
