@@ -1,6 +1,7 @@
 'use strict';
 
 var React = require('react');
+var ContactsAutocomplete = require('./ContactsAutocomplete.react');
 var KeybaseAutocomplete = require('./KeybaseAutocomplete.react');
 var InReplyToStore = require('../stores/InReplyToStore');
 var messageParsing = require('../messageParsing');
@@ -38,8 +39,8 @@ var ComposeArea = React.createClass({
       inReplyTo: InReplyToStore.get()
     }
   },
-  updateTo: function(e) {
-    this.setState({ to: e.target.value });
+  updateTo: function(to) {
+    this.setState({ to: to });
   },
   updateKBTo: function(kbto) {
     this.setState({ kbto: kbto });
@@ -146,7 +147,7 @@ var ComposeArea = React.createClass({
               <form className="form-horizontal">
                 <div className="form-group">
                   <label htmlFor="to">To:</label>
-                  <input type="text" value={this.state.to} name="to" id="to" onChange={this.updateTo} className="form-control"></input><br />
+                  <ContactsAutocomplete updateParent={this.updateTo}/>
                 </div>
                 <div className="form-group">
                   <label htmlFor="kbto">Keybase ID of Recipient:</label>
