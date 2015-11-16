@@ -42,18 +42,11 @@ var ContactsAutocomplete = React.createClass({
       contactAddr = contact.email + ', ';
     }
 
-    let lastComma = -1;
-    for (var i = 0; i < this.state.to.length; i++) {
-      if (this.state.to[i] == ',') {
-        lastComma = i;
-      }
-    }
-
     let updated = '';
-    if (lastComma == -1) {
+    if (this.state.to.lastIndexOf(',') == -1) {
       updated = contactAddr;
     } else {
-      updated = this.state.to.slice(0, lastComma + 1) + ' ' + contactAddr;
+      updated = this.state.to.slice(0, this.state.to.lastIndexOf(',') + 1) + ' ' + contactAddr;
     }
 
     this.setState({ to: updated });
@@ -62,8 +55,10 @@ var ContactsAutocomplete = React.createClass({
   },
 
   updateTo: function(e) {
-    this.setState({ to: e.target.value });
-    autocompleteContacts(e.target.value).then(function(results) {
+    let newString = e.target.value;
+    this.setState({ to: newString });
+    let query = newString.slice(newString.lastIndexOf(',') + 1);
+    autocompleteContacts(query).then(function(results) {
       this.setState({ results: results});
       this.props.updateParent(e.target.value);
     }.bind(this));
