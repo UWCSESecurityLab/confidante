@@ -15,12 +15,14 @@ var KeybaseAutocomplete = React.createClass({
   },
   resultClicked: function(username) {
     this.setState({ kbto: username });
+    this.props.updateParent(username);
     this.hideCompletions();
   },
   updateKBTo: function(e) {
     this.setState({ kbto: e.target.value });
     keybaseAPI.autocomplete(this.state.kbto).then(function(body) {
       this.setState({ results: JSON.parse(body) });
+      this.props.updateParent(e.target.value);
     }.bind(this));
   },
 
@@ -31,7 +33,6 @@ var KeybaseAutocomplete = React.createClass({
                value={this.state.kbto}
                name="kbto"
                onChange={this.updateKBTo}
-               onBlur={this.hideCompletions}
                className="form-control"></input>
         <ul className="autocompletions">
           { this.state.results.completions ?
@@ -40,7 +41,7 @@ var KeybaseAutocomplete = React.createClass({
               return (
                  <KeybaseCompletion key={username}
                     onClick={this.resultClicked.bind(this, username)}
-                   components={completion.components} />
+                    components={completion.components} />
               );
             }.bind(this)) : null }
         </ul>
