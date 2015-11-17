@@ -1,9 +1,11 @@
 'use strict';
+var credentials = require('../client_secret.json');
 var google = require('googleapis');
 var googleAuth = require('google-auth-library');
 var pgp = require('./pgp.js');
-var credentials = require('../client_secret.json');
+var request = require('request');
 var URLSafeBase64 = require('urlsafe-base64');
+
 
 class GmailClient {
   /**
@@ -176,6 +178,67 @@ class GmailClient {
     rfcMessage.push(jsonMessage.body);
 
     return rfcMessage.join('\r\n');
+  }
+
+  searchContacts(query) {
+    return new Promise(function(resolve, reject) {
+      if (query.length < 2) {
+        resolve([]);
+        return;
+      }
+      request({
+        method: 'GET',
+        url: 'https://www.google.com/m8/feeds/contacts/default/full',
+        headers: {
+          'GData-Version': 3.0,
+          'Authorization': 'Bearer ' + this.oauth2Client.credentials.access_token
+        },
+        qs: {
+          'alt': 'json',
+          'max-results': 10,
+          'q': query
+        }
+      }, function(error, response, body) {
+        if (!error && response.statusCode == 200) {
+          let raw = JSON.parse(body);
+          let contacts = raw['feed']['entry'];
+          if (!contacts) {
+            resolve([]);
+            return;
+          }
+          resolve(contacts.map(this.toSmallContact)
+          .reduce(function(flat, next) {
+            return flat.concat(next);
+          }));
+        } else {
+          reject(body);
+        }
+      }.bind(this))
+    }.bind(this));
+  }
+
+  /**
+   * Converts a GData contact to a simple JSON object with the contact's name
+   * and email address. Since there may be multiple email addresses, it returns
+   * one or more objects in an array.
+   */
+  toSmallContact(gDataContact) {
+    let emails = gDataContact['gd$email'];
+    if (!emails) {
+      return [];
+    }
+
+    let name = gDataContact['title']['$t'];
+    if (!name) {
+      name = '';
+    }
+
+    return emails.map(function(email) {
+      return {
+        name: name,
+        email: email.address
+      }
+    });
   }
 }
 
