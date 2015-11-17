@@ -66,7 +66,7 @@ var ContactsAutocomplete = React.createClass({
 
   render: function() {
     return (
-      <div>
+      <div onMouseLeave={this.hideCompletions}>
         <input type="text"
                value={this.state.to}
                name="to"

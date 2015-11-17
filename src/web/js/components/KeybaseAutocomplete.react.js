@@ -10,7 +10,7 @@ var KeybaseAutocomplete = React.createClass({
       results: {}
     };
   },
-  hideCompletions: function() {
+  hideCompletions: function(e) {
     this.setState({results: {}});
   },
   resultClicked: function(username) {
@@ -28,7 +28,7 @@ var KeybaseAutocomplete = React.createClass({
 
   render: function() {
     return (
-      <div>
+      <div onMouseLeave={this.hideCompletions}>
         <input type="text"
                value={this.state.kbto}
                name="kbto"

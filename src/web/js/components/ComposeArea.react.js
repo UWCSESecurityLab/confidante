@@ -164,8 +164,8 @@ var ComposeArea = React.createClass({
               </form>
             </div>
             <div className="modal-footer">
-              <button onClick={this.send} className="btn btn-primary">Send</button>
-              <span className="error">{this.state.feedback}</span>
+              <div className="alert alert-danger">{this.state.feedback}</div>
+              <button onClick={this.send} className="btn btn-primary">Encrypt and Send</button>
             </div>
           </div>
         </div>
