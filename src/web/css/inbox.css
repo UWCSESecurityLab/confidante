@@ -34,7 +34,7 @@ ul {
 .message {
   border-bottom: 1px solid #EFEFEF;
   padding: 1.5em 3em;
-  white-space: pre;
+  white-space: pre-wrap;
 }
 
 .reply {
