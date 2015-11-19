@@ -11,8 +11,11 @@ var mongoose = require('mongoose');
 var MongoSessionStore = require('connect-mongodb-session')(session);
 var googleAuthLibrary = require('google-auth-library');
 
+var kbpgp = require('kbpgp');
+
 var credentials = require('../client_secret.json');
 var GmailClient = require('./gmailClient.js');
+var Invite = require('./models/invite.js');
 var User = require('./models/user.js');
 
 var messageParsing = require('./web/js/messageParsing');
@@ -78,20 +81,6 @@ app.get('/inbox', ensureAuthenticated, function(req, res) {
   });
 });
 
-app.get('/fakeInbox', function(req, res) {
-  res.json({
-    emails: [
-      { id: 0, to: 'A', from: 'Jane', subject: 'Jane sent this email' },
-      { id: 1, to: 'A', from: 'Janus', subject: 'Janus sent this email' },
-      { id: 2, to: 'A', from: 'Jacqueline', subject: 'Jacqueline sent this email' },
-      { id: 3, to: 'A', from: 'Jo', subject: 'Jo sent this email' },
-      { id: 4, to: 'A', from: 'Jane', subject: 'Jane sent this email as well' },
-      { id: 5, to: 'A', from: Math.random().toString(36).substring(7),
-               subject: Math.random().toString(36).substring(7) }
-    ]
-  });
-});
-
 app.post('/sendMessage', ensureAuthenticated, function(req, res) {
   var gmailClient = new GmailClient(req.session.googleToken);
   let parent = req.body.parentMessage;
@@ -114,6 +103,85 @@ app.post('/sendMessage', ensureAuthenticated, function(req, res) {
   }).catch(function(error) {
     res.status(500).send(error);
   });
+});
+
+app.get('/invite/getKey', ensureAuthenticated, function(req, res) {
+  let recipient = req.query.recipient;
+  if (!recipient) {
+    res.status(400).send('No recipient provided');
+    return;
+  }
+  console.log('Recipient = ' + recipient);
+  console.log('Generating keys...');
+  kbpgp.KeyManager.generate_rsa({
+    userid: recipient
+  }, function(err, tempKeyManager) {
+    if (err) {
+      console.log(err);
+      res.status(400).send('Error generating temporary key pair');
+      return;
+    }
+    console.log('Signing keys...')
+    tempKeyManager.sign({}, function(signErr) {
+      if (signErr) {
+        res.status(400).send('Error signing key pair');
+        return;
+      }
+      console.log('Exporting keys...');
+      let publicPromise = new Promise(function(resolve, reject) {
+        tempKeyManager.export_pgp_public({}, function(err, pgp_public) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(pgp_public)
+          }
+        });
+      });
+      let privatePromise = new Promise(function(resolve, reject) {
+        tempKeyManager.export_pgp_private({}, function(err, pgp_private) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(pgp_private);
+          }
+        });
+      });
+
+      Promise.all([publicPromise, privatePromise]).then(function(values) {
+        console.log('Keys successfully exported.');
+        let publicKey = values[0];
+        let privateKey = values[1];
+        let expires = new Date();
+        expires.setDate(expires.getDate() + 2);
+        let invite = new Invite({
+          recipientEmail: recipient,
+          expires: expires,
+          pgp: {
+            public_key: publicKey,
+            private_key: privateKey
+          }
+        });
+
+        res.json({ key: publicKey, id: invite._id });
+      }).catch(function(err) {
+        console.log(err);
+        res.status(400).send(err);
+      });
+    });
+  });
+  // Create a new invite object with key pair and emails
+  // Respond with public key
+});
+
+app.post('/invite/sendInvite', ensureAuthenticated, function(req, res) {
+  // Parse encrypted mail
+  // Update invite object with message
+  // Send system email/gmail message
+});
+
+app.get('/invite/viewInvite', function(req, res) {
+  // Look up invite
+  // Return page, invite, and encrypted message
 });
 
 /**
