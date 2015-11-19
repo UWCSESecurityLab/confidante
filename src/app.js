@@ -14,6 +14,7 @@ var googleAuthLibrary = require('google-auth-library');
 var kbpgp = require('kbpgp');
 
 var credentials = require('../client_secret.json');
+var db = require('./db.js');
 var GmailClient = require('./gmailClient.js');
 var Invite = require('./models/invite.js');
 var User = require('./models/user.js');
@@ -189,15 +190,11 @@ app.get('/invite/viewInvite', function(req, res) {
  * authenticated with Keybase so we can identify them.
  */
 app.get('/auth/google', function(req, res) {
-  User.findOne({'keybase.id': req.session.keybaseId}, function(err, user) {
-    if (err) {
-      res.statusCode(500).send(err);
-    }
+  db.getUser(req.session.keybaseId).then(function(user) {
     if (!user) {
       // If there is no Keybase id, send them back to the initial login.
       res.redirect('/login');
     }
-
     if (user.google.refreshToken) {
       // If the user has logged in with Google before, get an access token
       // using the refresh token.
@@ -211,23 +208,10 @@ app.get('/auth/google', function(req, res) {
     } else {
       redirectToGoogleOAuthUrl(req, res);
     }
+  }).catch(function(err) {
+    res.statusCode(500).send(err);
   });
 });
-
-function redirectToGoogleOAuthUrl(req, res) {
-  // Otherwise, we need to send them through the Google OAuth flow.
-  var oauth2Client = buildGoogleOAuthClient();
-  var authUrl = oauth2Client.generateAuthUrl({
-    access_type: 'offline',
-    scope: [
-      'email',
-      'https://www.googleapis.com/auth/contacts.readonly',
-      'https://www.googleapis.com/auth/gmail.modify'
-    ],
-    redirect_uri: credentials.web.redirect_uris[0]
-  });
-  res.redirect(authUrl);
-}
 
 /**
  * Exchanges an authorization code for tokens from Google, and updates the
@@ -236,7 +220,6 @@ function redirectToGoogleOAuthUrl(req, res) {
 app.get('/auth/google/return', function(req, res) {
   var code = req.query.code;
   if (!code) {
-    console.error('No authorization code in query string!');
     res.redirect('/login');
   }
 
@@ -256,16 +239,13 @@ app.get('/auth/google/return', function(req, res) {
 
     // If a refresh token was returned, we need to store it in the database.
     if (token.refresh_token) {
-      storeGoogleCredentials(
-        req.session.keybaseId,
-        email,
-        token.refresh_token
-      ).then(function() {
-        res.redirect('/');
-      }).catch(function(error) {
-        console.error(error);
-        res.redirect('/login');
-      });
+      db.storeGoogleCredentials(req.session.keybaseId, email,token.refresh_token)
+        .then(function() {
+          res.redirect('/');
+        }).catch(function(error) {
+          console.error(error);
+          res.redirect('/login');
+        });
     } else {
       res.redirect('/');
     }
@@ -354,7 +334,7 @@ app.post('/login.json', function(req, res) {
         return cookie.session !== undefined;
       });
       // Create a User record for this user if necessary.
-      storeKeybaseCredentials(keybase).then(function() {
+      db.storeKeybaseCredentials(keybase).then(function() {
         // Echo the response with the same status code on success.
         res.status(response.statusCode).send(body);
       }).catch(function(mongoError) {
@@ -377,6 +357,21 @@ app.get('/logout', function(req, res) {
 });
 
 app.listen(3000);
+
+function redirectToGoogleOAuthUrl(req, res) {
+  // Otherwise, we need to send them through the Google OAuth flow.
+  var oauth2Client = buildGoogleOAuthClient();
+  var authUrl = oauth2Client.generateAuthUrl({
+    access_type: 'offline',
+    scope: [
+      'email',
+      'https://www.googleapis.com/auth/contacts.readonly',
+      'https://www.googleapis.com/auth/gmail.modify'
+    ],
+    redirect_uri: credentials.web.redirect_uris[0]
+  });
+  res.redirect(authUrl);
+}
 
 /**
  * Constructs a Google OAuth client with the app's credentials.
@@ -422,69 +417,6 @@ function refreshGoogleOAuthToken(refreshToken) {
         reject(err);
       } else {
         resolve(response.body);
-      }
-    });
-  });
-}
-
-/**
- * Creates and stores new User from their Keybase credentials. If the user has
- * already used our service, then nothing needs to be updated.
- * @param keybase The login object returned from the Keybase API
- * @return an empty promise
- */
-function storeKeybaseCredentials(keybase) {
-  return new Promise(function(resolve, reject) {
-    User.findOne({'keybase.id': keybase.me.id}, function(err, user) {
-      if (err) {
-        reject(err);
-        return;
-      }
-      if (user) {
-        resolve();
-      } else {
-        // Currently we only store the id. We can store other non-sensitive
-        // info here in the future, like the profile picture.
-        user = new User({
-          keybase: {
-            id: keybase.me.id
-          }
-        });
-        user.save(function(err) {
-          if (err) reject(err);
-          else resolve();
-        });
-      }
-    });
-  });
-}
-
-/**
- * Creates or updates a User's Google credentials.
- * @param keybaseId The identifier for the user
- * @param email The user's email address
- * @param refreshToken The Google OAuth refresh Token
- * @return Empty Promise
- */
-function storeGoogleCredentials(keybaseId, email, refreshToken) {
-  return new Promise(function(resolve, reject) {
-    User.findOne({'keybase.id': keybaseId}, function(err, user) {
-      if (err) {
-        reject(err);
-        return;
-      }
-      if (user) {
-        user.google.refreshToken = refreshToken;
-        user.google.email = email;
-        user.save(function(err) {
-          if (err) {
-            reject(err);
-          } else {
-            resolve();
-          }
-        });
-      } else {
-        reject('Could not find user');
       }
     });
   });
