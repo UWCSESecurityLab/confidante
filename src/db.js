@@ -14,6 +14,18 @@ function getUser(keybaseId) {
   });
 }
 
+function getInvite(inviteId) {
+  return new Promise(function(resolve, reject) {
+    Invite.findOne({'_id': inviteId}, function(err, invite) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(invite);
+      }
+    });
+  });
+}
+
 /**
  * Creates and stores new User from their Keybase credentials. If the user has
  * already used our service, then nothing needs to be updated.
@@ -72,6 +84,14 @@ function storeGoogleCredentials(keybaseId, email, refreshToken) {
   });
 }
 
+/**
+ * Creates a new invite with its key pairs. At this point, the message has not
+ * yet been sent to the server, so the invite only contains the id, recipient,
+ * and key pair.
+ * @param recipient The email address of the recipient.
+ * @param keys.publicKey The armored public PGP key
+ * @param keys.privateKey The armored private PGP key
+ */
 function storeInviteKeys(recipient, keys) {
   return new Promise(function(resolve, reject) {
     let expires = new Date();
