@@ -105,13 +105,22 @@ app.post('/sendMessage', ensureAuthenticated, function(req, res) {
   });
 });
 
+/**
+ * Part 1 of 2 in sending an invite to a non-Keymail user.
+ * The inviter calls this endpoint to get a temporary public key for the
+ * invitee. They should encrypt the invite message on their end, and then
+ * call /invite/sendInvite.
+ *
+ * The request query should contain 'recipient=<invitee's email address>'.
+ * The response body contains a JSON object containing the invite id,
+ * and the public key. When calling /invite/sendInvite, pass back the invite id.
+ */
 app.get('/invite/getKey', ensureAuthenticated, function(req, res) {
   let recipient = req.query.recipient;
   if (!recipient) {
     res.status(500).send('No recipient provided');
     return;
   }
-  console.log('Recipient = ' + recipient);
   pgp.generateKeyPair(recipient).then(function(keys) {
     db.storeInviteKeys(recipient, keys).then(function(recordId) {
       res.json({ id: recordId, publicKey: keys.publicKey });
