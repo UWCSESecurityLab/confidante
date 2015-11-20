@@ -65,7 +65,7 @@ var Message = React.createClass({
           <p>To: {to}</p>
         </div>
         {body}
-        <button type="button" className="btn btn-primary" data-toggle="modal" data-target="#composeMessage" onClick={this.reply}>
+        <button type="button" className="btn btn-primary reply" data-toggle="modal" data-target="#composeMessage" onClick={this.reply}>
           Reply
         </button>
       </div>

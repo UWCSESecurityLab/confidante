@@ -3,6 +3,10 @@ ul {
   padding: 0;
 }
 
+.alert:empty {
+  display: none;
+}
+
 .autocompletions {
   background-color: #FFFFFF;
   border: 1px solid #DDDDDD;
@@ -30,7 +34,11 @@ ul {
 .message {
   border-bottom: 1px solid #EFEFEF;
   padding: 1.5em 3em;
-  white-space: pre;
+  white-space: pre-wrap;
+}
+
+.reply {
+  margin-top: 1em;
 }
 
 .snippet {
@@ -44,6 +52,10 @@ ul {
   border: 1px solid #E5E5E5;
   box-shadow: 0px 0px 5px 3px #EEEEEE;
   margin: 1em 0em;
+}
+
+.threadClose {
+  margin-right: 0.75em;
 }
 
 .threadHeader {
