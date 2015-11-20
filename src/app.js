@@ -1,5 +1,4 @@
 'use strict';
-
 var express = require('express');
 var session = require('express-session');
 var bodyParser = require('body-parser');
@@ -11,7 +10,7 @@ var mongoose = require('mongoose');
 var MongoSessionStore = require('connect-mongodb-session')(session);
 var googleAuthLibrary = require('google-auth-library');
 
-var kbpgp = require('kbpgp');
+var pgp = require('./pgp.js');
 
 var credentials = require('../client_secret.json');
 var db = require('./db.js');
@@ -109,69 +108,21 @@ app.post('/sendMessage', ensureAuthenticated, function(req, res) {
 app.get('/invite/getKey', ensureAuthenticated, function(req, res) {
   let recipient = req.query.recipient;
   if (!recipient) {
-    res.status(400).send('No recipient provided');
+    res.status(500).send('No recipient provided');
     return;
   }
   console.log('Recipient = ' + recipient);
-  console.log('Generating keys...');
-  kbpgp.KeyManager.generate_rsa({
-    userid: recipient
-  }, function(err, tempKeyManager) {
-    if (err) {
+  pgp.generateKeyPair(recipient).then(function(keys) {
+    db.storeInviteKeys(recipient, keys).then(function(recordId) {
+      res.json({ id: recordId, publicKey: keys.publicKey });
+    }).catch(function(err) {
       console.log(err);
-      res.status(400).send('Error generating temporary key pair');
-      return;
-    }
-    console.log('Signing keys...')
-    tempKeyManager.sign({}, function(signErr) {
-      if (signErr) {
-        res.status(400).send('Error signing key pair');
-        return;
-      }
-      console.log('Exporting keys...');
-      let publicPromise = new Promise(function(resolve, reject) {
-        tempKeyManager.export_pgp_public({}, function(err, pgp_public) {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(pgp_public)
-          }
-        });
-      });
-      let privatePromise = new Promise(function(resolve, reject) {
-        tempKeyManager.export_pgp_private({}, function(err, pgp_private) {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(pgp_private);
-          }
-        });
-      });
-
-      Promise.all([publicPromise, privatePromise]).then(function(values) {
-        console.log('Keys successfully exported.');
-        let publicKey = values[0];
-        let privateKey = values[1];
-        let expires = new Date();
-        expires.setDate(expires.getDate() + 2);
-        let invite = new Invite({
-          recipientEmail: recipient,
-          expires: expires,
-          pgp: {
-            public_key: publicKey,
-            private_key: privateKey
-          }
-        });
-
-        res.json({ key: publicKey, id: invite._id });
-      }).catch(function(err) {
-        console.log(err);
-        res.status(400).send(err);
-      });
+      res.status(500).send(err);
     });
+  }).catch(function(err) {
+    console.log(err);
+    res.status(500).send(err);
   });
-  // Create a new invite object with key pair and emails
-  // Respond with public key
 });
 
 app.post('/invite/sendInvite', ensureAuthenticated, function(req, res) {

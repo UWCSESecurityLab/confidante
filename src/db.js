@@ -72,8 +72,26 @@ function storeGoogleCredentials(keybaseId, email, refreshToken) {
   });
 }
 
+function storeInviteKeys(recipient, keys) {
+  return new Promise(function(resolve, reject) {
+    let expires = new Date();
+    expires.setDate(expires.getDate() + 2);
+    let invite = new Invite({
+      recipientEmail: recipient,
+      expires: expires,
+      pgp: keys
+    });
+    invite.save().then(function(savedInvite) {
+      resolve(savedInvite._id);
+    }).catch(function(err) {
+      reject(err);
+    });
+  });
+}
+
 module.exports = {
   getUser: getUser,
-  storeKeybaseCredentials: storeKeybaseCredentials,
-  storeGoogleCredentials: storeGoogleCredentials
+  storeInviteKeys: storeInviteKeys,
+  storeGoogleCredentials: storeGoogleCredentials,
+  storeKeybaseCredentials: storeKeybaseCredentials
 }
