@@ -29,7 +29,7 @@ function getUser(keybaseId) {
         // Currently we only store the id. We can store other non-sensitive
         // info here in the future, like the profile picture.
         let newUser = new User({ keybase: { id: keybase.me.id }});
-        user.save(function(err) {
+        newUser.save(function(err) {
           if (err) {
             reject(err);
           } else {
@@ -79,12 +79,17 @@ function storeInviteKeys(recipient, keys) {
     let invite = new Invite({
       recipientEmail: recipient,
       expires: expires,
-      pgp: keys
+      pgp: {
+        public_key: keys.publicKey,
+        private_key: keys.privateKey
+      }
     });
-    invite.save().then(function(savedInvite) {
-      resolve(savedInvite._id);
-    }).catch(function(err) {
-      reject(err);
+    invite.save(function(err, savedInvite) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(savedInvite._id);
+      }
     });
   });
 }
