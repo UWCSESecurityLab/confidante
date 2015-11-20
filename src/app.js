@@ -131,6 +131,10 @@ app.get('/invite/getKey', ensureAuthenticated, function(req, res) {
   });
 });
 
+/**
+ * Sends an invite to a non-Keymail user. The client should provide a JSON
+ * object containing 'email', 'inviteId', and 'subject'.
+ */
 app.post('/invite/sendInvite', ensureAuthenticated, function(req, res) {
   db.getInvite(req.body.inviteId).then(function(invite) {
     invite.message = req.body.email;
@@ -143,9 +147,12 @@ app.post('/invite/sendInvite', ensureAuthenticated, function(req, res) {
         }
       });
     });
-
+    let inviteUrl = req.protocol + '://' + req.get('host') +
+        '/invite/viewInvite/' + req.body.inviteId;
     let email = req.session.email +
         ' wants to send you an encrypted email through Keymail!\n' +
+        'View the email at this link: ' +
+        '<a href=' + inviteUrl + '>' + inviteUrl + '<a>\n' +
         req.body.email;
 
     let sendMessage = gmailClient.sendMessage({
