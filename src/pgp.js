@@ -57,48 +57,64 @@ exports.containsPGPMessage = function(text) {
  */
 exports.generateKeyPair = function(userId) {
   return new Promise(function(resolve, reject) {
-    console.log('Generating keys...');
-    kbpgp.KeyManager.generate_ecc({ userid: userId }, function(err, keyManager) {
-      if (err) {
-        reject(err);
-        return;
-      }
-      console.log('Signing keys...')
-      keyManager.sign({}, function(signErr) {
-        if (signErr) {
-          reject(signErr);
-          return;
-        }
-        // Create promises for exporting both the public and private key
-        let publicPromise = new Promise(function(resolve, reject) {
-          keyManager.export_pgp_public({}, function(err, pgp_public) {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(pgp_public)
-            }
-          });
-        });
-        let privatePromise = new Promise(function(resolve, reject) {
-          keyManager.export_pgp_private({}, function(err, pgp_private) {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(pgp_private);
-            }
-          });
-        });
-        console.log('Exporting keys...');
-        Promise.all([publicPromise, privatePromise]).then(function(values) {
-          console.log('Keys successfully exported.');
-          resolve({
-            publicKey: values[0],
-            privateKey: values[1]
-          });
-        }).catch(function(err) {
-          reject(err);
+    let generateEccKeys = function(id) {
+      return new Promise(function(resolve, reject) {
+        kbpgp.KeyManager.generate_ecc({ userid: id }, function(err, keyManager) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(keyManager);
+          }
         });
       });
-    });
+    }
+
+    let signKeys = function(keyManager) {
+      return new Promise(function(resolve, reject) {
+        keyManager.sign({}, function(signErr) {
+          if (signErr) {
+            reject(signErr);
+          } else {
+            resolve(keyManager);
+          }
+        });
+      });
+    };
+
+    let exportKeys = function(keyManager) {
+      // Create promises for exporting both the public and private key
+      let exportPublic = new Promise(function(resolve, reject) {
+        keyManager.export_pgp_public({}, function(err, pgp_public) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(pgp_public)
+          }
+        });
+      });
+      let exportPrivate = new Promise(function(resolve, reject) {
+        keyManager.export_pgp_private({}, function(err, pgp_private) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(pgp_private);
+          }
+        });
+      });
+      return Promise.all([exportPublic, exportPrivate]);
+    }
+
+    generateEccKeys(userId)
+      .then(signKeys)
+      .then(exportKeys)
+      .then(function(keypair) {
+        resolve({
+          publicKey: keypair[0],
+          privateKey: keypair[1]
+        });
+      })
+      .catch(function(err) {
+        reject(err);
+      });
   });
 }
