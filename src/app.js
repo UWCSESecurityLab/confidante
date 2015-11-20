@@ -167,9 +167,19 @@ app.post('/invite/sendInvite', ensureAuthenticated, function(req, res) {
   });
 });
 
-app.get('/invite/viewInvite', function(req, res) {
+app.get('/invite/viewInvite/:id', function(req, res) {
   // Look up invite
-  // Return page, invite, and encrypted message
+  db.getInvite(req.params.id).then(function(invite) {
+    if (invite) {
+      // Return page, invite, and encrypted message
+      res.json({
+        email: invite.message,
+        key: invite.pgp.private_key
+      });
+    }
+  }).catch(function(err) {
+    res.status(500).send(err);
+  });
 });
 
 /**

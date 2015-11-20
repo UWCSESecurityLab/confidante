@@ -115,6 +115,7 @@ function storeInviteKeys(recipient, keys) {
 }
 
 module.exports = {
+  getInvite: getInvite,
   getUser: getUser,
   storeInviteKeys: storeInviteKeys,
   storeGoogleCredentials: storeGoogleCredentials,
