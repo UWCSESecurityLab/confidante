@@ -132,9 +132,39 @@ app.get('/invite/getKey', ensureAuthenticated, function(req, res) {
 });
 
 app.post('/invite/sendInvite', ensureAuthenticated, function(req, res) {
-  // Parse encrypted mail
-  // Update invite object with message
-  // Send system email/gmail message
+  db.getInvite(req.body.inviteId).then(function(invite) {
+    invite.message = req.body.email;
+    let dbUpdate = new Promise(function(resolve, reject) {
+      invite.save(function(err) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(err);
+        }
+      });
+    });
+
+    let email = req.session.email +
+        ' wants to send you an encrypted email through Keymail!\n' +
+        req.body.email;
+
+    let sendMessage = gmailClient.sendMessage({
+      headers: {
+        to: invite.recipient,
+        from: req.session.email,
+        subject: req.body.subject,
+        date: new Date().toString(),
+      },
+      body: email
+    });
+
+    return Promise.all([dbUpdate, sendMessage]);
+  }).then(function() {
+    res.status(200).send('OK');
+  }).catch(function(err) {
+    console.log(err);
+    res.status(500).send(err);
+  });
 });
 
 app.get('/invite/viewInvite', function(req, res) {
