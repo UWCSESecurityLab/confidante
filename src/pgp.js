@@ -58,7 +58,7 @@ exports.containsPGPMessage = function(text) {
 exports.generateKeyPair = function(userId) {
   return new Promise(function(resolve, reject) {
     console.log('Generating keys...');
-    kbpgp.KeyManager.generate_rsa({ userid: userId }, function(err, keyManager) {
+    kbpgp.KeyManager.generate_ecc({ userid: userId }, function(err, keyManager) {
       if (err) {
         reject(err);
         return;
