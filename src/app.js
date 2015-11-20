@@ -122,12 +122,9 @@ app.get('/invite/getKey', ensureAuthenticated, function(req, res) {
     return;
   }
   pgp.generateKeyPair(recipient).then(function(keys) {
-    db.storeInviteKeys(recipient, keys).then(function(recordId) {
-      res.json({ id: recordId, publicKey: keys.publicKey });
-    }).catch(function(err) {
-      console.log(err);
-      res.status(500).send(err);
-    });
+    return db.storeInviteKeys(recipient, keys);
+  }).then(function(record) {
+    res.json({ id: record._id, publicKey: record.pgp.public_key });
   }).catch(function(err) {
     console.log(err);
     res.status(500).send(err);

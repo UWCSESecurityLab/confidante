@@ -88,7 +88,7 @@ function storeInviteKeys(recipient, keys) {
       if (err) {
         reject(err);
       } else {
-        resolve(savedInvite._id);
+        resolve(savedInvite);
       }
     });
   });
