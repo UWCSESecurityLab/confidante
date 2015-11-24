@@ -141,7 +141,10 @@ app.get('/invite/getKey', ensureAuthenticated, function(req, res) {
   pgp.generateKeyPair(recipient)
     .then(encryptPrivateKey)
     .then(keys => db.storeInviteKeys(recipient, keys))
-    .then(record => res.json({ id: record._id, publicKey: record.pgp.public_key }))
+    .then(record => {
+      res.json({ id: record._id, publicKey: record.pgp.public_key });
+      console.log('Generated new invite: ' + record);
+    })
     .catch(err => {
       console.log(err);
       res.status(500).send(err);
@@ -150,56 +153,82 @@ app.get('/invite/getKey', ensureAuthenticated, function(req, res) {
 
 /**
  * Sends an invite to a non-Keymail user. The client should provide a JSON
- * object containing 'email', 'inviteId', and 'subject'.
+ * object containing 'emailBody', 'inviteId', and 'subject'.
  */
 app.post('/invite/sendInvite', ensureAuthenticated, function(req, res) {
-  db.getInvite(req.body.inviteId).then(function(invite) {
-    invite.message = req.body.email;
-    let dbUpdate = new Promise(function(resolve, reject) {
+  if (!req.session.tempPassphrase || !req.body.inviteId || !req.body.emailBody || !req.body.subject) {
+    res.status(400).send('Bad request');
+    return;
+  }
+
+  // Save the encrypted message in the invite model.
+  let addMessageToInvite = function(invite) {
+    return new Promise(function(resolve, reject) {
+      invite.message = req.body.emailBody;
       invite.save(function(err) {
         if (err) {
           reject(err);
         } else {
-          resolve(err);
+          resolve(invite);
         }
       });
     });
+  }
+
+  // Add an invite link to the message and send it over gmail.
+  let sendMessage = function(invite) {
     let inviteUrl = req.protocol + '://' + req.get('host') +
-        '/invite/viewInvite/' + req.body.inviteId;
-    let email = req.session.email +
+        '/invite/viewInvite?' +
+        'id=' + req.body.inviteId + '&' +
+        'pw=' + req.session.tempPassphrase;
+    let inviteEmail = req.session.email +
         ' wants to send you an encrypted email through Keymail!\n' +
         'View the email at this link: ' +
-        '<a href=' + inviteUrl + '>' + inviteUrl + '<a>\n' +
-        req.body.email;
+        '<a href=' + inviteUrl + '>' + inviteUrl + '<a>\n\n' +
+        req.body.emailBody;
 
-    let sendMessage = gmailClient.sendMessage({
+    console.log('Sending invite link: ' + inviteUrl);
+
+    let gmailClient = new GmailClient(req.session.googleToken);
+    return gmailClient.sendMessage({
       headers: {
-        to: invite.recipient,
+        to: [invite.recipientEmail],
         from: req.session.email,
         subject: req.body.subject,
         date: new Date().toString(),
       },
-      body: email
+      body: inviteEmail
     });
+  }
 
-    return Promise.all([dbUpdate, sendMessage]);
-  }).then(function() {
-    res.status(200).send('OK');
-  }).catch(function(err) {
-    console.log(err);
-    res.status(500).send(err);
-  });
+  db.getInvite(req.body.inviteId)
+    .then(addMessageToInvite)
+    .then(sendMessage)
+    .then(function() {
+      delete req.session.tempPassphrase;
+      res.status(200).send('OK');
+    }).catch(function(err) {
+      console.log(err);
+      res.status(500).send(err);
+    });
 });
 
-app.get('/invite/viewInvite/:id', function(req, res) {
+app.get('/invite/viewInvite', function(req, res) {
+  console.log(req.query);
+  if (!req.query.id || !req.query.pw) {
+    res.status(400).send('Bad Request');
+    return;
+  }
+
   // Look up invite
-  db.getInvite(req.params.id).then(function(invite) {
+  db.getInvite(req.query.id).then(function(invite) {
     if (invite) {
       // Return page, invite, and encrypted message
       res.json({
         email: invite.message,
         key: invite.pgp.private_key
       });
+      console.log('Looked up invite: ' + invite);
     }
   }).catch(function(err) {
     res.status(500).send(err);
