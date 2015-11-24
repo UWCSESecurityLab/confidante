@@ -13,6 +13,7 @@ var crypto = require('crypto');
 var p3skb = require('./p3skb');
 var pgp = require('./pgp.js');
 
+var auth = require('./auth.js');
 var credentials = require('../client_secret.json');
 var db = require('./db.js');
 var GmailClient = require('./gmailClient.js');
@@ -58,30 +59,30 @@ app.use(express.static(__dirname + '/web/css'));
 app.get('/', function(req, res) {
   res.render('index', {
     email: req.session.email,
-    loggedIn: isAuthenticated(req.session)
+    loggedIn: auth.isAuthenticated(req.session)
   });
 });
 
 app.get('/login', function(req, res) {
-  if (isAuthenticated(req.session)) {
+  if (auth.isAuthenticated(req.session)) {
     res.redirect('/mail');
   } else {
     res.render('login', { email: req.session.email, loggedIn: false });
   }
 });
 
-app.get('/mail', ensureAuthenticated, function(req, res) {
+app.get('/mail', auth.ensureAuthenticated, function(req, res) {
   res.render('mail', { email: req.session.email, loggedIn: true });
 });
 
-app.get('/inbox', ensureAuthenticated, function(req, res) {
+app.get('/inbox', auth.ensureAuthenticated, function(req, res) {
   var gmailClient = new GmailClient(req.session.googleToken);
   gmailClient.getEncryptedInbox().then(function(threads) {
     res.json(threads);
   });
 });
 
-app.post('/sendMessage', ensureAuthenticated, function(req, res) {
+app.post('/sendMessage', auth.ensureAuthenticated, function(req, res) {
   var gmailClient = new GmailClient(req.session.googleToken);
   let parent = req.body.parentMessage;
   let parentId = messageParsing.getMessageHeader(parent, 'Message-ID');
@@ -115,7 +116,7 @@ app.post('/sendMessage', ensureAuthenticated, function(req, res) {
  * The response body contains a JSON object containing the invite id,
  * and the public key. When calling /invite/sendInvite, pass back the invite id.
  */
-app.get('/invite/getKey', ensureAuthenticated, function(req, res) {
+app.get('/invite/getKey', auth.ensureAuthenticated, function(req, res) {
   let recipient = req.query.recipient;
   if (!recipient) {
     res.status(500).send('No recipient provided');
@@ -142,8 +143,7 @@ app.get('/invite/getKey', ensureAuthenticated, function(req, res) {
     .then(encryptPrivateKey)
     .then(keys => db.storeInviteKeys(recipient, keys))
     .then(record => {
-      res.json({ id: record._id, publicKey: record.pgp.public_key });
-      console.log('Generated new invite: ' + record);
+      res.json({ inviteId: record._id, publicKey: record.pgp.public_key });
     })
     .catch(err => {
       console.log(err);
@@ -155,7 +155,7 @@ app.get('/invite/getKey', ensureAuthenticated, function(req, res) {
  * Sends an invite to a non-Keymail user. The client should provide a JSON
  * object containing 'emailBody', 'inviteId', and 'subject'.
  */
-app.post('/invite/sendInvite', ensureAuthenticated, function(req, res) {
+app.post('/invite/sendInvite', auth.ensureAuthenticated, function(req, res) {
   if (!req.session.tempPassphrase || !req.body.inviteId || !req.body.emailBody || !req.body.subject) {
     res.status(400).send('Bad request');
     return;
@@ -305,7 +305,7 @@ app.get('/auth/google/return', function(req, res) {
   });
 });
 
-app.get('/contacts.json', ensureAuthenticated, function(req, res) {
+app.get('/contacts.json', auth.ensureAuthenticated, function(req, res) {
   let gmailClient = new GmailClient(req.session.googleToken);
   gmailClient.searchContacts(req.query.q).then(function(body) {
     res.json(body);
@@ -408,6 +408,8 @@ app.get('/logout', function(req, res) {
 
 app.listen(3000);
 
+module.exports = app; // For testing
+
 function redirectToGoogleOAuthUrl(req, res) {
   // Otherwise, we need to send them through the Google OAuth flow.
   var oauth2Client = buildGoogleOAuthClient();
@@ -470,49 +472,4 @@ function refreshGoogleOAuthToken(refreshToken) {
       }
     });
   });
-}
-
-function isAuthenticated(session) {
-  return isAuthenticatedWithKeybase(session) && isAuthenticatedWithGoogle(session);
-}
-
-function isAuthenticatedWithKeybase(session) {
-  if (!session.keybaseId || !session.keybaseCookie) {
-    return false;
-  }
-  var now = new Date();
-  var expires = new Date(session.keybaseCookie.Expires);
-  if (expires - now <= 0) {
-    delete session.keybaseId;
-    delete session.keybaseCookie;
-    return false;
-  }
-  return true;
-}
-
-function isAuthenticatedWithGoogle(session) {
-  if (!session.googleToken || !session.email) {
-    return false;
-  }
-
-  var expires = new Date(session.googleToken.expiry_date);
-  var now = new Date();
-  if (expires - now <= 0) {
-    delete session.googleToken;
-    delete session.email;
-    return false;
-  }
-  return true;
-}
-
-// Simple route middleware to ensure user is authenticated.
-//   Use this route middleware on any resource that needs to be protected.  If
-//   the request is authenticated (typically via a persistent login session),
-//   the request will proceed.  Otherwise, the user will be redirected to the
-//   login page.
-function ensureAuthenticated(req, res, next) {
-  if (isAuthenticated(req.session)) {
-    return next();
-  }
-  res.redirect('/login');
 }
