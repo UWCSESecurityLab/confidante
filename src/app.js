@@ -142,7 +142,9 @@ app.get('/invite/getKey', auth.ensureAuthenticated, function(req, res) {
   pgp.generateKeyPair(recipient)
     .then(encryptPrivateKey)
     .then(keys => db.storeInviteKeys(recipient, keys))
-    .then(record => res.json({ id: record._id, publicKey: record.pgp.public_key }))
+    .then(record => {
+      res.json({ inviteId: record._id, publicKey: record.pgp.public_key });
+    })
     .catch(err => {
       console.log(err);
       res.status(500).send(err);

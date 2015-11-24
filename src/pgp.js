@@ -49,12 +49,12 @@ exports.containsPGPMessage = function(text) {
 
 /**
  * Generates a PGP key pair.
- * @param userId The id of the key's owner.
+ * @param emailAddress The email address of the key's owner.
  * @return a Promise containing an object with the following data:
  *   publicKey: The PGP public key
  *   privateKey: The PGP private key
  */
-exports.generateKeyPair = function(userId) {
+exports.generateKeyPair = function(emailAddress) {
   return new Promise(function(resolve, reject) {
     let generateEccKeys = function(id) {
       return new Promise(function(resolve, reject) {
@@ -103,7 +103,7 @@ exports.generateKeyPair = function(userId) {
       return Promise.all([exportPublic, exportPrivate]);
     }
 
-    generateEccKeys(userId)
+    generateEccKeys('<' + emailAddress + '>')
       .then(signKeys)
       .then(exportKeys)
       .then(function(keypair) {
