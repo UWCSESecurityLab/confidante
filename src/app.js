@@ -2,7 +2,6 @@
 var express = require('express');
 var session = require('express-session');
 var bodyParser = require('body-parser');
-
 var request = require('request');
 var Cookie = require('cookie');
 
@@ -10,15 +9,16 @@ var mongoose = require('mongoose');
 var MongoSessionStore = require('connect-mongodb-session')(session);
 var googleAuthLibrary = require('google-auth-library');
 
+var crypto = require('crypto');
+var p3skb = require('./p3skb');
 var pgp = require('./pgp.js');
 
 var credentials = require('../client_secret.json');
 var db = require('./db.js');
 var GmailClient = require('./gmailClient.js');
 var Invite = require('./models/invite.js');
-var User = require('./models/user.js');
-
 var messageParsing = require('./web/js/messageParsing');
+var User = require('./models/user.js');
 
 // Mongo session store setup.
 var store = new MongoSessionStore({
@@ -121,14 +121,31 @@ app.get('/invite/getKey', ensureAuthenticated, function(req, res) {
     res.status(500).send('No recipient provided');
     return;
   }
-  pgp.generateKeyPair(recipient).then(function(keys) {
-    return db.storeInviteKeys(recipient, keys);
-  }).then(function(record) {
-    res.json({ id: record._id, publicKey: record.pgp.public_key });
-  }).catch(function(err) {
-    console.log(err);
-    res.status(500).send(err);
-  });
+
+  // Get a random code to encrypt the temporary private key
+  let passphrase = crypto.randomBytes(64).toString('base64');
+  // Store in the session, until /invite/sendInvite is sent
+  req.session.tempPassphrase = passphrase;
+
+  // Given an object containing a key pair, replace the private key with
+  // a p3skb-encrypted string
+  let encryptPrivateKey = function(keys) {
+    return new Promise((resolve, reject) => {
+      p3skb.armoredPrivateKeyToP3skb(keys.privateKey, passphrase)
+        .then(encryptedKey => {
+          resolve({publicKey: keys.publicKey, privateKey: encryptedKey});
+        }).catch(err => reject(err));
+    });
+  }
+
+  pgp.generateKeyPair(recipient)
+    .then(encryptPrivateKey)
+    .then(keys => db.storeInviteKeys(recipient, keys))
+    .then(record => res.json({ id: record._id, publicKey: record.pgp.public_key }))
+    .catch(err => {
+      console.log(err);
+      res.status(500).send(err);
+    });
 });
 
 app.post('/invite/sendInvite', ensureAuthenticated, function(req, res) {

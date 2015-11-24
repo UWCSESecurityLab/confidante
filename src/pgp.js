@@ -1,7 +1,6 @@
 'use strict'
 var kbpgp = require('kbpgp');
 
-
 // Strings used to build PGP Armor
 var ARMOR_LINE = '-----';
 var BEGIN = 'BEGIN PGP';
