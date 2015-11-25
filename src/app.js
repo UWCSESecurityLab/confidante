@@ -213,8 +213,7 @@ app.post('/invite/sendInvite', auth.ensureAuthenticated, function(req, res) {
 });
 
 app.get('/invite/viewInvite', function(req, res) {
-  if (!req.query.id || !req.query.pw) {
-    console.log(req.query);
+  if (!req.query.id) {
     res.status(400).send('Bad Request');
     return;
   }

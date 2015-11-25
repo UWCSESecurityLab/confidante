@@ -141,7 +141,9 @@ describe('app.js', function() {
                 date: sinon.match.any
               },
               body: sinon.match((actualBody) => {
-                return actualBody.includes(mockBody) && actualBody.includes(mockPassphrase);
+                return actualBody.includes(mockBody) &&
+                    actualBody.includes(mockPassphrase) &&
+                    actualBody.includes(mockInviteId);
               })
             }
           );
@@ -242,7 +244,7 @@ describe('app.js', function() {
         return new Promise(function(resolve, reject) {
           request(app)
             .get('/invite/viewInvite')
-            .query({ id: id, pw: parsePassphrase(sentMessage) })
+            .query({ id: id })
             .expect(200)
             .end(function(err, res) {
               if (err) { return done(err); }
