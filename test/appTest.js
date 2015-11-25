@@ -37,6 +37,22 @@ let storeInviteKeysStub = sinon.stub(db, "storeInviteKeys", (recipient, keys) =>
   });
 });
 
+let mockInvite = new Invite({
+  id: 'lol',
+  recipientEmail: 'me@example.com',
+  expires: new Date(),
+  pgp: {
+    public_key: 'public',
+    private_key: 'private'
+  }
+});
+
+let getInviteStub = sinon.stub(db, "getInvite", (id) => {
+  return new Promise(function(resolve, reject) {
+    resolve(mockInvite);
+  });
+});
+
 // Stub out Gmail API calls.
 var GmailClient = require('../src/gmailClient.js');
 let sendMessageStub = sinon.stub(GmailClient.prototype, "sendMessage", (jsonMessage, threadId) =>
@@ -101,22 +117,6 @@ describe('app.js', function() {
   });
 
   describe('POST /invite/sendInvite', function(done) {
-    let mockInvite = new Invite({
-      id: 'lol',
-      recipientEmail: 'me@example.com',
-      expires: new Date(),
-      pgp: {
-        public_key: 'public',
-        private_key: 'private'
-      }
-    });
-
-    let getInviteStub = sinon.stub(db, "getInvite", (id) => {
-      return new Promise(function(resolve, reject) {
-        resolve(mockInvite);
-      });
-    });
-
     it('Should update the invite db object and send an email', function(done) {
       let mockSubject = 'Test subject';
       let mockInviteId = '13F25';
@@ -153,5 +153,24 @@ describe('app.js', function() {
           done();
         });
     });
-  })
+  });
+  describe('GET /invite/viewInvite', function() {
+    it('Should return the encrypted message and key associated with the id', function(done) {
+      let mockId = 'lol';
+      let mockPw = 'password1234';
+
+      request(app)
+        .get('/invite/viewInvite')
+        .query({ id: mockId, pw: mockPw })
+        .expect(200)
+        .end(function(err, res) {
+          if (err) { return done(err); }
+          res.body.should.have.property('email');
+          res.body.should.have.property('key');
+          res.body.email.should.equal(mockInvite.message);
+          res.body.key.should.equal(mockInvite.pgp.private_key);
+          done();
+        });
+    });
+  });
 });
