@@ -16,7 +16,7 @@ sinon.stub(auth, "ensureAuthenticated", (req, res, next) => {
 
 var Invite = require('../src/models/invite.js');
 var db = require('../src/db.js');
-sinon.stub(db, "storeInviteKeys", (recipient, keys) => {
+var storeInviteKeysStub = sinon.stub(db, "storeInviteKeys", (recipient, keys) => {
   return new Promise(function(resolve, reject) {
     resolve(new Invite({
       recipientEmail: recipient,
@@ -28,9 +28,6 @@ sinon.stub(db, "storeInviteKeys", (recipient, keys) => {
     }));
   });
 });
-
-var Invite = require('../src/models/invite.js');
-sinon.stub(Invite.prototype, "save", (cb) => cb());
 
 describe('app.js', function() {
   describe('/invite/getKey', function() {
@@ -52,6 +49,13 @@ describe('app.js', function() {
           if (!res.body.publicKey) {
             return done(new Error('No public key returned'));
           }
+
+          // Ensure database call was made with correct data
+          sinon.assert.calledWith(
+            storeInviteKeysStub,
+            'me@example.com',
+            sinon.match({ publicKey: res.body.publicKey })
+          );
 
           // Ensure that the userid contains the correct email address
           kbpgp.KeyManager.import_from_armored_pgp({
