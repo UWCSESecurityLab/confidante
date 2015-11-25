@@ -187,8 +187,6 @@ app.post('/invite/sendInvite', auth.ensureAuthenticated, function(req, res) {
         '<a href=' + inviteUrl + '>' + inviteUrl + '<a>\n\n' +
         req.body.emailBody;
 
-    console.log('Sending invite link: ' + inviteUrl);
-
     let gmailClient = new GmailClient(req.session.googleToken);
     return gmailClient.sendMessage({
       headers: {
@@ -214,7 +212,6 @@ app.post('/invite/sendInvite', auth.ensureAuthenticated, function(req, res) {
 });
 
 app.get('/invite/viewInvite', function(req, res) {
-  console.log(req.query);
   if (!req.query.id || !req.query.pw) {
     res.status(400).send('Bad Request');
     return;
@@ -228,7 +225,6 @@ app.get('/invite/viewInvite', function(req, res) {
         email: invite.message,
         key: invite.pgp.private_key
       });
-      console.log('Looked up invite: ' + invite);
     }
   }).catch(function(err) {
     res.status(500).send(err);
