@@ -10,9 +10,27 @@ var kbpgp = require('kbpgp');
 // Mock out ensureAuthenticated middleware so we don't have to mess with the
 // session store.
 var auth = require('../src/auth.js');
-var mockAuth = sinon.stub(auth, "ensureAuthenticated", (req, res, next) => {
+sinon.stub(auth, "ensureAuthenticated", (req, res, next) => {
   return next();
 });
+
+var Invite = require('../src/models/invite.js');
+var db = require('../src/db.js');
+sinon.stub(db, "storeInviteKeys", (recipient, keys) => {
+  return new Promise(function(resolve, reject) {
+    resolve(new Invite({
+      recipientEmail: recipient,
+      expires: new Date(),
+      pgp: {
+        public_key: keys.publicKey,
+        private_key: keys.privateKey
+      }
+    }));
+  });
+});
+
+var Invite = require('../src/models/invite.js');
+sinon.stub(Invite.prototype, "save", (cb) => cb());
 
 describe('app.js', function() {
   describe('/invite/getKey', function() {
