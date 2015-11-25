@@ -1,3 +1,6 @@
+'use strict'
+var kbpgp = require('kbpgp');
+
 // Strings used to build PGP Armor
 var ARMOR_LINE = '-----';
 var BEGIN = 'BEGIN PGP';
@@ -43,3 +46,74 @@ exports.parsePGPType = function(text) {
 exports.containsPGPMessage = function(text) {
   return text.includes(header(ARMOR_TYPES.MESSAGE)) && text.includes(footer(ARMOR_TYPES.MESSAGE));
 };
+
+/**
+ * Generates a PGP key pair.
+ * @param emailAddress The email address of the key's owner.
+ * @return a Promise containing an object with the following data:
+ *   publicKey: The PGP public key
+ *   privateKey: The PGP private key
+ */
+exports.generateKeyPair = function(emailAddress) {
+  return new Promise(function(resolve, reject) {
+    let generateEccKeys = function(id) {
+      return new Promise(function(resolve, reject) {
+        kbpgp.KeyManager.generate_ecc({ userid: id }, function(err, keyManager) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(keyManager);
+          }
+        });
+      });
+    }
+
+    let signKeys = function(keyManager) {
+      return new Promise(function(resolve, reject) {
+        keyManager.sign({}, function(signErr) {
+          if (signErr) {
+            reject(signErr);
+          } else {
+            resolve(keyManager);
+          }
+        });
+      });
+    };
+
+    let exportKeys = function(keyManager) {
+      // Create promises for exporting both the public and private key
+      let exportPublic = new Promise(function(resolve, reject) {
+        keyManager.export_pgp_public({}, function(err, pgp_public) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(pgp_public)
+          }
+        });
+      });
+      let exportPrivate = new Promise(function(resolve, reject) {
+        keyManager.export_pgp_private({}, function(err, pgp_private) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(pgp_private);
+          }
+        });
+      });
+      return Promise.all([exportPublic, exportPrivate]);
+    }
+
+    generateEccKeys('<' + emailAddress + '>')
+      .then(signKeys)
+      .then(exportKeys)
+      .then(function(keypair) {
+        resolve({
+          publicKey: keypair[0],
+          privateKey: keypair[1]
+        });
+      })
+      .catch(function(err) {
+        reject(err);
+      });
+  });
+}

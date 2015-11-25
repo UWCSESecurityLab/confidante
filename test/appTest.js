@@ -1,0 +1,70 @@
+'use strict';
+var chai = require('chai');
+var should = chai.should();
+var mockery = require('mockery');
+var sinon = require('sinon');
+var request = require('supertest');
+
+var kbpgp = require('kbpgp');
+
+// Mock out ensureAuthenticated middleware so we don't have to mess with the
+// session store.
+var auth = require('../src/auth.js');
+sinon.stub(auth, "ensureAuthenticated", (req, res, next) => {
+  return next();
+});
+
+var Invite = require('../src/models/invite.js');
+var db = require('../src/db.js');
+var storeInviteKeysStub = sinon.stub(db, "storeInviteKeys", (recipient, keys) => {
+  return new Promise(function(resolve, reject) {
+    resolve(new Invite({
+      recipientEmail: recipient,
+      expires: new Date(),
+      pgp: {
+        public_key: keys.publicKey,
+        private_key: keys.privateKey
+      }
+    }));
+  });
+});
+
+describe('app.js', function() {
+  describe('/invite/getKey', function() {
+    it('Should provide an id and PGP public key with the correct user id', function(done) {
+      this.timeout(5000);
+      var app = require('../src/app.js');
+      // Make request to /invite/getKey endpoint
+      request(app)
+        .get('/invite/getKey?recipient=me%40example%2Ecom')
+        .expect(200)
+        .end(function(err, res) {
+          // Basic output validation
+          if (err) {
+            return done(err);
+          }
+          if (!res.body.inviteId) {
+            return done(new Error('No invite id returned'));
+          }
+          if (!res.body.publicKey) {
+            return done(new Error('No public key returned'));
+          }
+
+          // Ensure database call was made with correct data
+          sinon.assert.calledWith(
+            storeInviteKeysStub,
+            'me@example.com',
+            sinon.match({ publicKey: res.body.publicKey })
+          );
+
+          // Ensure that the userid contains the correct email address
+          kbpgp.KeyManager.import_from_armored_pgp({
+            armored: res.body.publicKey
+          }, function(err, mgr) {
+            mgr.pgp.userids[0].components.email.should.equal('me@example.com');
+            done();
+          });
+        });
+    });
+  });
+});

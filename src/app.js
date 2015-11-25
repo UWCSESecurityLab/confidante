@@ -1,9 +1,7 @@
 'use strict';
-
 var express = require('express');
 var session = require('express-session');
 var bodyParser = require('body-parser');
-
 var request = require('request');
 var Cookie = require('cookie');
 
@@ -11,11 +9,17 @@ var mongoose = require('mongoose');
 var MongoSessionStore = require('connect-mongodb-session')(session);
 var googleAuthLibrary = require('google-auth-library');
 
-var credentials = require('../client_secret.json');
-var GmailClient = require('./gmailClient.js');
-var User = require('./models/user.js');
+var crypto = require('crypto');
+var p3skb = require('./p3skb');
+var pgp = require('./pgp.js');
 
+var auth = require('./auth.js');
+var credentials = require('../client_secret.json');
+var db = require('./db.js');
+var GmailClient = require('./gmailClient.js');
+var Invite = require('./models/invite.js');
 var messageParsing = require('./web/js/messageParsing');
+var User = require('./models/user.js');
 
 // Mongo session store setup.
 var store = new MongoSessionStore({
@@ -55,44 +59,30 @@ app.use(express.static(__dirname + '/web/css'));
 app.get('/', function(req, res) {
   res.render('index', {
     email: req.session.email,
-    loggedIn: isAuthenticated(req.session)
+    loggedIn: auth.isAuthenticated(req.session)
   });
 });
 
 app.get('/login', function(req, res) {
-  if (isAuthenticated(req.session)) {
+  if (auth.isAuthenticated(req.session)) {
     res.redirect('/mail');
   } else {
     res.render('login', { email: req.session.email, loggedIn: false });
   }
 });
 
-app.get('/mail', ensureAuthenticated, function(req, res) {
+app.get('/mail', auth.ensureAuthenticated, function(req, res) {
   res.render('mail', { email: req.session.email, loggedIn: true });
 });
 
-app.get('/inbox', ensureAuthenticated, function(req, res) {
+app.get('/inbox', auth.ensureAuthenticated, function(req, res) {
   var gmailClient = new GmailClient(req.session.googleToken);
   gmailClient.getEncryptedInbox().then(function(threads) {
     res.json(threads);
   });
 });
 
-app.get('/fakeInbox', function(req, res) {
-  res.json({
-    emails: [
-      { id: 0, to: 'A', from: 'Jane', subject: 'Jane sent this email' },
-      { id: 1, to: 'A', from: 'Janus', subject: 'Janus sent this email' },
-      { id: 2, to: 'A', from: 'Jacqueline', subject: 'Jacqueline sent this email' },
-      { id: 3, to: 'A', from: 'Jo', subject: 'Jo sent this email' },
-      { id: 4, to: 'A', from: 'Jane', subject: 'Jane sent this email as well' },
-      { id: 5, to: 'A', from: Math.random().toString(36).substring(7),
-               subject: Math.random().toString(36).substring(7) }
-    ]
-  });
-});
-
-app.post('/sendMessage', ensureAuthenticated, function(req, res) {
+app.post('/sendMessage', auth.ensureAuthenticated, function(req, res) {
   var gmailClient = new GmailClient(req.session.googleToken);
   let parent = req.body.parentMessage;
   let parentId = messageParsing.getMessageHeader(parent, 'Message-ID');
@@ -117,19 +107,71 @@ app.post('/sendMessage', ensureAuthenticated, function(req, res) {
 });
 
 /**
+ * Part 1 of 2 in sending an invite to a non-Keymail user.
+ * The inviter calls this endpoint to get a temporary public key for the
+ * invitee. They should encrypt the invite message on their end, and then
+ * call /invite/sendInvite.
+ *
+ * The request query should contain 'recipient=<invitee's email address>'.
+ * The response body contains a JSON object containing the invite id,
+ * and the public key. When calling /invite/sendInvite, pass back the invite id.
+ */
+app.get('/invite/getKey', auth.ensureAuthenticated, function(req, res) {
+  let recipient = req.query.recipient;
+  if (!recipient) {
+    res.status(500).send('No recipient provided');
+    return;
+  }
+
+  // Get a random code to encrypt the temporary private key
+  let passphrase = crypto.randomBytes(64).toString('base64');
+  // Store in the session, until /invite/sendInvite is sent
+  req.session.tempPassphrase = passphrase;
+
+  // Given an object containing a key pair, replace the private key with
+  // a p3skb-encrypted string
+  let encryptPrivateKey = function(keys) {
+    return new Promise((resolve, reject) => {
+      p3skb.armoredPrivateKeyToP3skb(keys.privateKey, passphrase)
+        .then(encryptedKey => {
+          resolve({publicKey: keys.publicKey, privateKey: encryptedKey});
+        }).catch(err => reject(err));
+    });
+  }
+
+  pgp.generateKeyPair(recipient)
+    .then(encryptPrivateKey)
+    .then(keys => db.storeInviteKeys(recipient, keys))
+    .then(record => {
+      res.json({ inviteId: record._id, publicKey: record.pgp.public_key });
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).send(err);
+    });
+});
+
+app.post('/invite/sendInvite', auth.ensureAuthenticated, function(req, res) {
+  // Parse encrypted mail
+  // Update invite object with message
+  // Send system email/gmail message
+});
+
+app.get('/invite/viewInvite', function(req, res) {
+  // Look up invite
+  // Return page, invite, and encrypted message
+});
+
+/**
  * Authenticates the user with Google. The user must have already been
  * authenticated with Keybase so we can identify them.
  */
 app.get('/auth/google', function(req, res) {
-  User.findOne({'keybase.id': req.session.keybaseId}, function(err, user) {
-    if (err) {
-      res.statusCode(500).send(err);
-    }
+  db.getUser(req.session.keybaseId).then(function(user) {
     if (!user) {
       // If there is no Keybase id, send them back to the initial login.
       res.redirect('/login');
     }
-
     if (user.google.refreshToken) {
       // If the user has logged in with Google before, get an access token
       // using the refresh token.
@@ -143,23 +185,10 @@ app.get('/auth/google', function(req, res) {
     } else {
       redirectToGoogleOAuthUrl(req, res);
     }
+  }).catch(function(err) {
+    res.statusCode(500).send(err);
   });
 });
-
-function redirectToGoogleOAuthUrl(req, res) {
-  // Otherwise, we need to send them through the Google OAuth flow.
-  var oauth2Client = buildGoogleOAuthClient();
-  var authUrl = oauth2Client.generateAuthUrl({
-    access_type: 'offline',
-    scope: [
-      'email',
-      'https://www.googleapis.com/auth/contacts.readonly',
-      'https://www.googleapis.com/auth/gmail.modify'
-    ],
-    redirect_uri: credentials.web.redirect_uris[0]
-  });
-  res.redirect(authUrl);
-}
 
 /**
  * Exchanges an authorization code for tokens from Google, and updates the
@@ -168,7 +197,6 @@ function redirectToGoogleOAuthUrl(req, res) {
 app.get('/auth/google/return', function(req, res) {
   var code = req.query.code;
   if (!code) {
-    console.error('No authorization code in query string!');
     res.redirect('/login');
   }
 
@@ -188,16 +216,13 @@ app.get('/auth/google/return', function(req, res) {
 
     // If a refresh token was returned, we need to store it in the database.
     if (token.refresh_token) {
-      storeGoogleCredentials(
-        req.session.keybaseId,
-        email,
-        token.refresh_token
-      ).then(function() {
-        res.redirect('/');
-      }).catch(function(error) {
-        console.error(error);
-        res.redirect('/login');
-      });
+      db.storeGoogleCredentials(req.session.keybaseId, email,token.refresh_token)
+        .then(function() {
+          res.redirect('/');
+        }).catch(function(error) {
+          console.error(error);
+          res.redirect('/login');
+        });
     } else {
       res.redirect('/');
     }
@@ -207,7 +232,7 @@ app.get('/auth/google/return', function(req, res) {
   });
 });
 
-app.get('/contacts.json', ensureAuthenticated, function(req, res) {
+app.get('/contacts.json', auth.ensureAuthenticated, function(req, res) {
   let gmailClient = new GmailClient(req.session.googleToken);
   gmailClient.searchContacts(req.query.q).then(function(body) {
     res.json(body);
@@ -286,7 +311,7 @@ app.post('/login.json', function(req, res) {
         return cookie.session !== undefined;
       });
       // Create a User record for this user if necessary.
-      storeKeybaseCredentials(keybase).then(function() {
+      db.storeKeybaseCredentials(keybase).then(function() {
         // Echo the response with the same status code on success.
         res.status(response.statusCode).send(body);
       }).catch(function(mongoError) {
@@ -309,6 +334,23 @@ app.get('/logout', function(req, res) {
 });
 
 app.listen(3000);
+
+module.exports = app; // For testing
+
+function redirectToGoogleOAuthUrl(req, res) {
+  // Otherwise, we need to send them through the Google OAuth flow.
+  var oauth2Client = buildGoogleOAuthClient();
+  var authUrl = oauth2Client.generateAuthUrl({
+    access_type: 'offline',
+    scope: [
+      'email',
+      'https://www.googleapis.com/auth/contacts.readonly',
+      'https://www.googleapis.com/auth/gmail.modify'
+    ],
+    redirect_uri: credentials.web.redirect_uris[0]
+  });
+  res.redirect(authUrl);
+}
 
 /**
  * Constructs a Google OAuth client with the app's credentials.
@@ -357,112 +399,4 @@ function refreshGoogleOAuthToken(refreshToken) {
       }
     });
   });
-}
-
-/**
- * Creates and stores new User from their Keybase credentials. If the user has
- * already used our service, then nothing needs to be updated.
- * @param keybase The login object returned from the Keybase API
- * @return an empty promise
- */
-function storeKeybaseCredentials(keybase) {
-  return new Promise(function(resolve, reject) {
-    User.findOne({'keybase.id': keybase.me.id}, function(err, user) {
-      if (err) {
-        reject(err);
-        return;
-      }
-      if (user) {
-        resolve();
-      } else {
-        // Currently we only store the id. We can store other non-sensitive
-        // info here in the future, like the profile picture.
-        user = new User({
-          keybase: {
-            id: keybase.me.id
-          }
-        });
-        user.save(function(err) {
-          if (err) reject(err);
-          else resolve();
-        });
-      }
-    });
-  });
-}
-
-/**
- * Creates or updates a User's Google credentials.
- * @param keybaseId The identifier for the user
- * @param email The user's email address
- * @param refreshToken The Google OAuth refresh Token
- * @return Empty Promise
- */
-function storeGoogleCredentials(keybaseId, email, refreshToken) {
-  return new Promise(function(resolve, reject) {
-    User.findOne({'keybase.id': keybaseId}, function(err, user) {
-      if (err) {
-        reject(err);
-        return;
-      }
-      if (user) {
-        user.google.refreshToken = refreshToken;
-        user.google.email = email;
-        user.save(function(err) {
-          if (err) {
-            reject(err);
-          } else {
-            resolve();
-          }
-        });
-      } else {
-        reject('Could not find user');
-      }
-    });
-  });
-}
-
-function isAuthenticated(session) {
-  return isAuthenticatedWithKeybase(session) && isAuthenticatedWithGoogle(session);
-}
-
-function isAuthenticatedWithKeybase(session) {
-  if (!session.keybaseId || !session.keybaseCookie) {
-    return false;
-  }
-  var now = new Date();
-  var expires = new Date(session.keybaseCookie.Expires);
-  if (expires - now <= 0) {
-    delete session.keybaseId;
-    delete session.keybaseCookie;
-    return false;
-  }
-  return true;
-}
-
-function isAuthenticatedWithGoogle(session) {
-  if (!session.googleToken || !session.email) {
-    return false;
-  }
-
-  var expires = new Date(session.googleToken.expiry_date);
-  var now = new Date();
-  if (expires - now <= 0) {
-    delete session.googleToken;
-    delete session.email;
-    return false;
-  }
-  return true;
-}
-
-// Simple route middleware to ensure user is authenticated.
-//   Use this route middleware on any resource that needs to be protected.  If
-//   the request is authenticated (typically via a persistent login session),
-//   the request will proceed.  Otherwise, the user will be redirected to the
-//   login page.
-function ensureAuthenticated(req, res, next) {
-  if (isAuthenticated(req.session)) {
-    return next();
-  }
-  res.redirect('/login');
 }
