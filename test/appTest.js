@@ -6,6 +6,9 @@ var sinon = require('sinon');
 var request = require('supertest');
 
 var kbpgp = require('kbpgp');
+var p3skb = require('../src/p3skb');
+var url = require('url');
+var querystring = require('querystring');
 
 // For session mocking
 var express = require('express');
@@ -24,27 +27,19 @@ let inviteSaveStub = sinon.stub(Invite.prototype, "save", (cb) => cb());
 
 // Stub out database calls, generate fake return results if necessary.
 var db = require('../src/db.js');
+let mockInvite = {}
 let storeInviteKeysStub = sinon.stub(db, "storeInviteKeys", (recipient, keys) => {
   return new Promise(function(resolve, reject) {
-    resolve(new Invite({
+    mockInvite = new Invite({
       recipientEmail: recipient,
       expires: new Date(),
       pgp: {
         public_key: keys.publicKey,
         private_key: keys.privateKey
       }
-    }));
+    });
+    resolve(mockInvite);
   });
-});
-
-let mockInvite = new Invite({
-  id: 'lol',
-  recipientEmail: 'me@example.com',
-  expires: new Date(),
-  pgp: {
-    public_key: 'public',
-    private_key: 'private'
-  }
 });
 
 let getInviteStub = sinon.stub(db, "getInvite", (id) => {
@@ -55,8 +50,12 @@ let getInviteStub = sinon.stub(db, "getInvite", (id) => {
 
 // Stub out Gmail API calls.
 var GmailClient = require('../src/gmailClient.js');
+let sentMessage = {}
 let sendMessageStub = sinon.stub(GmailClient.prototype, "sendMessage", (jsonMessage, threadId) =>
-  new Promise((resolve, reject) => resolve())
+  new Promise((resolve, reject) => {
+    sentMessage = jsonMessage;
+    resolve();
+  })
 );
 
 // Set up an alternate version of the app with middleware that sets the
@@ -122,7 +121,7 @@ describe('app.js', function() {
         .post('/invite/sendInvite')
         .send({
           inviteId: mockInviteId,
-          emailBody: mockBody,
+          message: mockBody,
           subject: mockSubject
         })
         .expect(200)
@@ -150,6 +149,7 @@ describe('app.js', function() {
         });
     });
   });
+
   describe('GET /invite/viewInvite', function() {
     it('Should return the encrypted message and key associated with the id', function(done) {
       let mockId = 'lol';
@@ -161,11 +161,136 @@ describe('app.js', function() {
         .expect(200)
         .end(function(err, res) {
           if (err) { return done(err); }
-          res.body.should.have.property('email');
+          res.body.should.have.property('message');
           res.body.should.have.property('key');
-          res.body.email.should.equal(mockInvite.message);
+          res.body.message.should.equal(mockInvite.message);
           res.body.key.should.equal(mockInvite.pgp.private_key);
           done();
+        });
+    });
+  });
+
+  describe('End-to-end invite test', function() {
+    it('Can generate keys, send encrypted invite, decrypt private key, and decrypt invite', function(done) {
+      this.timeout(5000);
+
+      let testSubject = "Does this even work?";
+      let testMessage = "If this message survives the whole journey I'll eat a shoe";
+
+      let getKey = function() {
+        return new Promise(function(resolve, reject) {
+          request(app)
+            .get('/invite/getKey?recipient=me%40example%2Ecom')
+            .expect(200)
+            .end(function(err, res) {
+              if (err) { done(err); }
+              resolve(res);
+            });
+        });
+      };
+
+      let encryptMessage = function(res) {
+        return new Promise(function(resolve, reject) {
+          kbpgp.KeyManager.import_from_armored_pgp({
+            armored: res.body.publicKey
+          }, function(err, invitee) {
+            if (err) {
+              done(err);
+            }
+            kbpgp.box({
+              msg: testMessage,
+              encrypt_for: invitee
+            }, function(err, armored, buf) {
+              if (err) {
+                done(err);
+              }
+              resolve({ msg: armored, res: res });
+            });
+          });
+        });
+      };
+
+      let sendInvite = function(params) {
+        let cookie = params.res.headers['set-cookie'];
+        let inviteId = params.res.body.inviteId;
+        let msg = params.msg;
+        return new Promise(function(resolve, reject) {
+          request(app)
+            .post('/invite/sendInvite')
+            .set('Cookie', cookie)
+            .send({
+              message: msg,
+              inviteId: inviteId,
+              subject: testSubject
+            })
+            .expect(200)
+            .end(function(err, res) {
+              if (err) { return done(err); }
+              resolve(inviteId);
+            });
+        });
+      };
+
+      let parsePassphrase = function(message) {
+        let href = message.body.match('href=".*"')[0];
+        let link = href.slice(href.indexOf('"') + 1, href.lastIndexOf('"'));
+        let query = querystring.parse(url.parse(link).query);
+        return query.pw;
+      }
+
+      let viewInvite = function(id) {
+        return new Promise(function(resolve, reject) {
+          request(app)
+            .get('/invite/viewInvite')
+            .query({ id: id, pw: parsePassphrase(sentMessage) })
+            .expect(200)
+            .end(function(err, res) {
+              if (err) { return done(err); }
+              resolve(res.body);
+            });
+        });
+      };
+
+      let decryptKey = function(invite) {
+        return p3skb.p3skbToArmoredPrivateKey(invite.key, parsePassphrase(sentMessage));
+      };
+
+      let decryptMessage = function(invite, key) {
+        return new Promise(function(resolve, reject) {
+          let ring = new kbpgp.keyring.KeyRing();
+          kbpgp.KeyManager.import_from_armored_pgp({
+            armored: key
+          }, function(err, manager) {
+            if (err) {
+              done(err);
+            }
+            ring.add_key_manager(manager);
+            kbpgp.unbox({
+              keyfetch: ring,
+              armored: invite.message
+            }, function(err, literals) {
+              if (err) {
+                done(err);
+              }
+              resolve(literals[0].toString());
+            });
+          });
+        });
+      };
+
+      getKey()
+        .then(encryptMessage)
+        .then(sendInvite)
+        .then(viewInvite)
+        .then(function(invite) {
+          return decryptKey(invite).then(function(key) {
+            return decryptMessage(invite, key);
+          });
+        }).then(function(plaintext) {
+          plaintext.should.equal(testMessage);
+          done();
+        }).catch(function(err) {
+          done(err);
         });
     });
   });

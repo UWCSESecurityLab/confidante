@@ -4,6 +4,7 @@ var session = require('express-session');
 var bodyParser = require('body-parser');
 var request = require('request');
 var Cookie = require('cookie');
+var URLSafeBase64 = require('urlsafe-base64');
 
 var mongoose = require('mongoose');
 var MongoSessionStore = require('connect-mongodb-session')(session);
@@ -124,7 +125,7 @@ app.get('/invite/getKey', auth.ensureAuthenticated, function(req, res) {
   }
 
   // Get a random code to encrypt the temporary private key
-  let passphrase = crypto.randomBytes(64).toString('base64');
+  let passphrase = URLSafeBase64.encode(crypto.randomBytes(64));
   // Store in the session, until /invite/sendInvite is sent
   req.session.tempPassphrase = passphrase;
 
@@ -184,7 +185,7 @@ app.post('/invite/sendInvite', auth.ensureAuthenticated, function(req, res) {
     let inviteEmail = req.session.email +
         ' wants to send you an encrypted email through Keymail!\n' +
         'View the email at this link: ' +
-        '<a href=' + inviteUrl + '>' + inviteUrl + '<a>\n\n' +
+        '<a href="' + inviteUrl + '">' + inviteUrl + '<a>\n\n' +
         req.body.message;
 
     let gmailClient = new GmailClient(req.session.googleToken);
@@ -213,6 +214,7 @@ app.post('/invite/sendInvite', auth.ensureAuthenticated, function(req, res) {
 
 app.get('/invite/viewInvite', function(req, res) {
   if (!req.query.id || !req.query.pw) {
+    console.log(req.query);
     res.status(400).send('Bad Request');
     return;
   }
