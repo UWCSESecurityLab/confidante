@@ -91,12 +91,8 @@ describe('app.js', function() {
           if (err) {
             return done(err);
           }
-          if (!res.body.inviteId) {
-            return done(new Error('No invite id returned'));
-          }
-          if (!res.body.publicKey) {
-            return done(new Error('No public key returned'));
-          }
+          res.body.should.have.property('inviteId');
+          res.body.should.have.property('publicKey');
 
           // Ensure database call was made with correct data
           sinon.assert.calledWith(
