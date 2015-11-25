@@ -153,10 +153,10 @@ app.get('/invite/getKey', auth.ensureAuthenticated, function(req, res) {
 
 /**
  * Sends an invite to a non-Keymail user. The client should provide a JSON
- * object containing 'emailBody', 'inviteId', and 'subject'.
+ * object containing 'message', 'inviteId', and 'subject'.
  */
 app.post('/invite/sendInvite', auth.ensureAuthenticated, function(req, res) {
-  if (!req.session.tempPassphrase || !req.body.inviteId || !req.body.emailBody || !req.body.subject) {
+  if (!req.session.tempPassphrase || !req.body.inviteId || !req.body.message || !req.body.subject) {
     res.status(400).send('Bad request');
     return;
   }
@@ -164,7 +164,7 @@ app.post('/invite/sendInvite', auth.ensureAuthenticated, function(req, res) {
   // Save the encrypted message in the invite model.
   let addMessageToInvite = function(invite) {
     return new Promise(function(resolve, reject) {
-      invite.message = req.body.emailBody;
+      invite.message = req.body.message;
       invite.save(function(err) {
         if (err) {
           reject(err);
@@ -185,7 +185,7 @@ app.post('/invite/sendInvite', auth.ensureAuthenticated, function(req, res) {
         ' wants to send you an encrypted email through Keymail!\n' +
         'View the email at this link: ' +
         '<a href=' + inviteUrl + '>' + inviteUrl + '<a>\n\n' +
-        req.body.emailBody;
+        req.body.message;
 
     let gmailClient = new GmailClient(req.session.googleToken);
     return gmailClient.sendMessage({
@@ -222,7 +222,7 @@ app.get('/invite/viewInvite', function(req, res) {
     if (invite) {
       // Return page, invite, and encrypted message
       res.json({
-        email: invite.message,
+        message: invite.message,
         key: invite.pgp.private_key
       });
     }
