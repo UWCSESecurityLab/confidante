@@ -178,7 +178,7 @@ app.post('/invite/sendInvite', auth.ensureAuthenticated, function(req, res) {
 
   // Add an invite link to the message and send it over gmail.
   let sendMessage = function(invite) {
-    let 'http://localhost:3000/invite/viewInvite?' +
+    let inviteUrl = 'http://localhost:3000/invite/viewInvite?' +
         'id=' + req.body.inviteId + '&' +
         'pw=' + req.session.tempPassphrase;
     let inviteEmail = req.session.email +
