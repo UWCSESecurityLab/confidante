@@ -56,7 +56,8 @@ var ComposeArea = React.createClass({
     ComposeStore.addChangeListener(this._onInReplyToChange);
   },
   _onInReplyToChange: function() {
-    let inReplyTo = ComposeStore.get();
+    let invite = ComposeStore.getInvite();
+    let inReplyTo = ComposeStore.getReply();
     let defaultTo = '';
     let defaultSubject = '';
     if (Object.keys(inReplyTo).length !== 0) {
@@ -74,6 +75,7 @@ var ComposeArea = React.createClass({
     this.setState({
       to: defaultTo,
       inReplyTo: inReplyTo,
+      invite: invite,
       subject: defaultSubject
     });
   },
@@ -136,7 +138,82 @@ var ComposeArea = React.createClass({
   },
 
   sendInvite: function() {
-    
+    let getKey = function(recipient) {
+      return new Promise(function(resolve, reject) {
+        request({
+          method: 'GET',
+          url: window.location.origin + '/invite/getKey',
+          qs: { recipient: recipient }
+        }, function(error, response, body) {
+          if (error) {
+            console.error(error);
+            reject(error);
+          } else {
+            resolve(JSON.parse(body));
+          }
+        });
+      });
+    }
+
+    let encryptMessage = function(message, publicKey) {
+      return new Promise(function(resolve, reject) {
+        console.log('Message: ' + message);
+        console.log('Public key: ' + publicKey);
+        kbpgp.KeyManager.import_from_armored_pgp({
+          armored: publicKey
+        }, function(err, invitee) {
+          if (err) {
+            console.error(err);
+            reject(err);
+            return;
+          }
+          kbpgp.box({
+            msg: message,
+            encrypt_for: invitee
+          }, function(err, armored, buf) {
+            if (err) {
+              console.error(err);
+              reject(err);
+            } else {
+              resolve(armored);
+            }
+          });
+        });
+      });
+    };
+
+    let sendInvite = function(id, subject, message) {
+      return new Promise(function(resolve, reject) {
+        request({
+          method: 'POST',
+          url: window.location.origin + '/invite/sendInvite',
+          json: true,
+          body: {
+            inviteId: id,
+            message: message,
+            subject: subject
+          }
+        }, function(error) {
+          if (error) {
+            console.error(error);
+            reject(error);
+          } else {
+            resolve();
+          }
+        });
+      });
+    };
+
+    let inviteId = '';
+    getKey(this.state.to).then(response => {
+      inviteId = response.inviteId;
+      return encryptMessage(this.state.email, response.publicKey);
+    }).then(encryptedMessage =>
+      sendInvite(inviteId, this.state.subject, encryptedMessage)
+    ).catch(err => {
+      console.log(err);
+      this.setState({ feedback: err.toString() })
+    });
   },
 
   render: function() {
@@ -148,7 +225,12 @@ var ComposeArea = React.createClass({
               <button type="button" className="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
-              <h4 className="modal-title">Compose Email</h4>
+              <h4 className="modal-title">
+                { this.state.invite
+                  ? <span>Invite a friend to Keymail</span>
+                  : <span>Compose Email</span>
+                }
+              </h4>
             </div>
             <div className="modal-body">
               <form className="form-horizontal">
@@ -156,7 +238,7 @@ var ComposeArea = React.createClass({
                   <label htmlFor="to">To:</label>
                   <ContactsAutocomplete updateParent={this.updateTo}/>
                 </div>
-                { invite
+                { this.state.invite
                   ? null
                   : <div className="form-group">
                       <label htmlFor="kbto">Keybase ID of Recipient:</label>
@@ -174,7 +256,7 @@ var ComposeArea = React.createClass({
             </div>
             <div className="modal-footer">
               <div className="alert alert-danger">{this.state.feedback}</div>
-              { invite
+              { this.state.invite
                 ? <button onClick={this.sendInvite} className="btn btn-primary">Encrypt and Invite</button>
                 : <button onClick={this.send} className="btn btn-primary">Encrypt and Send</button>
               }
