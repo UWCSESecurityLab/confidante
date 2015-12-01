@@ -3,7 +3,7 @@
 var React = require('react');
 var ContactsAutocomplete = require('./ContactsAutocomplete.react');
 var KeybaseAutocomplete = require('./KeybaseAutocomplete.react');
-var InReplyToStore = require('../stores/InReplyToStore');
+var ComposeStore = require('../stores/ComposeStore');
 var messageParsing = require('../messageParsing');
 var keybaseAPI = require('../keybaseAPI');
 var kbpgp = require('kbpgp');
@@ -36,7 +36,8 @@ var ComposeArea = React.createClass({
       subject: '',
       email: '',
       feedback: '',
-      inReplyTo: InReplyToStore.get()
+      inReplyTo: ComposeStore.getReply(),
+      invite: ComposeStore.getInvite()
     };
   },
   updateTo: function(to) {
@@ -52,10 +53,10 @@ var ComposeArea = React.createClass({
     this.setState({ email: e.target.value });
   },
   componentDidMount: function() {
-    InReplyToStore.addChangeListener(this._onInReplyToChange);
+    ComposeStore.addChangeListener(this._onInReplyToChange);
   },
   _onInReplyToChange: function() {
-    let inReplyTo = InReplyToStore.get();
+    let inReplyTo = ComposeStore.get();
     let defaultTo = '';
     let defaultSubject = '';
     if (Object.keys(inReplyTo).length !== 0) {
@@ -133,6 +134,11 @@ var ComposeArea = React.createClass({
         this.setState({ feedback: err.toString() });
       }.bind(this));
   },
+
+  sendInvite: function() {
+    
+  },
+
   render: function() {
     return (
       <div className="modal fade" id="composeMessage">
@@ -150,10 +156,13 @@ var ComposeArea = React.createClass({
                   <label htmlFor="to">To:</label>
                   <ContactsAutocomplete updateParent={this.updateTo}/>
                 </div>
-                <div className="form-group">
-                  <label htmlFor="kbto">Keybase ID of Recipient:</label>
-                  <KeybaseAutocomplete updateParent={this.updateKBTo}/>
-                </div>
+                { invite
+                  ? null
+                  : <div className="form-group">
+                      <label htmlFor="kbto">Keybase ID of Recipient:</label>
+                      <KeybaseAutocomplete updateParent={this.updateKBTo}/>
+                    </div>
+                }
                 <div className="form-group">
                   <label htmlFor="subject">Subject:</label>
                   <input type="text" value={this.state.subject} name="subject" id="subject" onChange={this.updateSubject} className="form-control"></input><br />
@@ -165,7 +174,10 @@ var ComposeArea = React.createClass({
             </div>
             <div className="modal-footer">
               <div className="alert alert-danger">{this.state.feedback}</div>
-              <button onClick={this.send} className="btn btn-primary">Encrypt and Send</button>
+              { invite
+                ? <button onClick={this.sendInvite} className="btn btn-primary">Encrypt and Invite</button>
+                : <button onClick={this.send} className="btn btn-primary">Encrypt and Send</button>
+              }
             </div>
           </div>
         </div>

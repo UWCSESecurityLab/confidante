@@ -8,5 +8,11 @@ module.exports = {
       type: 'SET_IN_REPLY_TO',
       message: message
     });
+  },
+  setInvite: function(message) {
+    InboxDispatcher.dispatch({
+      type: 'SET_INVITE',
+      message: message
+    });
   }
 };

@@ -1,12 +1,13 @@
 'use strict';
 
-var InboxDispatcher = require('../dispatcher/InboxDispatcher'); 
+var InboxDispatcher = require('../dispatcher/InboxDispatcher');
 var EventEmitter = require('events').EventEmitter;
 var assign = require('object-assign');
 
 var _inReplyTo = {};
+var _invite = false;
 
-var InReplyToStore = assign({}, EventEmitter.prototype, {
+var ComposeStore = assign({}, EventEmitter.prototype, {
   emitChange: function() {
     this.emit('CHANGE');
   },
@@ -22,18 +23,25 @@ var InReplyToStore = assign({}, EventEmitter.prototype, {
     this.removeListener('CHANGE', callback);
   },
 
-  get: function() {
+  getReply: function() {
     return _inReplyTo;
+  },
+
+  getInvite: function() {
+    return _invite;
   },
 
   dispatchToken: InboxDispatcher.register(function(action) {
     if (action.type === 'SET_IN_REPLY_TO') {
       _inReplyTo = action.message;
-      InReplyToStore.emitChange();
-    } else {
-      // Do nothing on all other action types.
+      _invite = false;
+      ComposeStore.emitChange();
+    } else if (action.type === 'SET_INVITE') {
+      _inReplyTo = {};
+      _invite = action.message;
+      ComposeStore.emitChange();
     }
   })
 });
 
-module.exports = InReplyToStore;
+module.exports = ComposeStore;
