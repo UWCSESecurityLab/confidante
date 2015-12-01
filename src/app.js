@@ -4,6 +4,7 @@ var session = require('express-session');
 var bodyParser = require('body-parser');
 var request = require('request');
 var Cookie = require('cookie');
+var URLSafeBase64 = require('urlsafe-base64');
 
 var mongoose = require('mongoose');
 var MongoSessionStore = require('connect-mongodb-session')(session);
@@ -124,7 +125,7 @@ app.get('/invite/getKey', auth.ensureAuthenticated, function(req, res) {
   }
 
   // Get a random code to encrypt the temporary private key
-  let passphrase = crypto.randomBytes(64).toString('base64');
+  let passphrase = URLSafeBase64.encode(crypto.randomBytes(64));
   // Store in the session, until /invite/sendInvite is sent
   req.session.tempPassphrase = passphrase;
 
@@ -151,15 +152,83 @@ app.get('/invite/getKey', auth.ensureAuthenticated, function(req, res) {
     });
 });
 
+/**
+ * Sends an invite to a non-Keymail user. The client should provide a JSON
+ * object containing 'message', 'inviteId', and 'subject'.
+ */
 app.post('/invite/sendInvite', auth.ensureAuthenticated, function(req, res) {
-  // Parse encrypted mail
-  // Update invite object with message
-  // Send system email/gmail message
+  if (!req.session.tempPassphrase || !req.body.inviteId || !req.body.message || !req.body.subject) {
+    res.status(400).send('Bad request');
+    return;
+  }
+
+  // Save the encrypted message in the invite model.
+  let addMessageToInvite = function(invite) {
+    return new Promise(function(resolve, reject) {
+      invite.message = req.body.message;
+      invite.save(function(err) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(invite);
+        }
+      });
+    });
+  }
+
+  // Add an invite link to the message and send it over gmail.
+  let sendMessage = function(invite) {
+    let inviteUrl = 'http://localhost:3000/invite/viewInvite?' +
+        'id=' + req.body.inviteId + '&' +
+        'pw=' + req.session.tempPassphrase;
+    let inviteEmail = req.session.email +
+        ' wants to send you an encrypted email through Keymail!\n' +
+        'View the email at this link: ' +
+        '<a href="' + inviteUrl + '">' + inviteUrl + '<a>\n\n' +
+        req.body.message;
+
+    let gmailClient = new GmailClient(req.session.googleToken);
+    return gmailClient.sendMessage({
+      headers: {
+        to: [invite.recipientEmail],
+        from: req.session.email,
+        subject: req.body.subject,
+        date: new Date().toString(),
+      },
+      body: inviteEmail
+    });
+  }
+
+  db.getInvite(req.body.inviteId)
+    .then(addMessageToInvite)
+    .then(sendMessage)
+    .then(function() {
+      delete req.session.tempPassphrase;
+      res.status(200).send('OK');
+    }).catch(function(err) {
+      console.log(err);
+      res.status(500).send(err);
+    });
 });
 
 app.get('/invite/viewInvite', function(req, res) {
+  if (!req.query.id) {
+    res.status(400).send('Bad Request');
+    return;
+  }
+
   // Look up invite
-  // Return page, invite, and encrypted message
+  db.getInvite(req.query.id).then(function(invite) {
+    if (invite) {
+      // Return page, invite, and encrypted message
+      res.json({
+        message: invite.message,
+        key: invite.pgp.private_key
+      });
+    }
+  }).catch(function(err) {
+    res.status(500).send(err);
+  });
 });
 
 /**
