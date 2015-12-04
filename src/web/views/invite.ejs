@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <%- include('includeBootstrap'); %>
+  <link rel="stylesheet" type="text/css" href="inbox.css">
+  <link rel="stylesheet" type="text/css" href="spinner.css">
+  <title>Keymail</title>
+  <%- include('includeBootstrap'); %>
+</head>
+<body>
+  <%- include('header', { loggedIn: false }); %>
+  <div id="app" class="container">
+    <span class="glyphicon glyphicon-refresh spinner" id="spinner" aria-hidden="true"></span>
+    Loading...
+    <script src="scrypt.js"></script>
+    <script src="invite-bundle.js"></script>
+  </div>
+</body>
+</html>

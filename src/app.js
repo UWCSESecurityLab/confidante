@@ -178,7 +178,7 @@ app.post('/invite/sendInvite', auth.ensureAuthenticated, function(req, res) {
 
   // Add an invite link to the message and send it over gmail.
   let sendMessage = function(invite) {
-    let inviteUrl = 'http://localhost:3000/invite/viewInvite?' +
+    let inviteUrl = 'http://localhost:3000/invite?' +
         'id=' + req.body.inviteId + '&' +
         'pw=' + req.session.tempPassphrase;
     let inviteEmail = req.session.email +
@@ -229,6 +229,15 @@ app.get('/invite/viewInvite', function(req, res) {
   }).catch(function(err) {
     res.status(500).send(err);
   });
+});
+
+app.get('/invite', function(req, res) {
+  if (!req.query.id || !req.query.pw) {
+    res.status(404).send('Not Found');
+    return;
+  }
+
+  res.render('invite', { loggedIn: false });
 });
 
 /**
