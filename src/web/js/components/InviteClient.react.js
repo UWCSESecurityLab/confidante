@@ -8,7 +8,7 @@ var p3skb = require('../../../p3skb.js');
 var InviteClient = React.createClass({
   getInitialState: function() {
     return {
-      body: '',
+      invite: {},
       plaintext: '',
       status: '',
       error: ''
@@ -25,7 +25,7 @@ var InviteClient = React.createClass({
         return;
       }
       let invite = JSON.parse(body);
-      this.setState({ body: invite });
+      this.setState({ invite: invite });
       this.setState({ status: 'Decrypting key...' });
       p3skb.p3skbToArmoredPrivateKey(invite.key, getQuery('pw'))
         .then(KeybaseAPI.managerFromPublicKey)

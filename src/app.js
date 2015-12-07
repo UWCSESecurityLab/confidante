@@ -231,11 +231,11 @@ app.get('/invite/viewInvite', function(req, res) {
     if (invite) {
       // Return page, invite, and encrypted message
       res.json({
-        expires: invite.expires,
+        expires: invite.expires.toString(),
         key: invite.pgp.private_key,
         message: invite.message,
         sender: invite.sender,
-        sent: invite.sent,
+        sent: invite.sent.toString(),
         subject: invite.subject
       });
     }
