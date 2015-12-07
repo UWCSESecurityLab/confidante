@@ -189,10 +189,12 @@ app.post('/invite/sendInvite', auth.ensureAuthenticated, function(req, res) {
         'pw=' + req.session.tempPassphrase;
     let inviteEmail = req.session.email +
         ' wants to send you an encrypted email through Keymail!\n' +
-        'View the email at this link: ' + inviteUrl + '\n\n' + req.body.message;
+        'View the email at this link: ' +
+        '<a href="' + inviteUrl + '">' + inviteUrl + '<a>\n\n' +
+        req.body.message;
     console.log('Sending invite with message:');
     console.log(inviteEmail);
-    console.log('Intended recipient: ' + invite.recipient);
+
     let gmailClient = new GmailClient(req.session.googleToken);
     return gmailClient.sendMessage({
       headers: {
