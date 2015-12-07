@@ -122,6 +122,7 @@ class GmailClient {
   }
 
   sendMessage(jsonMessage, threadId) {
+    console.log('GmailClient.sendMessage');
     return new Promise(function(resolve, reject) {
       if (!jsonMessage.headers.from) {
         reject(new Error('Message missing \"From\" header'));
@@ -135,10 +136,10 @@ class GmailClient {
         reject(new Error('Message missing \"Date\" header'));
         return;
       }
-
+      console.log('Headers are OK');
       var rfcMessage = this.buildRfcMessage(jsonMessage);
       var encodedMessage = URLSafeBase64.encode(new Buffer(rfcMessage));
-
+      console.log('Sending message....');
       google.gmail('v1').users.messages.send({
         auth: this.oauth2Client,
         userId: 'me',
@@ -148,9 +149,12 @@ class GmailClient {
         }
       }, function(err, response) {
         if (err) {
+          console.log('Error sending message: ' + err);
           reject(err);
           return;
         }
+        console.log('Message sent');
+        console.log(response);
         resolve(response);
       });
     }.bind(this));

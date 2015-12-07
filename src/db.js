@@ -97,7 +97,7 @@ function storeInviteKeys(recipient, keys) {
     let expires = new Date();
     expires.setDate(expires.getDate() + 2);
     let invite = new Invite({
-      recipientEmail: recipient,
+      recipient: recipient,
       expires: expires,
       pgp: {
         public_key: keys.publicKey,
