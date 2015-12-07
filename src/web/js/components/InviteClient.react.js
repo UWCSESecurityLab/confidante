@@ -70,8 +70,8 @@ var InviteClient = React.createClass({
         </div>
         <div className="message">
           <div className="messageHeader">
-            <p>{this.state.invite.sent}</p>
-            From: <strong>{this.state.invite.sender}</strong>
+            {this.state.invite.sent}
+            <p>From: <strong>{this.state.invite.sender}</strong></p>
           </div>
           {body}
           <button type="button" className="btn btn-primary reply">
