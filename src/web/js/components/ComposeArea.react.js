@@ -213,7 +213,9 @@ var ComposeArea = React.createClass({
       return encryptMessage(this.state.email, response.publicKey);
     }).then(encryptedMessage =>
       sendInvite(inviteId, this.state.subject, encryptedMessage)
-    ).catch(err => {
+    ).then(function() {
+      $('#composeMessage').modal('hide');
+    }).catch(err => {
       console.log(err);
       this.setState({ feedback: err.toString() })
     });
