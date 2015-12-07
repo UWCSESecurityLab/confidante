@@ -157,7 +157,9 @@ app.get('/invite/getKey', auth.ensureAuthenticated, function(req, res) {
  * object containing 'message', 'inviteId', and 'subject'.
  */
 app.post('/invite/sendInvite', auth.ensureAuthenticated, function(req, res) {
+  console.log('GET /invite/sendInvite');
   if (!req.session.tempPassphrase || !req.body.inviteId || !req.body.message || !req.body.subject) {
+    console.log('Bad request - missing a field or temp passphrase');
     res.status(400).send('Bad request');
     return;
   }
@@ -166,10 +168,14 @@ app.post('/invite/sendInvite', auth.ensureAuthenticated, function(req, res) {
   let addMessageToInvite = function(invite) {
     return new Promise(function(resolve, reject) {
       invite.message = req.body.message;
+      invite.subject = req.body.subject;
+      invite.sender = req.session.email;
+      invite.sent = new Date();
       invite.save(function(err) {
         if (err) {
           reject(err);
         } else {
+          console.log('Saved message to mongo');
           resolve(invite);
         }
       });
@@ -186,11 +192,13 @@ app.post('/invite/sendInvite', auth.ensureAuthenticated, function(req, res) {
         'View the email at this link: ' +
         '<a href="' + inviteUrl + '">' + inviteUrl + '<a>\n\n' +
         req.body.message;
+    console.log('Sending invite with message:');
+    console.log(inviteEmail);
 
     let gmailClient = new GmailClient(req.session.googleToken);
     return gmailClient.sendMessage({
       headers: {
-        to: [invite.recipientEmail],
+        to: [invite.recipient],
         from: req.session.email,
         subject: req.body.subject,
         date: new Date().toString(),
@@ -204,6 +212,7 @@ app.post('/invite/sendInvite', auth.ensureAuthenticated, function(req, res) {
     .then(sendMessage)
     .then(function() {
       delete req.session.tempPassphrase;
+      console.log('Message sent, deleting passphrase');
       res.status(200).send('OK');
     }).catch(function(err) {
       console.log(err);
@@ -222,8 +231,12 @@ app.get('/invite/viewInvite', function(req, res) {
     if (invite) {
       // Return page, invite, and encrypted message
       res.json({
+        expires: invite.expires,
+        key: invite.pgp.private_key,
         message: invite.message,
-        key: invite.pgp.private_key
+        sender: invite.sender,
+        sent: invite.sent,
+        subject: invite.subject
       });
     }
   }).catch(function(err) {

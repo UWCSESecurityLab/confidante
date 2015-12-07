@@ -138,6 +138,7 @@ var ComposeArea = React.createClass({
   },
 
   sendInvite: function() {
+    console.log('sendInvite()');
     let getKey = function(recipient) {
       return new Promise(function(resolve, reject) {
         request({
@@ -149,6 +150,7 @@ var ComposeArea = React.createClass({
             console.error(error);
             reject(error);
           } else {
+            console.log('Got key: ' + body);
             resolve(JSON.parse(body));
           }
         });
@@ -198,6 +200,7 @@ var ComposeArea = React.createClass({
             console.error(error);
             reject(error);
           } else {
+            console.log('Message sent successfully');
             resolve();
           }
         });

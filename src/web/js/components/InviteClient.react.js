@@ -8,6 +8,7 @@ var p3skb = require('../../../p3skb.js');
 var InviteClient = React.createClass({
   getInitialState: function() {
     return {
+      body: '',
       plaintext: '',
       status: '',
       error: ''
@@ -24,6 +25,7 @@ var InviteClient = React.createClass({
         return;
       }
       let invite = JSON.parse(body);
+      this.setState({ body: invite });
       this.setState({ status: 'Decrypting key...' });
       p3skb.p3skbToArmoredPrivateKey(invite.key, getQuery('pw'))
         .then(KeybaseAPI.managerFromPublicKey)
@@ -63,11 +65,19 @@ var InviteClient = React.createClass({
 
     return (
       <div className="row thread">
+        <div className="threadHeader">
+          <h4 className="subjectLine">{this.state.invite.subject}</h4>
+        </div>
         <div className="message">
+          <div className="messageHeader">
+            <p>{this.state.invite.sent}</p>
+            From: <strong>{this.state.invite.sender}</strong>
+          </div>
           {body}
-          <button type="button" className="btn btn-primary reply" onClick={this.reply}>
+          <button type="button" className="btn btn-primary reply">
             Reply
           </button>
+          <p>This message expires at {this.state.invite.expires}</p>
         </div>
       </div>
     )
