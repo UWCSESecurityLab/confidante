@@ -36,6 +36,7 @@ var ComposeArea = React.createClass({
       subject: '',
       email: '',
       feedback: '',
+      sendingSpinner: false,
       inReplyTo: ComposeStore.getReply(),
       invite: ComposeStore.getInvite()
     };
@@ -95,6 +96,8 @@ var ComposeArea = React.createClass({
     }.bind(this));
   },
   send: function() {
+    this.setState({ sendingSpinner: true });
+
     var toManager = keybaseAPI.publicKeyForUser(this.state.kbto)
       .then(keybaseAPI.managerFromPublicKey);
 
@@ -128,17 +131,19 @@ var ComposeArea = React.createClass({
               console.log('Done with send but server not happy. Mail should not have been sent.');
               this.setState({ feedback: 'Sending encountered a server error.' });
             }
+            this.setState({ sendingSpinner: false });
           }.bind(this)
         );
       }.bind(this))
       .catch(function(err) {
         console.log(err);
-        this.setState({ feedback: err.toString() });
+        this.setState({ feedback: err.toString(), sendingSpinner: false });
       }.bind(this));
   },
 
   sendInvite: function() {
     console.log('sendInvite()');
+    this.setState({ sendingSpinner: true });
     let getKey = function(recipient) {
       return new Promise(function(resolve, reject) {
         request({
@@ -215,9 +220,10 @@ var ComposeArea = React.createClass({
       sendInvite(inviteId, this.state.subject, encryptedMessage)
     ).then(function() {
       $('#composeMessage').modal('hide');
-    }).catch(err => {
+      this.setState({ sendingSpinner: false });
+    }.bind(this)).catch(err => {
       console.log(err);
-      this.setState({ feedback: err.toString() })
+      this.setState({ feedback: err.toString(), sendingSpinner: false });
     });
   },
 
@@ -261,6 +267,10 @@ var ComposeArea = React.createClass({
             </div>
             <div className="modal-footer">
               <div className="alert alert-danger">{this.state.feedback}</div>
+              { this.state.sendingSpinner
+                ? <span className="glyphicon glyphicon-refresh spinner"></span>
+                : null
+              }
               { this.state.invite
                 ? <button onClick={this.sendInvite} className="btn btn-primary">Encrypt and Invite</button>
                 : <button onClick={this.send} className="btn btn-primary">Encrypt and Send</button>
