@@ -176,6 +176,10 @@ class GmailClient {
     if (jsonMessage.headers.references) {
       rfcMessage.push('References: ' + jsonMessage.headers.references);
     }
+    if (jsonMessage.headers.contentType) {
+      rfcMessage.push('Content-Type: ' + jsonMessage.headers.contentType);
+    }
+
     rfcMessage.push('Subject: ' + jsonMessage.headers.subject);
     rfcMessage.push('Date: ' + jsonMessage.headers.date);
     rfcMessage.push('');

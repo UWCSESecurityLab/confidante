@@ -187,11 +187,11 @@ app.post('/invite/sendInvite', auth.ensureAuthenticated, function(req, res) {
     let inviteUrl = 'http://localhost:3000/invite?' +
         'id=' + req.body.inviteId + '&' +
         'pw=' + req.session.tempPassphrase;
-    let inviteEmail = req.session.email +
-        ' wants to send you an encrypted email through Keymail!\n' +
-        'View the email at this link: ' +
-        '<a href="' + inviteUrl + '">' + inviteUrl + '<a>\n\n' +
-        req.body.message;
+    let inviteEmail = '<p>' + req.session.email +
+        ' wants to send you an encrypted email through Keymail! ' +
+        'View the email at this link:</p>' +
+        '<p><a href="' + inviteUrl + '">' + inviteUrl + '<a></p>\n\n' +
+        '<pre>' + req.body.message + '</pre>';
     console.log('Sending invite with message:');
     console.log(inviteEmail);
 
@@ -202,6 +202,7 @@ app.post('/invite/sendInvite', auth.ensureAuthenticated, function(req, res) {
         from: req.session.email,
         subject: req.body.subject,
         date: new Date().toString(),
+        contentType: 'text/html; charset=utf-8'
       },
       body: inviteEmail
     });
