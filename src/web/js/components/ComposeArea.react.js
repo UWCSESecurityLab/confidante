@@ -117,37 +117,29 @@ var ComposeArea = React.createClass({
           parentMessage: this.state.inReplyTo
         };
 
-        console.log('Sending encrypted mail to ' + this.state.to);
-        request(
-          {
+        request({
             method: 'POST',
             url: window.location.origin + '/sendMessage',
             json: true,
             body: email
           }, function(error, response) {
             if (error) {
-              // Tell the user about the error.
-              console.log('Error send (network error, server down, etc.).');
-              this.setState({ feedback: 'Sending encountered an error.' });
+              this.setState({ feedback: 'Error: Couldn\'t reach Keymail server.' });
             } else if (response.statusCode == 200) {
-              console.log('Done with send successfully. Mail should have been sent.');
               InboxActions.resetComposeFields();
             } else {
-              console.log('Done with send but server not happy. Mail should not have been sent.');
-              this.setState({ feedback: 'Sending encountered a server error.' });
+              this.setState({ feedback: 'Error: something went wrong in the Keymail server.' });
             }
             this.setState({ sendingSpinner: false });
           }.bind(this)
         );
       }.bind(this))
       .catch(function(err) {
-        console.log(err);
         this.setState({ feedback: err.toString(), sendingSpinner: false });
       }.bind(this));
   },
 
   sendInvite: function() {
-    console.log('sendInvite()');
     this.setState({ sendingSpinner: true });
     let getKey = function(recipient) {
       return new Promise(function(resolve, reject) {
@@ -160,7 +152,6 @@ var ComposeArea = React.createClass({
             console.error(error);
             reject(error);
           } else {
-            console.log('Got key: ' + body);
             resolve(JSON.parse(body));
           }
         });
@@ -169,8 +160,6 @@ var ComposeArea = React.createClass({
 
     let encryptMessage = function(message, publicKey) {
       return new Promise(function(resolve, reject) {
-        console.log('Message: ' + message);
-        console.log('Public key: ' + publicKey);
         kbpgp.KeyManager.import_from_armored_pgp({
           armored: publicKey
         }, function(err, invitee) {
@@ -210,7 +199,6 @@ var ComposeArea = React.createClass({
             console.error(error);
             reject(error);
           } else {
-            console.log('Message sent successfully');
             resolve();
           }
         });
@@ -226,7 +214,6 @@ var ComposeArea = React.createClass({
     ).then(function() {
       InboxActions.resetComposeFields();
     }.bind(this)).catch(err => {
-      console.log(err);
       this.setState({ feedback: err.toString(), sendingSpinner: false });
     });
   },

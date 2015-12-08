@@ -157,9 +157,7 @@ app.get('/invite/getKey', auth.ensureAuthenticated, function(req, res) {
  * object containing 'message', 'inviteId', and 'subject'.
  */
 app.post('/invite/sendInvite', auth.ensureAuthenticated, function(req, res) {
-  console.log('GET /invite/sendInvite');
   if (!req.session.tempPassphrase || !req.body.inviteId || !req.body.message || !req.body.subject) {
-    console.log('Bad request - missing a field or temp passphrase');
     res.status(400).send('Bad request');
     return;
   }
@@ -175,7 +173,6 @@ app.post('/invite/sendInvite', auth.ensureAuthenticated, function(req, res) {
         if (err) {
           reject(err);
         } else {
-          console.log('Saved message to mongo');
           resolve(invite);
         }
       });
@@ -192,8 +189,6 @@ app.post('/invite/sendInvite', auth.ensureAuthenticated, function(req, res) {
         'View the email at this link:</p>' +
         '<p><a href="' + inviteUrl + '">' + inviteUrl + '<a></p>\n\n' +
         '<pre>' + req.body.message + '</pre>';
-    console.log('Sending invite with message:');
-    console.log(inviteEmail);
 
     let gmailClient = new GmailClient(req.session.googleToken);
     return gmailClient.sendMessage({
@@ -213,7 +208,6 @@ app.post('/invite/sendInvite', auth.ensureAuthenticated, function(req, res) {
     .then(sendMessage)
     .then(function() {
       delete req.session.tempPassphrase;
-      console.log('Message sent, deleting passphrase');
       res.status(200).send('OK');
     }).catch(function(err) {
       console.log(err);
