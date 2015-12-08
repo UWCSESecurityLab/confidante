@@ -1,6 +1,7 @@
 'use strict';
 
 var React = require('react');
+var ComposeStore = require('../stores/ComposeStore');
 var request = require('request');
 var keybaseAPI = require('../keybaseAPI');
 
@@ -29,11 +30,15 @@ var ContactsAutocomplete = React.createClass({
       results: []
     };
   },
-
+  componentDidMount: function() {
+    ComposeStore.addResetListener(this._onReset);
+  },
+  _onReset: function() {
+    this.setState(this.getInitialState());
+  },
   hideCompletions: function() {
     this.setState({ results: [] });
   },
-
   resultClicked: function(contact) {
     let contactAddr = '';
     if (contact.name.length != 0) {

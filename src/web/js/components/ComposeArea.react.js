@@ -1,9 +1,10 @@
 'use strict';
 
 var React = require('react');
-var ContactsAutocomplete = require('./ContactsAutocomplete.react');
-var KeybaseAutocomplete = require('./KeybaseAutocomplete.react');
 var ComposeStore = require('../stores/ComposeStore');
+var ContactsAutocomplete = require('./ContactsAutocomplete.react');
+var InboxActions = require('../actions/InboxActions');
+var KeybaseAutocomplete = require('./KeybaseAutocomplete.react');
 var messageParsing = require('../messageParsing');
 var keybaseAPI = require('../keybaseAPI');
 var kbpgp = require('kbpgp');
@@ -55,6 +56,7 @@ var ComposeArea = React.createClass({
   },
   componentDidMount: function() {
     ComposeStore.addChangeListener(this._onComposeStoreChange);
+    ComposeStore.addResetListener(this._onReset);
   },
   _onComposeStoreChange: function() {
     let invite = ComposeStore.getInvite();
@@ -79,6 +81,10 @@ var ComposeArea = React.createClass({
       invite: invite,
       subject: defaultSubject
     });
+  },
+  _onReset: function() {
+    this.replaceState(this.getInitialState());
+    $('#composeMessage').modal('hide');
   },
   encryptEmail: function(keyManagers) {
     return new Promise(function(fulfill, reject) {
@@ -125,8 +131,7 @@ var ComposeArea = React.createClass({
               this.setState({ feedback: 'Sending encountered an error.' });
             } else if (response.statusCode == 200) {
               console.log('Done with send successfully. Mail should have been sent.');
-              this.setState(this.getInitialState());
-              $('#composeMessage').modal('hide');
+              InboxActions.resetComposeFields();
             } else {
               console.log('Done with send but server not happy. Mail should not have been sent.');
               this.setState({ feedback: 'Sending encountered a server error.' });
@@ -219,8 +224,7 @@ var ComposeArea = React.createClass({
     }).then(encryptedMessage =>
       sendInvite(inviteId, this.state.subject, encryptedMessage)
     ).then(function() {
-      $('#composeMessage').modal('hide');
-      this.setState({ sendingSpinner: false });
+      InboxActions.resetComposeFields();
     }.bind(this)).catch(err => {
       console.log(err);
       this.setState({ feedback: err.toString(), sendingSpinner: false });

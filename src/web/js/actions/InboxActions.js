@@ -14,5 +14,8 @@ module.exports = {
       type: 'SET_INVITE',
       message: message
     });
+  },
+  resetComposeFields: function() {
+    InboxDispatcher.dispatch({ type: 'RESET_FIELDS' });
   }
 };

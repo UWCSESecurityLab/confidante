@@ -12,6 +12,10 @@ var ComposeStore = assign({}, EventEmitter.prototype, {
     this.emit('CHANGE');
   },
 
+  emitReset: function() {
+    this.emit('RESET');
+  },
+
   /**
    * @param {function} callback
    */
@@ -21,6 +25,14 @@ var ComposeStore = assign({}, EventEmitter.prototype, {
 
   removeChangeListener: function(callback) {
     this.removeListener('CHANGE', callback);
+  },
+
+  addResetListener: function(callback) {
+    this.on('RESET', callback);
+  },
+
+  removeResetListener: function(callback) {
+    this.removeListener('RESET', callback);
   },
 
   getReply: function() {
@@ -40,6 +52,8 @@ var ComposeStore = assign({}, EventEmitter.prototype, {
       _inReplyTo = {};
       _invite = action.message;
       ComposeStore.emitChange();
+    } else if (action.type === 'RESET_FIELDS') {
+      ComposeStore.emitReset();
     }
   })
 });
