@@ -54,13 +54,13 @@ var ComposeArea = React.createClass({
     this.setState({ email: e.target.value });
   },
   componentDidMount: function() {
-    ComposeStore.addChangeListener(this._onInReplyToChange);
+    ComposeStore.addChangeListener(this._onComposeStoreChange);
   },
-  _onInReplyToChange: function() {
+  _onComposeStoreChange: function() {
     let invite = ComposeStore.getInvite();
     let inReplyTo = ComposeStore.getReply();
-    let defaultTo = '';
-    let defaultSubject = '';
+    let defaultTo = this.state.to;
+    let defaultSubject = this.state.subject;
     if (Object.keys(inReplyTo).length !== 0) {
       let to = messageParsing.getMessageHeader(inReplyTo, 'To');
       let from = messageParsing.getMessageHeader(inReplyTo, 'From');
