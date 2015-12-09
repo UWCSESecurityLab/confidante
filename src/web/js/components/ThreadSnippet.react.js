@@ -14,7 +14,6 @@ var messageParsing = require('../messageParsing');
 var ThreadSnippet = React.createClass({
   getInitialState: function() {
     return {
-      messages: [],
       checked: false,
       fullThread: false
     };
@@ -29,13 +28,23 @@ var ThreadSnippet = React.createClass({
     if (!this.state.fullThread) {
       var threadSubject = messageParsing.getThreadHeader(this.props.thread, 'Subject');
       var threadFrom = messageParsing.getThreadHeader(this.props.thread, 'From');
+
+      let unread = this.props.thread.messages.some((message) =>
+        message.labelIds.some((label) => label === 'UNREAD')
+      );
+
+      let snippetClass = "row snippet";
+      if (unread) {
+        snippetClass += " unreadSnippet";
+      }
+
       return (
-        <div className="row snippet" onClick={this.openThread}>
+        <div className={snippetClass} onClick={this.openThread}>
           <div className="col-md-1">
             <input type="checkbox" value={this.state.checked} onchange={this.handleChange}></input>
           </div>
           <div className="col-md-3">
-            <strong>{threadFrom}</strong>
+            {threadFrom}
           </div>
           <div className="col-md-8">
             {threadSubject}
