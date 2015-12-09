@@ -166,6 +166,9 @@ app.post('/invite/sendInvite', auth.ensureAuthenticated, function(req, res) {
   let addMessageToInvite = function(invite) {
     return new Promise(function(resolve, reject) {
       invite.message = req.body.message;
+      invite.subject = req.body.subject;
+      invite.sender = req.session.email;
+      invite.sent = new Date();
       invite.save(function(err) {
         if (err) {
           reject(err);
@@ -178,22 +181,23 @@ app.post('/invite/sendInvite', auth.ensureAuthenticated, function(req, res) {
 
   // Add an invite link to the message and send it over gmail.
   let sendMessage = function(invite) {
-    let inviteUrl = 'http://localhost:3000/invite/viewInvite?' +
+    let inviteUrl = 'http://localhost:3000/invite?' +
         'id=' + req.body.inviteId + '&' +
         'pw=' + req.session.tempPassphrase;
-    let inviteEmail = req.session.email +
-        ' wants to send you an encrypted email through Keymail!\n' +
-        'View the email at this link: ' +
-        '<a href="' + inviteUrl + '">' + inviteUrl + '<a>\n\n' +
-        req.body.message;
+    let inviteEmail = '<p>' + req.session.email +
+        ' wants to send you an encrypted email through Keymail! ' +
+        'View the email at this link:</p>' +
+        '<p><a href="' + inviteUrl + '">' + inviteUrl + '<a></p>\n\n' +
+        '<pre>' + req.body.message + '</pre>';
 
     let gmailClient = new GmailClient(req.session.googleToken);
     return gmailClient.sendMessage({
       headers: {
-        to: [invite.recipientEmail],
+        to: [invite.recipient],
         from: req.session.email,
         subject: req.body.subject,
         date: new Date().toString(),
+        contentType: 'text/html; charset=utf-8'
       },
       body: inviteEmail
     });
@@ -222,13 +226,26 @@ app.get('/invite/viewInvite', function(req, res) {
     if (invite) {
       // Return page, invite, and encrypted message
       res.json({
+        expires: invite.expires.toString(),
+        key: invite.pgp.private_key,
         message: invite.message,
-        key: invite.pgp.private_key
+        sender: invite.sender,
+        sent: invite.sent.toString(),
+        subject: invite.subject
       });
     }
   }).catch(function(err) {
     res.status(500).send(err);
   });
+});
+
+app.get('/invite', function(req, res) {
+  if (!req.query.id || !req.query.pw) {
+    res.status(404).send('Not Found');
+    return;
+  }
+
+  res.render('invite', { loggedIn: false });
 });
 
 /**

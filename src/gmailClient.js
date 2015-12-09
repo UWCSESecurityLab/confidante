@@ -135,10 +135,8 @@ class GmailClient {
         reject(new Error('Message missing \"Date\" header'));
         return;
       }
-
       var rfcMessage = this.buildRfcMessage(jsonMessage);
       var encodedMessage = URLSafeBase64.encode(new Buffer(rfcMessage));
-
       google.gmail('v1').users.messages.send({
         auth: this.oauth2Client,
         userId: 'me',
@@ -148,6 +146,7 @@ class GmailClient {
         }
       }, function(err, response) {
         if (err) {
+          console.log('Error sending message: ' + err);
           reject(err);
           return;
         }
@@ -172,6 +171,10 @@ class GmailClient {
     if (jsonMessage.headers.references) {
       rfcMessage.push('References: ' + jsonMessage.headers.references);
     }
+    if (jsonMessage.headers.contentType) {
+      rfcMessage.push('Content-Type: ' + jsonMessage.headers.contentType);
+    }
+
     rfcMessage.push('Subject: ' + jsonMessage.headers.subject);
     rfcMessage.push('Date: ' + jsonMessage.headers.date);
     rfcMessage.push('');

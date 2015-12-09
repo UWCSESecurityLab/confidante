@@ -2,6 +2,7 @@
 
 var React = require('react');
 var keybaseAPI = require('../keybaseAPI');
+var ComposeStore = require('../stores/ComposeStore');
 
 var KeybaseAutocomplete = React.createClass({
   getInitialState: function() {
@@ -9,6 +10,12 @@ var KeybaseAutocomplete = React.createClass({
       kbto: '',
       results: {}
     };
+  },
+  componentDidMount: function() {
+    ComposeStore.addResetListener(this._onReset);
+  },
+  _onReset: function() {
+    this.setState(this.getInitialState());
   },
   hideCompletions: function(e) {
     this.setState({results: {}});

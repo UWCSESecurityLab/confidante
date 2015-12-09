@@ -5,6 +5,7 @@
 var ComposeButton = require('./ComposeButton.react');
 var ComposeArea = require('./ComposeArea.react');
 var Inbox = require('./Inbox.react');
+var InviteButton = require('./InviteButton.react');
 /*eslint-enable no-unused-vars*/
 
 var React = require('react');
@@ -20,6 +21,7 @@ var EmailClient = React.createClass({
     return (
       <div>
         <ComposeButton />
+        <InviteButton />
         <ComposeArea />
         <Inbox />
       </div>

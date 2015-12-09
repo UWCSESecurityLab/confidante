@@ -31,7 +31,7 @@ let mockInvite = {}
 let storeInviteKeysStub = sinon.stub(db, "storeInviteKeys", (recipient, keys) => {
   return new Promise(function(resolve, reject) {
     mockInvite = new Invite({
-      recipientEmail: recipient,
+      recipient: recipient,
       expires: new Date(),
       pgp: {
         public_key: keys.publicKey,
@@ -135,10 +135,11 @@ describe('app.js', function() {
           sinon.assert.calledWith(sendMessageStub,
             {
               headers: {
-                to: [mockInvite.recipientEmail],
+                to: [mockInvite.recipient],
                 from: mockSenderEmail,
                 subject: mockSubject,
-                date: sinon.match.any
+                date: sinon.match.any,
+                contentType: sinon.match.any
               },
               body: sinon.match((actualBody) => {
                 return actualBody.includes(mockBody) &&
