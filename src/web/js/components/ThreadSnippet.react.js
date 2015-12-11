@@ -5,6 +5,7 @@ var Thread = require('./Thread.react');
 /*eslint-enable no-unused-vars*/
 
 var React = require('react');
+var InboxActions = require('../actions/InboxActions.js');
 var messageParsing = require('../messageParsing');
 
 /**
@@ -20,21 +21,27 @@ var ThreadSnippet = React.createClass({
   },
   openThread: function() {
     this.setState({fullThread: true});
+    if (this.isUnread()) {
+      InboxActions.markAsRead(this.props.thread.id);
+    }
   },
   closeThread: function() {
     this.setState({fullThread: false});
+  },
+  isUnread: function() {
+    return this.props.thread.messages.some(function(message) {
+      return message.labelIds.some(function(label) {
+        return label === 'UNREAD';
+      });
+    });
   },
   render: function() {
     if (!this.state.fullThread) {
       var threadSubject = messageParsing.getThreadHeader(this.props.thread, 'Subject');
       var threadFrom = messageParsing.getThreadHeader(this.props.thread, 'From');
 
-      let unread = this.props.thread.messages.some((message) =>
-        message.labelIds.some((label) => label === 'UNREAD')
-      );
-
       let snippetClass = "row snippet";
-      if (unread) {
+      if (this.isUnread()) {
         snippetClass += " unreadSnippet";
       }
 
