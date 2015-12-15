@@ -105,7 +105,7 @@ class KeybaseAPI {
         url: this.serverBaseURI + '/login.json?' +
              'email_or_username=' + this.username + '&' +
              'hmac_pwh=' + hmac_pwh + '&' +
-             'login_session' + saltDetails.login_session
+             'login_session=' + saltDetails.login_session
       }, function (error, response, body) {
         if (error) {
           reject(body);
