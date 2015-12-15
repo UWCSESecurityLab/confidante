@@ -175,7 +175,7 @@ describe('app.js', function() {
 
   describe('End-to-end invite test', function() {
     it('Can generate keys, send encrypted invite, decrypt private key, and decrypt invite', function(done) {
-      this.timeout(5000);
+      this.timeout(8000);
 
       let testSubject = "Does this even work?";
       let testMessage = "If this message survives the whole journey I'll eat a shoe";
