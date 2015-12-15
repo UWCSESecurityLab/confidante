@@ -71,10 +71,8 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
   },
 
   markAsRead: function(threadId) {
-    request({
-      method: 'POST',
-      url: window.location.origin + '/markAsRead',
-      qs: { threadId: threadId }
+    xhr.post({
+      url: window.location.origin + '/markAsRead?threadId=' + threadId
     }, function(err, response, body) {
       if (err) {
         console.error(err);
