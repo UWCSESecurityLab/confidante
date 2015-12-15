@@ -1,5 +1,6 @@
 'use strict';
 var express = require('express');
+var compression = require('compression');
 var session = require('express-session');
 var bodyParser = require('body-parser');
 var request = require('request');
@@ -44,6 +45,7 @@ app.set('views', __dirname + '/web/views');
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(compression());
 app.use(session({
   secret: 'keyboard cat',
   resave: false,
