@@ -7,6 +7,7 @@
     "build": "./scripts/build.sh",
     "clean": "./scripts/clean.sh",
     "lint": "eslint src/* || true",
+    "prod-build": "./scripts/prod-build.sh",
     "postinstall": "./scripts/postinstall.sh",
     "test": "mocha"
   },
@@ -14,6 +15,7 @@
   "dependencies": {
     "body-parser": "^1.14.1",
     "bootstrap": "^3.3.5",
+    "compression": "^1.6.0",
     "connect-mongodb-session": "^1.0.5",
     "cookie": "^0.2.2",
     "ejs": "^2.3.4",
@@ -32,7 +34,8 @@
     "react-dom": "^0.14.0",
     "request": "^2.65.0",
     "triplesec": "^3.0.25",
-    "urlsafe-base64": "^1.0.0"
+    "urlsafe-base64": "^1.0.0",
+    "xhr": "^2.2.0"
   },
   "devDependencies": {
     "babelify": "^6.3.0",
@@ -43,7 +46,8 @@
     "mocha": "^2.3.3",
     "mockery": "^1.4.0",
     "sinon": "^1.17.1",
-    "supertest": "^1.1.0"
+    "supertest": "^1.1.0",
+    "uglify-js": "^2.6.1"
   },
   "repository": {
     "type": "git",

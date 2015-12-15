@@ -4,7 +4,7 @@ var InboxDispatcher = require('../dispatcher/InboxDispatcher');
 var EventEmitter = require('events').EventEmitter;
 var keybaseAPI = require('../keybaseAPI');
 var messageParsing = require('../messageParsing');
-var request = require('request');
+var xhr = require('xhr');
 
 var _plaintexts = {};
 var _threads = {};
@@ -35,11 +35,9 @@ function _decryptMessage(message) {
 }
 
 function loadMail() {
-  request({
-    method: 'GET',
+  xhr.get({
     url: window.location.origin + '/inbox'
-  },
-  function(error, response, body) {
+  }, function(error, response, body) {
     if (!error) {
       _threads = JSON.parse(body);
       _threads.forEach(function(thread) {
