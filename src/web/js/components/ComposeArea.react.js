@@ -8,7 +8,7 @@ var KeybaseAutocomplete = require('./KeybaseAutocomplete.react');
 var messageParsing = require('../messageParsing');
 var keybaseAPI = require('../keybaseAPI');
 var kbpgp = require('kbpgp');
-var request = require('request');
+var xhr = require('xhr');
 
 var ourPublicKeyManager =
   Promise
@@ -117,11 +117,10 @@ var ComposeArea = React.createClass({
           parentMessage: this.state.inReplyTo
         };
 
-        request({
-            method: 'POST',
+        xhr.post({
             url: window.location.origin + '/sendMessage',
-            json: true,
-            body: email
+            json: email,
+            withCredentials: true
           }, function(error, response) {
             if (error) {
               this.setState({ feedback: 'Error: Couldn\'t reach Keymail server.' });
@@ -143,10 +142,8 @@ var ComposeArea = React.createClass({
     this.setState({ sendingSpinner: true });
     let getKey = function(recipient) {
       return new Promise(function(resolve, reject) {
-        request({
-          method: 'GET',
-          url: window.location.origin + '/invite/getKey',
-          qs: { recipient: recipient }
+        xhr.get({
+          url: window.location.origin + '/invite/getKey?recipient=' + recipient,
         }, function(error, response, body) {
           if (error) {
             console.error(error);
@@ -185,11 +182,9 @@ var ComposeArea = React.createClass({
 
     let sendInvite = function(id, subject, message) {
       return new Promise(function(resolve, reject) {
-        request({
-          method: 'POST',
+        xhr.post({
           url: window.location.origin + '/invite/sendInvite',
-          json: true,
-          body: {
+          json: {
             inviteId: id,
             message: message,
             subject: subject

@@ -2,17 +2,13 @@
 
 var React = require('react');
 var ComposeStore = require('../stores/ComposeStore');
-var request = require('request');
 var keybaseAPI = require('../keybaseAPI');
+var xhr = require('xhr');
 
 function autocompleteContacts(query) {
   return new Promise(function(resolve, reject) {
-    request({
-      method: 'GET',
-      url: window.location.origin + '/contacts.json',
-      qs: {
-        q: query
-      }
+    xhr.get({
+      url: window.location.origin + '/contacts.json?q=' + query
     }, function(error, response, body) {
       if (!error && response.statusCode == 200) {
         resolve(JSON.parse(body));

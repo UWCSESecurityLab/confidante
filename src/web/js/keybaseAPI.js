@@ -1,12 +1,11 @@
 'use strict';
 
-var request = require('request');
-// var buffer = require('buffer');
 var crypto = require('crypto');
-var purepack = require('purepack');
 var kbpgp = require('kbpgp');
 var p3skb = require('../../p3skb');
+var purepack = require('purepack');
 var scrypt = scrypt_module_factory(67108864);
+var xhr = require('xhr');
 
 class KeybaseAPI {
   constructor(username, passphrase, serverBaseURI) {
@@ -76,23 +75,16 @@ class KeybaseAPI {
   _getSalt() {
     console.log('Get salt...');
     return new Promise(function(fulfill, reject) {
-      request(
-        {
-          method: 'GET',
-          url: this.serverBaseURI + '/getSalt.json',
-          qs: {
-            email_or_username: this.username
-          }
-        },
-        function(error, response, body) {
-          if (!error && response.statusCode == 200) {
-            body = JSON.parse(body);
-            fulfill(body);
-          } else {
-            reject(error);
-          }
+      xhr.get({
+        url: this.serverBaseURI + '/getSalt.json?email_or_username=' + this.username
+      }, function(error, response, body) {
+        if (!error && response.statusCode == 200) {
+          body = JSON.parse(body);
+          fulfill(body);
+        } else {
+          reject(error);
         }
-      );
+      });
     }.bind(this));
   }
 
@@ -109,25 +101,20 @@ class KeybaseAPI {
       var hash = KeybaseAPI.computePasswordHash(this.passphrase, salt);
       var hmac_pwh = crypto.createHmac('SHA512', hash).update(login_session).digest('hex');
 
-      request(
-        { method: 'POST',
-          url: this.serverBaseURI + '/login.json',
-          qs: {
-            'email_or_username': this.username,
-            'hmac_pwh': hmac_pwh,
-            'login_session': saltDetails.login_session
-          }
-        },
-        function (error, response, body) {
-          if (error) {
-            reject(body);
-          } else if (response.statusCode == 200) {
-            fulfill(JSON.parse(body));
-          } else {
-            reject(body);
-          }
+      xhr.post({
+        url: this.serverBaseURI + '/login.json?' +
+             'email_or_username=' + this.username + '&' +
+             'hmac_pwh=' + hmac_pwh + '&' +
+             'login_session=' + saltDetails.login_session
+      }, function (error, response, body) {
+        if (error) {
+          reject(body);
+        } else if (response.statusCode == 200) {
+          fulfill(JSON.parse(body));
+        } else {
+          reject(body);
         }
-      );
+      });
     }.bind(this));
   }
 
@@ -138,21 +125,17 @@ class KeybaseAPI {
    */
   static publicKeyForUser(user) {
     return new Promise(function(fulfill, reject) {
-      request(
-        {
-          method: 'GET',
-          url: 'https://keybase.io/' + user + '/key.asc'
-        },
-        function(error, response, body) {
-          if (error) {
-            reject('Internal error attempting to fetch key for user ' + user);
-          } else if (response.statusCode == 200) {
-            fulfill(body);
-          } else {
-            reject('Error code ' + response.statusCode + ' from keybase for key.asc for user ' + user);
-          }
+      xhr.get({
+        url: 'https://keybase.io/' + user + '/key.asc'
+      }, function(error, response, body) {
+        if (error) {
+          reject('Internal error attempting to fetch key for user ' + user);
+        } else if (response.statusCode == 200) {
+          fulfill(body);
+        } else {
+          reject('Error code ' + response.statusCode + ' from keybase for key.asc for user ' + user);
         }
-      );
+      });
     });
   }
 
@@ -244,22 +227,15 @@ class KeybaseAPI {
 
   static autocomplete(q) {
     return new Promise(function(fulfill, reject) {
-      request(
-        {
-          method: 'GET',
-          url: 'https://keybase.io/_/api/1.0/user/autocomplete.json',
-          qs: {
-            q: q
-          }
-        },
-        function (error, response, body) {
-          if (!error && response.statusCode == 200) {
-            fulfill(body);
-          } else {
-            reject(error);
-          }
+      xhr.get({
+        url: 'https://keybase.io/_/api/1.0/user/autocomplete.json?q=' + q
+      }, function (error, response, body) {
+        if (!error && response.statusCode == 200) {
+          fulfill(body);
+        } else {
+          reject(error);
         }
-      );
+      });
     });
   }
 
