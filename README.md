@@ -3,10 +3,12 @@ Encrypted email for everyone!
 
 ## Getting Started ##
 - Keymail runs on [node.js](https://nodejs.org). You'll need to install that first.
+- Keymail also needs [MongoDB](https://www.mongodb.org/) installed for storing accounts and sessions.
 - Clone this repository: `$ git clone git@gitlab.cs.washington.edu:lerner/keymail.git`
 - Run `$ npm install` to download third-party dependencies.
 - Run `$ npm run build` to compile frontend assets.
-- Run `$ node src/app.js` to run the Keymail server.
+- Run `$ mongod` to start the database service. Leave that terminal window open.
+- In another terminal window, run `$ node src/app.js` to run the Keymail server.
 - Keymail should be accessible at [http://localhost:3000](http://localhost:3000)
 
 ## Helpful Links ##
