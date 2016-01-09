@@ -37,8 +37,8 @@ var ThreadSnippet = React.createClass({
   },
   render: function() {
     if (!this.state.fullThread) {
-      var threadSubject = messageParsing.getThreadHeader(this.props.thread, 'Subject');
-      var threadFrom = messageParsing.getThreadHeader(this.props.thread, 'From');
+      let threadSubject = messageParsing.getThreadHeader(this.props.thread, 'Subject');
+      let threadFrom = messageParsing.getPeopleInThread(this.props.thread);
 
       let snippetClass = "row snippet";
       if (this.isUnread()) {
