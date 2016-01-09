@@ -2,7 +2,7 @@ var submit = document.getElementById('submit');
 submit.onclick = login;
 
 var spinner = document.getElementById('spinner');
-spinner.style.display = 'none';
+spinner.style.visibility = 'hidden';
 
 // Submit on enter key
 document.onkeydown = function(event) {
@@ -13,7 +13,7 @@ document.onkeydown = function(event) {
 
 function login() {
   removeError();
-  spinner.style.display = 'inline';
+  spinner.style.visibility = 'visible';
 
   var username = document.getElementById('username').value;
   var password = document.getElementById('password').value;
@@ -21,8 +21,9 @@ function login() {
 
   keybase.login().then(function(response) {
     if (response.status.code != 0) {
-      spinner.style.display = 'none';
+      spinner.style.visibility = 'hidden';
       addError();
+      console.log(response);
       return;
     }
     localStorage.setItem('keybase', JSON.stringify(response.me));

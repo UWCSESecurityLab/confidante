@@ -4,6 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Login - Keybase Mail</title>
+  <%- include('includeBootstrap'); %>
+  <link rel="stylesheet" href="login.css">
+  <link rel="stylesheet" href="spinner.css">
 </head>
 <body>
   <%- include('header', { email: email, loggedIn: loggedIn }); %>
@@ -40,9 +43,6 @@
       </a>
     </div>
   </div>
-  <%- include('includeBootstrap'); %>
-  <link rel="stylesheet" href="login.css">
-  <link rel="stylesheet" href="spinner.css">
   <script src="login.js"></script>
   <script src="scrypt.js"></script>
   <script src="keybaseAPI-bundle.js"></script>
