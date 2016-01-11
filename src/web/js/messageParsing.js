@@ -56,28 +56,27 @@ module.exports = {
    * in the from field of a message, it's converted to the string "me".
    */
   getPeopleInThread: function(thread, me) {
-    let participants = '';
+    let participants = [];
     let count = 0;
 
     thread.messages.forEach(function(message) {
       let headers = message.payload.headers;
       for (let i = 0; i < headers.length; i++) {
         if (headers[i].name == 'To') {
-          if (participants.length > 0) {
-            participants += ', ';
-          }
           if (headers[i].value.includes(me)) {
-            participants += 'me';
+            participants.push('me');
           } else {
-            participants += headers[i].value.split(' <')[0];
+            participants.push(headers[i].value.split(' <')[0]);
           }
-          count++;
         }
       }
     });
-    if (count > 1) {
-      participants += ' (' + count + ')';
+
+    if (participants.length > 2) {
+      return participants[0] + " ... " + participants[participants.length - 1] +
+          ' (' + participants.length + ')';
+    } else {
+      return participants.join(', ');
     }
-    return participants;
   }
 };

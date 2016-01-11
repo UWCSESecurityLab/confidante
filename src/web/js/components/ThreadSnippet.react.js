@@ -38,7 +38,10 @@ var ThreadSnippet = React.createClass({
   render: function() {
     if (!this.state.fullThread) {
       let threadSubject = messageParsing.getThreadHeader(this.props.thread, 'Subject');
-      let threadFrom = messageParsing.getPeopleInThread(this.props.thread);
+      let threadFrom = messageParsing.getPeopleInThread(
+        this.props.thread,
+        document.getElementById('myEmail').innerHTML
+      );
 
       let snippetClass = "row snippet";
       if (this.isUnread()) {
