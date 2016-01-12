@@ -19,18 +19,6 @@ var Message = React.createClass({
       body: 'Decrypting...'
     };
   },
-  componentDidMount: function() {
-    var message = messageParsing.getMessageBody(this.props.message);
-    keybaseAPI.getPrivateManager()
-      .then(keybaseAPI.decrypt(message))
-      .then(function(decryptedBody) {
-        this.setState({body: decryptedBody});
-      }.bind(this))
-      .catch(function(err) {
-        console.log(err);
-        this.setState({body: 'Could not decrypt body: ' + err});
-      }.bind(this));
-  },
 
   reply: function() {
     InboxActions.setInReplyTo(this.props.message);
