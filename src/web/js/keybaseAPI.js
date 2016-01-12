@@ -218,7 +218,7 @@ class KeybaseAPI {
             if (err !== null) {
               reject(err);
             } else {
-              fulfill(literals[0].toString());
+              fulfill(literals);
             }
           });
       });
