@@ -53,6 +53,7 @@ var Message = React.createClass({
           <p>To: {to}</p>
         </div>
         {body}
+        Signed by {this.props.signer}
         <button type="button" className="btn btn-primary reply" data-toggle="modal" data-target="#composeMessage" onClick={this.reply}>
           Reply
         </button>

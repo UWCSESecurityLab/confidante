@@ -18,6 +18,19 @@ _privateManager.then(function(pm) {
   console.log(pm);
 });
 
+function _signerFromLiterals(literals) {
+  let ds = literals[0].get_data_signer();
+  let km;
+  if (ds) { 
+    km = ds.get_key_manager();
+  }
+  if (km) {
+    console.log("Signed by PGP fingerprint");
+    console.log(km.pgp.get_key_id().toString('hex'));
+    return km.pgp.get_key_id().toString('hex');
+  }
+  return null;
+}
 function _decryptThread(thread) {
   thread.messages.forEach(function(message) {
     if (_plaintexts[message.id] === undefined) {
@@ -29,9 +42,9 @@ function _decryptMessage(message) {
   var body = messageParsing.getMessageBody(message);
   _privateManager
     .then(keybaseAPI.decrypt(body))
-    .then(function(plaintext) {
-      _plaintexts[message.id] = plaintext;
-
+    .then(function(literals) {
+      _plaintexts[message.id] = literals[0].toString();
+      _signers[message.id] = _signerFromLiterals(literals);
       delete _errors[message.id];
       MessageStore.emitChange();
     }).catch(function(err) {
@@ -76,7 +89,8 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
     return {
       errors: _errors,
       threads: _threads,
-      plaintexts: _plaintexts
+      plaintexts: _plaintexts,
+      signers: _signers,
     };
   },
 

@@ -65,6 +65,7 @@ var ThreadSnippet = React.createClass({
       return (<Thread plaintexts={this.props.plaintexts}
                       errors={this.props.errors}
                       thread={this.props.thread}
+                      signers={this.props.signers}
                       closeCallback={this.closeThread}/>);
     }
   }

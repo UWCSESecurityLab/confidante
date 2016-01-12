@@ -32,6 +32,7 @@ var Inbox = React.createClass({
       return (<li key={thread.id}>
                 <ThreadSnippet thread={thread}
                                errors={this.state.errors}
+                               signers={this.state.signers}
                                plaintexts={this.state.plaintexts} />
               </li>);
     }.bind(this));
