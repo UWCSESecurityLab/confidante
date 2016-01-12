@@ -9,9 +9,14 @@ var xhr = require('xhr');
 var _plaintexts = {};
 var _threads = {};
 var _errors = {};
+var _signers = {};
 
 // A promise containing our local private key.
 var _privateManager = keybaseAPI.getPrivateManager();
+
+_privateManager.then(function(pm) {
+  console.log(pm);
+});
 
 function _decryptThread(thread) {
   thread.messages.forEach(function(message) {
@@ -26,6 +31,7 @@ function _decryptMessage(message) {
     .then(keybaseAPI.decrypt(body))
     .then(function(plaintext) {
       _plaintexts[message.id] = plaintext;
+
       delete _errors[message.id];
       MessageStore.emitChange();
     }).catch(function(err) {
@@ -60,6 +66,10 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
   },
   removeChangeListener: function(callback) {
     this.removeListener('CHANGE', callback);
+  },
+
+  getPrivateManager: function() {
+    return _privateManager;
   },
 
   getAll: function() {

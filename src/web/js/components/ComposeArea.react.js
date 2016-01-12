@@ -2,6 +2,7 @@
 
 var React = require('react');
 var ComposeStore = require('../stores/ComposeStore');
+var MessageStore = require('../stores/MessageStore');
 var ContactsAutocomplete = require('./ContactsAutocomplete.react');
 var InboxActions = require('../actions/InboxActions');
 var KeybaseAutocomplete = require('./KeybaseAutocomplete.react');
@@ -10,7 +11,12 @@ var keybaseAPI = require('../keybaseAPI');
 var kbpgp = require('kbpgp');
 var xhr = require('xhr');
 
-var ourPublicKeyManager =
+var ourPrivateManager;
+MessageStore.getPrivateManager().then(function(privateManager) {
+  ourPrivateManager = privateManager;
+});
+
+var ourPublicKeyManager = 
   Promise
     .reject(new Error('Key manager for local public key not yet created.'))
     .catch(function() {});
@@ -90,7 +96,8 @@ var ComposeArea = React.createClass({
     return new Promise(function(fulfill, reject) {
       var params = {
         msg: this.state.email,
-        encrypt_for: keyManagers
+        encrypt_for: keyManagers,
+        sign_with: ourPrivateManager
       };
       kbpgp.box(params, function(err, result_string) {
         if (!err) {
