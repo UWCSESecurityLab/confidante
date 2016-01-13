@@ -5,6 +5,7 @@ var Thread = require('./Thread.react');
 /*eslint-enable no-unused-vars*/
 
 var React = require('react');
+var InboxActions = require('../actions/InboxActions.js');
 var messageParsing = require('../messageParsing');
 
 /**
@@ -14,28 +15,46 @@ var messageParsing = require('../messageParsing');
 var ThreadSnippet = React.createClass({
   getInitialState: function() {
     return {
-      messages: [],
       checked: false,
       fullThread: false
     };
   },
   openThread: function() {
     this.setState({fullThread: true});
+    if (this.isUnread()) {
+      InboxActions.markAsRead(this.props.thread.id);
+    }
   },
   closeThread: function() {
     this.setState({fullThread: false});
   },
+  isUnread: function() {
+    return this.props.thread.messages.some(function(message) {
+      return message.labelIds.some(function(label) {
+        return label === 'UNREAD';
+      });
+    });
+  },
   render: function() {
     if (!this.state.fullThread) {
-      var threadSubject = messageParsing.getThreadHeader(this.props.thread, 'Subject');
-      var threadFrom = messageParsing.getThreadHeader(this.props.thread, 'From');
+      let threadSubject = messageParsing.getThreadHeader(this.props.thread, 'Subject');
+      let threadFrom = messageParsing.getPeopleInThread(
+        this.props.thread,
+        document.getElementById('myEmail').innerHTML
+      );
+
+      let snippetClass = "row snippet";
+      if (this.isUnread()) {
+        snippetClass += " unreadSnippet";
+      }
+
       return (
-        <div className="row snippet" onClick={this.openThread}>
+        <div className={snippetClass} onClick={this.openThread}>
           <div className="col-md-1">
             <input type="checkbox" value={this.state.checked} onchange={this.handleChange}></input>
           </div>
           <div className="col-md-3">
-            <strong>{threadFrom}</strong>
+            {threadFrom}
           </div>
           <div className="col-md-8">
             {threadSubject}

@@ -155,6 +155,27 @@ class GmailClient {
     }.bind(this));
   }
 
+  markAsRead(threadId) {
+    return new Promise(function(resolve, reject) {
+      google.gmail('v1').users.threads.modify({
+        auth: this.oauth2Client,
+        userId: 'me',
+        id: threadId,
+        resource: {
+          'removeLabelIds': [
+            'UNREAD'
+          ]
+        }
+      }, function(err, response) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(response);
+        }
+      });
+    }.bind(this));
+  }
+
   buildRfcMessage(jsonMessage) {
     var rfcMessage = [];
     rfcMessage.push('From: ' + jsonMessage.headers.from);
