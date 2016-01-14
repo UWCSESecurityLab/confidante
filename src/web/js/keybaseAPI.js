@@ -58,13 +58,13 @@ class KeybaseAPI {
    */
   login() {
     return new Promise(function(fulfill, reject) {
-      this._getSalt(this.username)
-           .then(this._login.bind(this))
-           .then(function(loginBody) {
-             fulfill(loginBody);
-           }).catch(function(err) {
-             reject(err);
-           });
+      this._getSalt()
+        .then(this._login.bind(this))
+        .then(function(loginBody) {
+          fulfill(loginBody);
+        }).catch(function(err) {
+          reject(err);
+        });
     }.bind(this));
   }
 
@@ -76,11 +76,10 @@ class KeybaseAPI {
     console.log('Get salt...');
     return new Promise(function(fulfill, reject) {
       xhr.get({
-        url: this.serverBaseURI + '/getSalt.json?email_or_username=' + this.username
+        url: this.serverBaseURI + '/keybase/getsalt.json?email_or_username=' + this.username
       }, function(error, response, body) {
         if (!error && response.statusCode == 200) {
-          body = JSON.parse(body);
-          fulfill(body);
+          fulfill(JSON.parse(body));
         } else {
           reject(error);
         }
@@ -102,11 +101,11 @@ class KeybaseAPI {
       var hmac_pwh = crypto.createHmac('SHA512', hash).update(login_session).digest('hex');
 
       xhr.post({
-        url: this.serverBaseURI + '/login.json?' +
+        url: this.serverBaseURI + '/keybase/login.json?' +
              'email_or_username=' + this.username + '&' +
              'hmac_pwh=' + hmac_pwh + '&' +
              'login_session=' + saltDetails.login_session
-      }, function (error, response, body) {
+      }, function(error, response, body) {
         if (error) {
           reject(body);
         } else if (response.statusCode == 200) {
@@ -116,6 +115,31 @@ class KeybaseAPI {
         }
       });
     }.bind(this));
+  }
+
+  static signup(name, email, username, pw, invitation_id) {
+    return new Promise(function(resolve, reject) {
+      let salt = crypto.randomBytes(16);
+      let pwh = computePasswordHash(pw, salt);
+
+      xhr.post({
+        url: this.serverBaseURI + '/keybase/signup.json?' +
+             'name=' + name + '&' +
+             'email=' + email + '&' +
+             'username=' + username + '&' +
+             'pwh=' + pwh.toString('hex') + '&' +
+             'salt=' + salt.toString('base64') + '&' +
+             'invitation_id=' + invitation_id
+      }, function(error, response, body) {
+        if (error) {
+          reject(error);
+        } else if (response.statusCode == 200) {
+          resolve(body);
+        } else {
+          reject(body);
+        }
+      });
+    });
   }
 
   /**
