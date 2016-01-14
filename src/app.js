@@ -329,7 +329,6 @@ app.get('/contacts.json', auth.ensureAuthenticated, function(req, res) {
   });
 });
 
-var globalKeybaseCsrfToken;
 /**
  * These endpoints replicate the functionality of the keybase /getsalt.json and
  * /login.json endpoints by echoing the browser's request through to keybase
@@ -347,24 +346,19 @@ app.get('/keybase/getsalt.json', function(req, res) {
   // /keybase/getsalt.json
   // Inputs: email_or_username
   // Outputs: guest_id, status, csrf_token, login_session, pwh_version
-  //
   var GET_SALT_URL = 'https://keybase.io/_/api/1.0/getsalt.json';
-  request(
-    { method: 'GET',
-      url: GET_SALT_URL,
-      qs: req.query
-    },
-    function(error, response, body) {
-      if (error) {
-        res.status(500).send('Failed to contact keybase /getsalt.json endpoint.');
-        return;
-      }
-      console.log(JSON.parse(body));
-      globalKeybaseCsrfToken = body.csrf_token;
-      console.log('Set global CSRF token: ' + globalKeybaseCsrfToken)
-      // Echo the response with the same status code.
-      res.status(response.statusCode).send(body);
-    });
+  request({
+    method: 'GET',
+    url: GET_SALT_URL,
+    qs: req.query
+  }, function(error, response, body) {
+    if (error) {
+      res.status(500).send('Failed to contact keybase /getsalt.json endpoint.');
+      return;
+    }
+    // Echo the response with the same status code.
+    res.status(response.statusCode).send(body);
+  });
 });
 
 app.post('/keybase/login.json', function(req, res) {
@@ -388,6 +382,8 @@ app.post('/keybase/login.json', function(req, res) {
 
       // Early exit if the login failed
       if (keybase.status.code != 0) {
+        console.log('login.json failed');
+        console.log(body);
         res.status(response.statusCode).send(body);
         return;
       }
@@ -432,20 +428,21 @@ app.post('/keybase/signup.json', function(req, res) {
     if (error) {
       res.send(error);
     } else {
+      req.session.keybaseCSRF = JSON.parse(body).csrf_token;
       res.send(body);
     }
   });
 });
 
 app.post('/keybase/key/add.json', auth.ensureAuthenticated, function(req, res) {
-  console.log('Global CSRF token: ' + globalKeybaseCsrfToken);
+  console.log('CSRF token: ' + req.session.keybaseCSRF);
   request({
     method: 'POST',
     url: 'https://keybase.io/_/api/1.0/key/add.json',
     qs: req.query,
     jar: getKeybaseCookieJar(req.session),
     headers: {
-      'X-CSRF-Token': globalKeybaseCsrfToken
+      'X-CSRF-Token': req.session.keybaseCSRF
     }
   }, function(error, response, body) {
     if (error) {
