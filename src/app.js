@@ -85,6 +85,10 @@ app.get('/inbox', auth.ensureAuthenticated, function(req, res) {
   });
 });
 
+app.get('/signup', function(req, res) {
+  res.render('signup', { loggedIn: false });
+});
+
 app.post('/sendMessage', auth.ensureAuthenticated, function(req, res) {
   var gmailClient = new GmailClient(req.session.googleToken);
   let parent = req.body.parentMessage;
@@ -430,7 +434,7 @@ app.post('/keybase/login.json', function(req, res) {
 
 app.post('/keybase/signup.json', function(req, res) {
   if (auth.isAuthenticated(req.session)) {
-    res.redirect('/mail');
+    res.status(400).send('Already logged in!');
     return;
   }
   request({

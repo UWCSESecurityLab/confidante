@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Keybase Mail</title>
+	<title>Keymail</title>
 	<%- include('includeBootstrap'); %>
 </head>
 <body>
@@ -20,7 +20,8 @@
 				<% if (loggedIn) { %>
 					<a class="btn btn-primary" href="/mail" role="button">Go to Inbox</a>
 				<% } else { %>
-					<a class="btn btn-primary" href="/login" role="button">Sign In</a>
+          <a class="btn btn-success" href="/signup" role="button">Get Started</a>
+					<a class="btn btn-primary" href="/login" role="button">Log In</a>
 				<% } %>
 			</p>
 		</div>

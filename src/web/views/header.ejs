@@ -24,7 +24,8 @@
 			</ul>
     	<ul class="nav navbar-nav navbar-right">
 				<% if (!loggedIn) { %>
-        	<li><a href="/login">Sign In</a></li>
+        	<li><a href="/login">Log In</a></li>
+          <li><a href="/signup">Sign Up</a></li>
 				<% } else { %>
           <li><a id="myEmail" href="#"><%= email %></a></li>
 					<li><a href="/logout">Log Out</a></li>
