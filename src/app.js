@@ -329,6 +329,7 @@ app.get('/contacts.json', auth.ensureAuthenticated, function(req, res) {
   });
 });
 
+var globalKeybaseCsrfToken;
 /**
  * These endpoints replicate the functionality of the keybase /getsalt.json and
  * /login.json endpoints by echoing the browser's request through to keybase
@@ -342,8 +343,8 @@ app.get('/contacts.json', auth.ensureAuthenticated, function(req, res) {
  * critical, since the passphrase protects the private key, which the server may
  * also later eavesdrop (in encrypted form) if it is stored in keybase.
  */
-app.get('/getsalt.json', function(req, res) {
-  // /getsalt.json
+app.get('/keybase/getsalt.json', function(req, res) {
+  // /keybase/getsalt.json
   // Inputs: email_or_username
   // Outputs: guest_id, status, csrf_token, login_session, pwh_version
   //
@@ -358,13 +359,16 @@ app.get('/getsalt.json', function(req, res) {
         res.status(500).send('Failed to contact keybase /getsalt.json endpoint.');
         return;
       }
+      console.log(JSON.parse(body));
+      globalKeybaseCsrfToken = body.csrf_token;
+      console.log('Set global CSRF token: ' + globalKeybaseCsrfToken)
       // Echo the response with the same status code.
       res.status(response.statusCode).send(body);
     });
 });
 
-app.post('/login.json', function(req, res) {
-  // /login.json
+app.post('/keybase/login.json', function(req, res) {
+  // /keybase/login.json
   // Inputs: email_or_username, hmac_pwh, login_session
   // Outputs: status, session, me
   //
@@ -415,6 +419,43 @@ app.post('/login.json', function(req, res) {
   );
 });
 
+app.post('/keybase/signup.json', function(req, res) {
+  if (auth.isAuthenticated(req.session)) {
+    res.redirect('/mail');
+    return;
+  }
+  request({
+    method: 'POST',
+    url: 'https://keybase.io/_/api/1.0/signup.json',
+    qs: req.query
+  }, function(error, response, body) {
+    if (error) {
+      res.send(error);
+    } else {
+      res.send(body);
+    }
+  });
+});
+
+app.post('/keybase/key/add.json', auth.ensureAuthenticated, function(req, res) {
+  console.log('Global CSRF token: ' + globalKeybaseCsrfToken);
+  request({
+    method: 'POST',
+    url: 'https://keybase.io/_/api/1.0/key/add.json',
+    qs: req.query,
+    jar: getKeybaseCookieJar(req.session),
+    headers: {
+      'X-CSRF-Token': globalKeybaseCsrfToken
+    }
+  }, function(error, response, body) {
+    if (error) {
+      res.send(error);
+    } else {
+      res.send(body);
+    }
+  });
+});
+
 app.get('/logout', function(req, res) {
   req.session.destroy(function() {
     res.redirect('/');
@@ -424,6 +465,22 @@ app.get('/logout', function(req, res) {
 app.listen(3000);
 
 module.exports = app; // For testing
+
+/**
+ * Returns a request.jar that contains the user's Keybase cookie. For use with
+ * authenticated Keybase API endpoints.
+ * @param session The Keymail session belonging to the Keybase user.
+ * @return request.jar containing the session cookie.
+ */
+function getKeybaseCookieJar(session) {
+  let cookieJar = request.jar();
+  let cookieString = 'session=' + session.keybaseCookie.session;
+  let url = 'https://keybase.io';
+  cookieJar.setCookie(cookieString, url);
+  console.log('Including user\'s Keybase cookie:');
+  console.log(cookieString);
+  return cookieJar;
+}
 
 function redirectToGoogleOAuthUrl(req, res) {
   // Otherwise, we need to send them through the Google OAuth flow.
