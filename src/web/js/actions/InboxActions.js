@@ -17,5 +17,11 @@ module.exports = {
   },
   resetComposeFields: function() {
     InboxDispatcher.dispatch({ type: 'RESET_FIELDS' });
+  },
+  markAsRead: function(threadId) {
+    InboxDispatcher.dispatch({
+      type: 'MARK_AS_READ',
+      message: threadId
+    });
   }
 };

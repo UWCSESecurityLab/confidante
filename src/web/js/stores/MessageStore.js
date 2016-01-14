@@ -70,12 +70,23 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
     };
   },
 
+  markAsRead: function(threadId) {
+    xhr.post({
+      url: window.location.origin + '/markAsRead?threadId=' + threadId
+    }, function(err, response, body) {
+      if (err) {
+        console.error(err);
+      }
+    });
+  },
+
   // Remove this disable when the below function does something.
-  /*eslint-disable no-unused-vars*/
   dispatchToken: InboxDispatcher.register(function(action) {
-    // Respond to some actions.
+    if (action.type === 'MARK_AS_READ') {
+      MessageStore.markAsRead(action.message);
+      MessageStore.emitChange();
+    }
   })
-  /*eslint-enable no-unused-vars*/
 });
 
 module.exports = MessageStore;

@@ -2,7 +2,6 @@
 
 module.exports = {
   getMessageHeader: function(message, header) {
-
     if (!message || Object.keys(message).length === 0) {
       return '';
     }
@@ -15,9 +14,7 @@ module.exports = {
         return h.value;
       }
     }
-    // return '<<NO MESSAGE HEADER ' + header + 'FOUND>>';
     return '';
-
   },
 
   getThreadHeader: function(thread, header) {
@@ -33,7 +30,6 @@ module.exports = {
         return h.value;
       }
     }
-    // return '<<NO THREAD HEADER ' + header + 'FOUND>>';
     return '';
   },
 
@@ -50,5 +46,37 @@ module.exports = {
       return new Buffer(message.payload.body.data, 'base64').toString();
     }
     return '<<NO MESSAGE BODY>>';
+  },
+
+  /**
+   * Return the list of names or email addresses of people who have participated
+   * in an email thread.
+   * @param thread The thread to parse for participants.
+   * @param me (optional) The email address of the current user. If it appears
+   * in the from field of a message, it's converted to the string "me".
+   */
+  getPeopleInThread: function(thread, me) {
+    let participants = [];
+    let count = 0;
+
+    thread.messages.forEach(function(message) {
+      let headers = message.payload.headers;
+      for (let i = 0; i < headers.length; i++) {
+        if (headers[i].name == 'To') {
+          if (headers[i].value.includes(me)) {
+            participants.push('me');
+          } else {
+            participants.push(headers[i].value.split(' <')[0]);
+          }
+        }
+      }
+    });
+
+    if (participants.length > 2) {
+      return participants[0] + " ... " + participants[participants.length - 1] +
+          ' (' + participants.length + ')';
+    } else {
+      return participants.join(', ');
+    }
   }
 };
