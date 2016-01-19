@@ -216,7 +216,7 @@ var ComposeArea = React.createClass({
   render: function() {
     return (
       <div className="modal fade" id="composeMessage">
-        <div className="modal-dialog">
+        <div className="modal-dialog modal-lg">
           <div className="modal-content">
             <div className="modal-header">
               <button type="button" className="close" data-dismiss="modal" aria-label="Close">
