@@ -25,9 +25,10 @@ function _signerFromLiterals(literals) {
     km = ds.get_key_manager();
   }
   if (km) {
-    console.log("Signed by PGP fingerprint");
-    console.log(km.pgp.get_key_id().toString('hex'));
-    return km.pgp.get_key_id().toString('hex');
+    // console.log("Signed by PGP fingerprint");
+    // console.log(km.pgp.get_fingerprint().toString('hex'));
+    // return km.pgp.get_key_id().toString('hex');
+    return km;
   }
   return null;
 }
@@ -45,6 +46,20 @@ function _decryptMessage(message) {
     .then(function(literals) {
       _plaintexts[message.id] = literals[0].toString();
       _signers[message.id] = _signerFromLiterals(literals);
+
+      if (_signers[message.id]) {
+        let fingerprint = _signers[message.id].pgp.get_fingerprint().toString('hex');
+        keybaseAPI.userLookup(fingerprint).then(function(response) {
+          if (response.status.name === 'OK') {
+            _signers[message.id].user = response.them;
+            MessageStore.emitChange();
+          }
+        }).catch(function(error) {
+          console.log('Error looking up user by fingerprint');
+          console.log(error);
+        });
+      }
+
       delete _errors[message.id];
       MessageStore.emitChange();
     }).catch(function(err) {
