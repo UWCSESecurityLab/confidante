@@ -57,7 +57,7 @@ var InviteClient = React.createClass({
       body = (
         <div className="messageBody alert alert-info">
           {this.state.status}
-          <span className="glyphicon glyphicon-refresh spinner"></span>
+          <span className="spinner"></span>
         </div>
       )
     }
