@@ -54,8 +54,9 @@ var SignupClient = React.createClass({
       );
     } else if (this.state.state == 'spinner') {
       return (
-        <div className="box col-md-8 col-md-offset-2">
-          <div className="spinner"></div>
+        <div className="box col-md-8 col-md-offset-2 loading">
+          <div className="large-spinner"></div>
+          <p>Signing Up...</p>
         </div>
       );
     } else if (this.state.state == 'completed') {

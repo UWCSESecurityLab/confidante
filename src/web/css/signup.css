@@ -3,3 +3,7 @@
   box-shadow: 0px 0px 5px 3px #EEEEEE;
   padding: 2em;
 }
+
+.loading {
+  text-align: center;
+}

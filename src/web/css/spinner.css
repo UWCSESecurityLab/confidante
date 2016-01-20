@@ -14,3 +14,15 @@
   0%    { transform: rotate(0deg); }
   100%  { transform: rotate(360deg); }
 }
+
+.large-spinner {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 1em 1em;
+  height: 48px;
+  width: 48px;
+  animation: rotate 0.8s infinite linear;
+  border: 6px solid #3498db;
+  border-right-color: transparent;
+  border-radius: 50%;
+}
