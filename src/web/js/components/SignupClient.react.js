@@ -1,6 +1,7 @@
 'use strict';
 
 var React = require('react');
+var KeybaseAPI = require('../keybaseAPI.js');
 
 /**
  * The SignupClient is the top level React class that manages signing up for
@@ -9,7 +10,7 @@ var React = require('react');
 var SignupClient = React.createClass({
   getInitialState: function() {
     return {
-      state: 'signup'
+      state: 'spinner'
     }
   },
   updateName: function(e) {
@@ -30,9 +31,12 @@ var SignupClient = React.createClass({
   updateInvite: function(e) {
     this.setState({ invite: e.target.value });
   },
+  signup: function() {
+
+  },
   render: function() {
-    if (this.state.state == 'signup') {
-      return(
+    if (this.state.state == 'form') {
+      return (
         <div className="box col-md-8 col-md-offset-2">
           <h2>Create a Keybase Account</h2>
           <form className="form-horizontal">
@@ -43,8 +47,19 @@ var SignupClient = React.createClass({
             <FormInput key="confirm" name="Confirm Password" type="password" onUpdate={this.updateConfirm} />
             <FormInput key="invite" name="Keybase Invite" onUpdate={this.updateInvite} />
           </form>
+          <div className="col-sm-10 col-sm-offset-2">
+            <button onClick={this.signup} className="btn btn-primary">Submit</button>
+          </div>
         </div>
       );
+    } else if (this.state.state == 'spinner') {
+      return (
+        <div className="box col-md-8 col-md-offset-2">
+          <div className="spinner"></div>
+        </div>
+      );
+    } else if (this.state.state == 'completed') {
+
     } else {
       return <p>SignupClient error: invalid state</p>
     }
