@@ -51,7 +51,7 @@ var Message = React.createClass({
       body = (
         <div className="messageBody alert alert-info">
           Decrypting...
-          <span className="glyphicon glyphicon-refresh spinner"></span>
+          <span className="spinner"></span>
         </div>
       );
     } else if (this.props.error) {

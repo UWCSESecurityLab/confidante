@@ -254,7 +254,7 @@ var ComposeArea = React.createClass({
             <div className="modal-footer">
               <div className="alert alert-danger">{this.state.feedback}</div>
               { this.state.sendingSpinner
-                ? <span className="glyphicon glyphicon-refresh spinner"></span>
+                ? <span className="spinner"></span>
                 : null
               }
               { this.state.invite
