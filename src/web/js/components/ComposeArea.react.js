@@ -216,7 +216,7 @@ var ComposeArea = React.createClass({
   render: function() {
     return (
       <div className="modal fade" id="composeMessage">
-        <div className="modal-dialog">
+        <div className="modal-dialog modal-lg">
           <div className="modal-content">
             <div className="modal-header">
               <button type="button" className="close" data-dismiss="modal" aria-label="Close">
@@ -230,7 +230,7 @@ var ComposeArea = React.createClass({
               </h4>
             </div>
             <div className="modal-body">
-              <form className="form-horizontal">
+              <form className="form-horizontal" autocomplete="off">
                 <div className="form-group">
                   <label htmlFor="to">To:</label>
                   <ContactsAutocomplete updateParent={this.updateTo}/>
@@ -254,7 +254,7 @@ var ComposeArea = React.createClass({
             <div className="modal-footer">
               <div className="alert alert-danger">{this.state.feedback}</div>
               { this.state.sendingSpinner
-                ? <span className="glyphicon glyphicon-refresh spinner"></span>
+                ? <span className="spinner"></span>
                 : null
               }
               { this.state.invite
