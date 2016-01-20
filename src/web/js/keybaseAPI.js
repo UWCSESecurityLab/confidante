@@ -50,6 +50,21 @@ class KeybaseAPI {
     }
   }
 
+  static userLookup(keyFingerprint) {
+    return new Promise(function(fulfill, reject) {
+      xhr.get({
+        url: 'https://keybase.io/_/api/1.0/user/lookup.json?key_fingerprint=' + keyFingerprint
+      }, function(error, response, body) {
+        if (!error & response.statusCode === 200) {
+          body = JSON.parse(body);
+          fulfill(body);
+        } else {
+          reject(error);
+        }
+      });
+    });
+  }
+
   /**
    * Perform the 2-step Keybase login flow using the username and password
    * with which the API was initialized. This API fulfills whether the login

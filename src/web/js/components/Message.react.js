@@ -25,6 +25,7 @@ var Message = React.createClass({
   },
 
   render: function() {
+    console.log('rendering');
     var from = messageParsing.getMessageHeader(this.props.message, 'From');
     var to = messageParsing.getMessageHeader(this.props.message, 'To');
 
@@ -46,6 +47,12 @@ var Message = React.createClass({
       body = <ErrorBody error={this.props.error} message={this.props.message} />
     }
 
+    let signer;
+    if (this.props.signer.user && this.props.signer.user.length === 1) {
+      signer = this.props.signer.user[0].basics.username;
+
+    }
+
     return (
       <div className="message">
         <div className="messageHeader">
@@ -53,7 +60,7 @@ var Message = React.createClass({
           <p>To: {to}</p>
         </div>
         {body}
-        Signed by {this.props.signer}
+        Signed by {signer}
         <button type="button" className="btn btn-primary reply" data-toggle="modal" data-target="#composeMessage" onClick={this.reply}>
           Reply
         </button>
