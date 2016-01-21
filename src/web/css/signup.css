@@ -7,3 +7,7 @@
 .loading {
   text-align: center;
 }
+
+#error:empty {
+  visibility: hidden;
+}

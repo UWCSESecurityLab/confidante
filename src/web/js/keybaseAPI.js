@@ -63,6 +63,7 @@ class KeybaseAPI {
         .then(function(loginBody) {
           fulfill(loginBody);
         }).catch(function(err) {
+          console.log('Failed to log in');
           reject(err);
         });
     }.bind(this));
@@ -120,7 +121,7 @@ class KeybaseAPI {
   signup(name, email, invitation_id) {
     return new Promise(function(resolve, reject) {
       let salt = crypto.randomBytes(16);
-      let pwh = computePasswordHash(this.passphrase, salt);
+      let pwh = KeybaseAPI.computePasswordHash(this.passphrase, salt);
 
       xhr.post({
         url: this.serverBaseURI + '/keybase/signup.json?' +
@@ -128,18 +129,20 @@ class KeybaseAPI {
              'email=' + email + '&' +
              'username=' + this.username + '&' +
              'pwh=' + pwh.toString('hex') + '&' +
-             'salt=' + salt.toString('base64') + '&' +
-             'invitation_id=' + invitation_id
+             'salt=' + salt.toString('hex') + '&' +
+             'invitation_id=' + invitation_id + '&' +
+             'pwh_version=3'
       }, function(error, response, body) {
         if (error) {
           reject(error);
-        } else if (response.statusCode == 200) {
+        } else if (JSON.parse(body).status.code == 0) {
           resolve(body);
         } else {
+          console.log('Failed to sign up');
           reject(body);
         }
       });
-    });
+    }.bind(this));
   }
 
   /**
@@ -159,16 +162,17 @@ class KeybaseAPI {
           }, function(error, response, body) {
             if (error) {
               reject(error);
-            } else if (JSON.parse(body).status == 0) {
+            } else if (JSON.parse(body).status.code == 0) {
               resolve(body);
             } else {
+              console.log('Failed to add key');
               reject(body);
             }
           });
-        }).catch(function(error) {
+        }.bind(this)).catch(function(error) {
           reject(error);
         });
-    });
+    }.bind(this));
   }
 
   /**

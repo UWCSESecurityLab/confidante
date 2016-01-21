@@ -445,7 +445,6 @@ app.post('/keybase/signup.json', function(req, res) {
     if (error) {
       res.send(error);
     } else {
-      req.session.keybaseCSRF = JSON.parse(body).csrf_token;
       res.send(body);
     }
   });
