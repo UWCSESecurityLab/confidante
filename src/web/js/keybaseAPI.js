@@ -143,6 +143,35 @@ class KeybaseAPI {
   }
 
   /**
+   * Adds a key to the user's Keybase account.
+   * @param publicKey The armored public key.
+   * @param privateKey The armored private key.
+   */
+  addKey(publicKey, privateKey) {
+    return new Promise(function(resolve, reject) {
+      p3skb.armoredPrivateKeyToP3skb(privateKey, this.passphrase)
+        .then(function(p3skbPrivateKey) {
+          xhr.post({
+            url: this.serverBaseURI + '/keybase/key/add.json?' +
+                 'public_key=' + publicKey + '&' +
+                 'private_key=' + p3skbPrivateKey + '&' +
+                 'is_primary=true'
+          }, function(error, response, body) {
+            if (error) {
+              reject(error);
+            } else if (JSON.parse(body).status == 0) {
+              resolve(body);
+            } else {
+              reject(body);
+            }
+          });
+        }).catch(function(error) {
+          reject(error);
+        });
+    });
+  }
+
+  /**
    * publicKeyForUser retrieves the given user's public key from Keybase.
    *
    * @return key.asc for the given user (an ASCII armored public key).
