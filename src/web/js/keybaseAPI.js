@@ -117,16 +117,16 @@ class KeybaseAPI {
     }.bind(this));
   }
 
-  static signup(name, email, username, pw, invitation_id) {
+  signup(name, email, invitation_id) {
     return new Promise(function(resolve, reject) {
       let salt = crypto.randomBytes(16);
-      let pwh = computePasswordHash(pw, salt);
+      let pwh = computePasswordHash(this.passphrase, salt);
 
       xhr.post({
         url: this.serverBaseURI + '/keybase/signup.json?' +
              'name=' + name + '&' +
              'email=' + email + '&' +
-             'username=' + username + '&' +
+             'username=' + this.username + '&' +
              'pwh=' + pwh.toString('hex') + '&' +
              'salt=' + salt.toString('base64') + '&' +
              'invitation_id=' + invitation_id
