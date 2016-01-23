@@ -411,6 +411,10 @@ app.post('/login.json', function(req, res) {
       req.session.keybaseCookie = parsedCookies.find(function(cookie) {
         return cookie.session !== undefined;
       });
+
+      // Save the CSRF token in the user's session.
+      req.session.keybaseCSRF = keybase.csrf_token;
+
       // Create a User record for this user if necessary.
       db.storeKeybaseCredentials(keybase).then(function() {
         // Echo the response with the same status code on success.
@@ -429,6 +433,21 @@ app.post('/login.json', function(req, res) {
 });
 
 app.get('/logout', function(req, res) {
+  if (auth.isAuthenticatedWithKeybase(req.session)) {
+    request({
+      method: 'POST',
+      url: 'https://keybase.io/_/api/1.0/session/killall.json',
+      headers: { 'X-CSRF-Token': req.session.keybaseCSRF },
+      jar: getKeybaseCookieJar(req.session)
+    }, function(error, response, body) {
+      if (!error) {
+        console.log(body);
+      } else {
+        console.log('Failed to kill sessions: ' + error);
+      }
+    });
+  }
+
   req.session.destroy(function() {
     res.redirect('/');
   });
@@ -437,6 +456,19 @@ app.get('/logout', function(req, res) {
 app.listen(3000);
 
 module.exports = app; // For testing
+
+/**
+ * Returns a request.jar that contains the user's Keybase cookie. For use with
+ * authenticated Keybase API endpoints.
+ * @param session The Keymail session belonging to the Keybase user.
+ * @return request.jar containing the session cookie.
+ */
+function getKeybaseCookieJar(session) {
+  let cookieJar = request.jar();
+  let cookieString = 'session=' + session.keybaseCookie.session;
+  cookieJar.setCookie(cookieString, 'https://keybase.io');
+  return cookieJar;
+}
 
 function redirectToGoogleOAuthUrl(req, res) {
   // Otherwise, we need to send them through the Google OAuth flow.
