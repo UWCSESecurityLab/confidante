@@ -59,6 +59,8 @@ app.use(express.static(__dirname + '/web/js'));
 app.use(express.static(__dirname + '/web/html'));
 app.use(express.static(__dirname + '/web/css'));
 
+let KEYBASE_URL = 'https://stage0.keybase.io';
+
 app.get('/', function(req, res) {
   res.render('index', {
     email: req.session.email,
@@ -363,7 +365,7 @@ app.get('/keybase/getsalt.json', function(req, res) {
   // /keybase/getsalt.json
   // Inputs: email_or_username
   // Outputs: guest_id, status, csrf_token, login_session, pwh_version
-  var GET_SALT_URL = 'https://keybase.io/_/api/1.0/getsalt.json';
+  var GET_SALT_URL = KEYBASE_URL + '/_/api/1.0/getsalt.json';
   request({
     method: 'GET',
     url: GET_SALT_URL,
@@ -383,7 +385,7 @@ app.post('/keybase/login.json', function(req, res) {
   // Inputs: email_or_username, hmac_pwh, login_session
   // Outputs: status, session, me
   //
-  var LOGIN_URL = 'https://keybase.io/_/api/1.0/login.json';
+  var LOGIN_URL = KEYBASE_URL + '/_/api/1.0/login.json';
   request(
     {
       method: 'POST',
@@ -439,7 +441,7 @@ app.post('/keybase/signup.json', function(req, res) {
   }
   request({
     method: 'POST',
-    url: 'https://keybase.io/_/api/1.0/signup.json',
+    url: KEYBASE_URL + '/_/api/1.0/signup.json',
     qs: req.query
   }, function(error, response, body) {
     if (error) {
@@ -450,11 +452,18 @@ app.post('/keybase/signup.json', function(req, res) {
   });
 });
 
-app.post('/keybase/key/add.json', auth.ensureAuthenticated, function(req, res) {
+app.post('/keybase/key/add.json', function(req, res) {
   console.log('CSRF token: ' + req.session.keybaseCSRF);
+
+  if (!auth.isAuthenticatedWithKeybase(req.session)) {
+    console.log('POST /keybase/key/add.json failed: need Keybase authentication');
+    res.status(403).send('Cannot add keys without logging into Keybase');
+    return;
+  }
+
   request({
     method: 'POST',
-    url: 'https://keybase.io/_/api/1.0/key/add.json',
+    url: KEYBASE_URL + '/_/api/1.0/key/add.json',
     qs: req.query,
     jar: getKeybaseCookieJar(req.session),
     headers: {
@@ -488,8 +497,7 @@ module.exports = app; // For testing
 function getKeybaseCookieJar(session) {
   let cookieJar = request.jar();
   let cookieString = 'session=' + session.keybaseCookie.session;
-  let url = 'https://keybase.io';
-  cookieJar.setCookie(cookieString, url);
+  cookieJar.setCookie(cookieString, KEYBASE_URL);
   console.log('Including user\'s Keybase cookie:');
   console.log(cookieString);
   return cookieJar;
