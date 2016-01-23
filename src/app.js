@@ -386,56 +386,53 @@ app.post('/keybase/login.json', function(req, res) {
   // Outputs: status, session, me, csrf_token
   //
   var LOGIN_URL = KEYBASE_URL + '/_/api/1.0/login.json';
-  request(
-    {
-      method: 'POST',
-      url: LOGIN_URL,
-      qs: req.query
-    },
-    function (error, response, body) {
-      if (error) {
-        res.status(500).send('Failed to contact keybase /login.json endpoint.');
-        return;
-      }
-      var keybase = JSON.parse(body);
-
-      // Early exit if the login failed
-      if (keybase.status.code != 0) {
-        console.log('login.json failed');
-        console.log(body);
-        res.status(response.statusCode).send(body);
-        return;
-      }
-
-      // Save the user's id and Keybase cookies in their session.
-      req.session.keybaseId = keybase.me.id;
-      var parsedCookies = response.headers['set-cookie'].map(
-        function(cookie) {
-          return Cookie.parse(cookie);
-        }
-      );
-      req.session.keybaseCookie = parsedCookies.find(function(cookie) {
-        return cookie.session !== undefined;
-      });
-
-      // Save the CSRF token in the user's session.
-      req.session.keybaseCSRF = keybase.csrf_token;
-
-      // Create a User record for this user if necessary.
-      db.storeKeybaseCredentials(keybase).then(function() {
-        // Echo the response with the same status code on success.
-        res.status(response.statusCode).send(body);
-      }).catch(function(mongoError) {
-        req.session.destroy(function(sessionError) {
-          if (sessionError) {
-            res.status(500).send(sessionError + mongoError);
-          } else {
-            res.status(500).send(mongoError);
-          }
-        });
-      });
+  request({
+    method: 'POST',
+    url: LOGIN_URL,
+    qs: req.query
+  }, function (error, response, body) {
+    if (error) {
+      res.status(500).send('Failed to contact keybase /login.json endpoint.');
+      return;
     }
-  );
+    var keybase = JSON.parse(body);
+
+    // Early exit if the login failed
+    if (keybase.status.code != 0) {
+      console.log('login.json failed');
+      console.log(body);
+      res.status(response.statusCode).send(body);
+      return;
+    }
+
+    // Save the user's id and Keybase cookies in their session.
+    req.session.keybaseId = keybase.me.id;
+    var parsedCookies = response.headers['set-cookie'].map(
+      function(cookie) {
+        return Cookie.parse(cookie);
+      }
+    );
+    req.session.keybaseCookie = parsedCookies.find(function(cookie) {
+      return cookie.session !== undefined;
+    });
+
+    // Save the CSRF token in the user's session.
+    req.session.keybaseCSRF = keybase.csrf_token;
+
+    // Create a User record for this user if necessary.
+    db.storeKeybaseCredentials(keybase).then(function() {
+      // Echo the response with the same status code on success.
+      res.status(response.statusCode).send(body);
+    }).catch(function(mongoError) {
+      req.session.destroy(function(sessionError) {
+        if (sessionError) {
+          res.status(500).send(sessionError + mongoError);
+        } else {
+          res.status(500).send(mongoError);
+        }
+      });
+    });
+  });
 });
 
 app.post('/keybase/signup.json', function(req, res) {
