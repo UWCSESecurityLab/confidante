@@ -61,6 +61,10 @@ class KeybaseAPI {
       this._getSalt()
         .then(this._login.bind(this))
         .then(function(loginBody) {
+          if (loginBody.status.code != 0) {
+            console.log(loginBody);
+            reject(loginBody);
+          }
           fulfill(loginBody);
         }).catch(function(err) {
           console.log('Failed to log in');
