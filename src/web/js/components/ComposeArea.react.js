@@ -230,7 +230,7 @@ var ComposeArea = React.createClass({
               </h4>
             </div>
             <div className="modal-body">
-              <form className="form-horizontal" autocomplete="off">
+              <form className="form-horizontal" autoComplete="off">
                 <div className="form-group">
                   <label htmlFor="to">To:</label>
                   <ContactsAutocomplete updateParent={this.updateTo}/>

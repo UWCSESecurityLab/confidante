@@ -364,7 +364,7 @@ app.get('/contacts.json', auth.ensureAuthenticated, function(req, res) {
 app.get('/keybase/getsalt.json', function(req, res) {
   // /keybase/getsalt.json
   // Inputs: email_or_username
-  // Outputs: guest_id, status, csrf_token, login_session, pwh_version
+  // Outputs: guest_id, status, login_session, pwh_version
   var GET_SALT_URL = KEYBASE_URL + '/_/api/1.0/getsalt.json';
   request({
     method: 'GET',
@@ -383,7 +383,7 @@ app.get('/keybase/getsalt.json', function(req, res) {
 app.post('/keybase/login.json', function(req, res) {
   // /keybase/login.json
   // Inputs: email_or_username, hmac_pwh, login_session
-  // Outputs: status, session, me
+  // Outputs: status, session, me, csrf_token
   //
   var LOGIN_URL = KEYBASE_URL + '/_/api/1.0/login.json';
   request(
@@ -417,6 +417,10 @@ app.post('/keybase/login.json', function(req, res) {
       req.session.keybaseCookie = parsedCookies.find(function(cookie) {
         return cookie.session !== undefined;
       });
+
+      // Save the CSRF token in the user's session.
+      req.session.keybaseCSRF = keybase.csrf_token;
+
       // Create a User record for this user if necessary.
       db.storeKeybaseCredentials(keybase).then(function() {
         // Echo the response with the same status code on success.
@@ -479,6 +483,21 @@ app.post('/keybase/key/add.json', function(req, res) {
 });
 
 app.get('/logout', function(req, res) {
+  if (auth.isAuthenticatedWithKeybase(req.session)) {
+    request({
+      method: 'POST',
+      url: 'https://keybase.io/_/api/1.0/session/killall.json',
+      headers: { 'X-CSRF-Token': req.session.keybaseCSRF },
+      jar: getKeybaseCookieJar(req.session)
+    }, function(error, response, body) {
+      if (!error) {
+        console.log(body);
+      } else {
+        console.log('Failed to kill sessions: ' + error);
+      }
+    });
+  }
+
   req.session.destroy(function() {
     res.redirect('/');
   });
@@ -498,8 +517,6 @@ function getKeybaseCookieJar(session) {
   let cookieJar = request.jar();
   let cookieString = 'session=' + session.keybaseCookie.session;
   cookieJar.setCookie(cookieString, KEYBASE_URL);
-  console.log('Including user\'s Keybase cookie:');
-  console.log(cookieString);
   return cookieJar;
 }
 
