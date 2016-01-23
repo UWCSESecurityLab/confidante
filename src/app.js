@@ -358,7 +358,7 @@ app.get('/contacts.json', auth.ensureAuthenticated, function(req, res) {
 app.get('/getsalt.json', function(req, res) {
   // /getsalt.json
   // Inputs: email_or_username
-  // Outputs: guest_id, status, csrf_token, login_session, pwh_version
+  // Outputs: guest_id, status, login_session, pwh_version
   //
   var GET_SALT_URL = 'https://keybase.io/_/api/1.0/getsalt.json';
   request(
@@ -379,7 +379,7 @@ app.get('/getsalt.json', function(req, res) {
 app.post('/login.json', function(req, res) {
   // /login.json
   // Inputs: email_or_username, hmac_pwh, login_session
-  // Outputs: status, session, me
+  // Outputs: status, session, me, csrf_token
   //
   var LOGIN_URL = 'https://keybase.io/_/api/1.0/login.json';
   request(
