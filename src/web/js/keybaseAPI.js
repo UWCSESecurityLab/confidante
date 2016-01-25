@@ -61,7 +61,11 @@ class KeybaseAPI {
       this._getSalt(this.username)
            .then(this._login.bind(this))
            .then(function(loginBody) {
-             fulfill(loginBody);
+             if (loginBody.status.code != 0) {
+               reject(loginBody);
+             } else {
+               fulfill(loginBody);
+             }
            }).catch(function(err) {
              reject(err);
            });
