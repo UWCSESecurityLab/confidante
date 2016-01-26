@@ -1,3 +1,5 @@
+'use strict';
+
 var submit = document.getElementById('submit');
 submit.onclick = login;
 
@@ -20,20 +22,19 @@ function login() {
   var keybase = new KeybaseAPI(username, password, window.location.origin);
 
   keybase.login().then(function(response) {
-    if (response.status.code != 0) {
-      spinner.style.visibility = 'hidden';
-      addError();
-      console.log(response);
-      return;
-    }
     localStorage.setItem('keybase', JSON.stringify(response.me));
     localStorage.setItem('keybasePassphrase', password);
     window.location.href = '/auth/google';
+  }).catch(function(error) {
+    console.log(error.status);
+    spinner.style.visibility = 'hidden';
+    addError('An error occurred when logging in<br/>' + error.status.name + ": " + error.status.desc);
   });
 }
 
-function addError() {
-  var error = document.getElementById('error');
+function addError(message) {
+  let error = document.getElementById('error');
+  error.innerHTML = message;
   error.style.visibility = 'visible';
 }
 
