@@ -59,7 +59,13 @@ app.use(express.static(__dirname + '/web/js'));
 app.use(express.static(__dirname + '/web/html'));
 app.use(express.static(__dirname + '/web/css'));
 
-let KEYBASE_URL = 'https://stage0.keybase.io';
+let STAGING = true;
+var KEYBASE_URL;
+if (STAGING) {
+  KEYBASE_URL = 'https://stage0.keybase.io';
+} else {
+  KEYBASE_URL = 'https://keybase.io';
+}
 
 app.get('/', function(req, res) {
   res.render('index', {
@@ -385,6 +391,7 @@ app.post('/keybase/login.json', function(req, res) {
   // Inputs: email_or_username, hmac_pwh, login_session
   // Outputs: status, session, me, csrf_token
   //
+  console.log('POST /keybase/login.json');
   var LOGIN_URL = KEYBASE_URL + '/_/api/1.0/login.json';
   request({
     method: 'POST',
@@ -412,8 +419,14 @@ app.post('/keybase/login.json', function(req, res) {
         return Cookie.parse(cookie);
       }
     );
+    console.log('Login cookies:');
+    console.log(parsedCookies);
     req.session.keybaseCookie = parsedCookies.find(function(cookie) {
-      return cookie.session !== undefined;
+      if (STAGING) {
+        return cookie.s0_session !== undefined;
+      } else {
+        return cookie.session !== undefined;
+      }
     });
 
     // Save the CSRF token in the user's session.
@@ -454,10 +467,14 @@ app.post('/keybase/signup.json', function(req, res) {
 });
 
 app.post('/keybase/key/add.json', function(req, res) {
+  console.log('POST /keybase/key/add.json');
+  console.log('Current session:');
+  console.log(req.session);
   console.log('CSRF token: ' + req.session.keybaseCSRF);
 
   if (!auth.isAuthenticatedWithKeybase(req.session)) {
     console.log('POST /keybase/key/add.json failed: need Keybase authentication');
+    console.log(req.session);
     res.status(403).send('Cannot add keys without logging into Keybase');
     return;
   }
@@ -512,7 +529,12 @@ module.exports = app; // For testing
  */
 function getKeybaseCookieJar(session) {
   let cookieJar = request.jar();
-  let cookieString = 'session=' + session.keybaseCookie.session;
+  let cookieString;
+  if (STAGING) {
+    cookieString = 's0_session=' + session.keybaseCookie.s0_session;
+  } else {
+    cookieString = 'session=' +  session.keybaseCookie.session;
+  }
   cookieJar.setCookie(cookieString, KEYBASE_URL);
   return cookieJar;
 }
