@@ -104,20 +104,11 @@ class KeybaseAPI {
       var hash = KeybaseAPI.computePasswordHash(this.passphrase, salt);
       var hmac_pwh = crypto.createHmac('SHA512', hash).update(login_session).digest('hex');
 
-      // We need to send the base64 encoded login session back to Keybase in the
-      // query string, so we need to make it URL safe. Annoyingly, Keybase
-      // doesn't use the conventional URL safe base64 encoding, instead we must
-      // replace the invalid characters with the URL escape characters.
-      let escapedLoginSession = saltDetails.login_session
-          .replace(/\+/g, '%2B')
-          .replace(/\//g, '%2F')
-          .replace(/\=/g, '%3D');
-
       xhr.post({
         url: this.serverBaseURI + '/keybase/login.json?' +
              'email_or_username=' + this.username + '&' +
              'hmac_pwh=' + hmac_pwh + '&' +
-             'login_session=' + escapedLoginSession
+             'login_session=' + urlSafeBase64(saltDetails.login_session)
       }, function (error, response, body) {
         if (error) {
           reject(body);
@@ -164,17 +155,19 @@ class KeybaseAPI {
    */
   addKey(publicKey, privateKey) {
     return new Promise(function(resolve, reject) {
+      let b64publicKey = window.btoa(publicKey);
       p3skb.armoredPrivateKeyToP3skb(privateKey, this.passphrase)
         .then(function(p3skbPrivateKey) {
           xhr.post({
             url: this.serverBaseURI + '/keybase/key/add.json?' +
-                 'public_key=' + publicKey + '&' +
-                 'private_key=' + p3skbPrivateKey + '&' +
+                 'public_key=' + urlSafeBase64(b64publicKey) + '&' +
+                 'private_key=' + urlSafeBase64(p3skbPrivateKey) + '&' +
                  'is_primary=true'
           }, function(error, response, body) {
+            console.log(response);
             if (error) {
               reject(error);
-            } else if (JSON.parse(body).status.code == 0) {
+            } else if (response.statusCode == 200 && JSON.parse(body).status.code == 0) {
               resolve(body);
             } else {
               console.log('Failed to add key');
@@ -314,4 +307,16 @@ class KeybaseAPI {
     return p3skbObj;
   }
 }
+
+// Escape special characters for URLs in base64 encoded data.
+// Annoyingly, Keybase doesn't use the conventional URL safe base64 encoding,
+// instead we must replace the invalid characters with the URL escape
+// characters.
+function urlSafeBase64(b64String) {
+    return b64String
+        .replace(/\+/g, '%2B')
+        .replace(/\//g, '%2F')
+        .replace(/\=/g, '%3D');
+}
+
 module.exports = KeybaseAPI;
