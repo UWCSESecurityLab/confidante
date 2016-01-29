@@ -34,17 +34,13 @@ var SignupClient = React.createClass({
   },
 
   signup: function() {
-    this.setState({ state: 'spinner', status: 'Signing in...' });
-
+    this.setState({ state: 'spinner', status: 'Signing up...' });
     let keybaseAPI = new KeybaseAPI(this.state.username, this.state.password, window.location.origin);
-
-    //keybaseAPI.signup(this.state.name, this.state.email, this.state.invite)
-    //  .then(function(response) {
-        this.setState({ status: 'Logging in...' });
-        //return
-        keybaseAPI.login()//;
-      //}.bind(this))
+    keybaseAPI.signup(this.state.name, this.state.email, this.state.invite)
       .then(function(response) {
+        this.setState({ status: 'Logging in...' });
+        return keybaseAPI.login();
+      }.bind(this)).then(function(response) {
         this.setState({ status: 'Generating Keys...'});
         return pgp.generateKeysForUpload(this.state.username + '@keybase.io', this.state.password);
       }.bind(this)).then(function(keys) {
