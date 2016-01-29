@@ -97,7 +97,6 @@ class KeybaseAPI {
    */
   _login(saltDetails) {
     console.log('Login...');
-    console.log('saltDetails: ' + JSON.stringify(saltDetails, null, 4));
     return new Promise(function(fulfill, reject) {
       var salt = saltDetails.salt;
       var login_session = new Buffer(saltDetails.login_session, 'base64');
@@ -141,7 +140,6 @@ class KeybaseAPI {
         } else if (JSON.parse(body).status.code == 0) {
           resolve(body);
         } else {
-          console.log('Failed to sign up');
           reject(body);
         }
       });
@@ -161,13 +159,11 @@ class KeybaseAPI {
              'private_key=' + urlSafeBase64(privateKey) + '&' +
              'is_primary=true'
       }, function(error, response, body) {
-        console.log(response);
         if (error) {
           reject(error);
         } else if (response.statusCode == 200 && JSON.parse(body).status.code == 0) {
           resolve(JSON.parse(body));
         } else {
-          console.log('Failed to add key');
           reject(body);
         }
       });

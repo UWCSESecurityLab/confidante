@@ -391,7 +391,6 @@ app.post('/keybase/login.json', function(req, res) {
   // Inputs: email_or_username, hmac_pwh, login_session
   // Outputs: status, session, me, csrf_token
   //
-  console.log('POST /keybase/login.json');
   var LOGIN_URL = KEYBASE_URL + '/_/api/1.0/login.json';
   request({
     method: 'POST',
@@ -419,8 +418,6 @@ app.post('/keybase/login.json', function(req, res) {
         return Cookie.parse(cookie);
       }
     );
-    console.log('Login cookies:');
-    console.log(parsedCookies);
     req.session.keybaseCookie = parsedCookies.find(function(cookie) {
       if (STAGING) {
         return cookie.s0_session !== undefined;
@@ -467,14 +464,8 @@ app.post('/keybase/signup.json', function(req, res) {
 });
 
 app.post('/keybase/key/add.json', function(req, res) {
-  console.log('POST /keybase/key/add.json');
-  console.log('Current session:');
-  console.log(req.session);
-  console.log('CSRF token: ' + req.session.keybaseCSRF);
-
   if (!auth.isAuthenticatedWithKeybase(req.session)) {
     console.log('POST /keybase/key/add.json failed: need Keybase authentication');
-    console.log(req.session);
     res.status(403).send('Cannot add keys without logging into Keybase');
     return;
   }
