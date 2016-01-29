@@ -46,10 +46,10 @@ var SignupClient = React.createClass({
       //}.bind(this))
       .then(function(response) {
         this.setState({ status: 'Generating Keys...'});
-        return pgp.generateKeyPair(this.state.username + '@keybase.io');
-      }.bind(this)).then(function(armoredKeys) {
+        return pgp.generateKeysForUpload(this.state.username + '@keybase.io', this.state.password);
+      }.bind(this)).then(function(keys) {
         this.setState({ status: 'Adding keys to Keybase...'});
-        return keybaseAPI.addKey(armoredKeys.publicKey, armoredKeys.privateKey);
+        return keybaseAPI.addKey(keys.publicKey, keys.p3skbPrivateKey);
       }.bind(this)).then(function() {
         this.setState({ state: 'completed' });
       }.bind(this)).catch(function(error) {

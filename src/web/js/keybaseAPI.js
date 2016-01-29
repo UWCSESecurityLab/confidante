@@ -150,33 +150,27 @@ class KeybaseAPI {
 
   /**
    * Adds a key to the user's Keybase account.
-   * @param publicKey The armored public key.
-   * @param privateKey The armored private key.
+   * @param publicKey Armored public key
+   * @param privateKey Base64 encoded MsgPacked P3SKB private key
    */
   addKey(publicKey, privateKey) {
     return new Promise(function(resolve, reject) {
-      let b64publicKey = window.btoa(publicKey);
-      p3skb.armoredPrivateKeyToP3skb(privateKey, this.passphrase)
-        .then(function(p3skbPrivateKey) {
-          xhr.post({
-            url: this.serverBaseURI + '/keybase/key/add.json?' +
-                 'public_key=' + urlSafeBase64(b64publicKey) + '&' +
-                 'private_key=' + urlSafeBase64(p3skbPrivateKey) + '&' +
-                 'is_primary=true'
-          }, function(error, response, body) {
-            console.log(response);
-            if (error) {
-              reject(error);
-            } else if (response.statusCode == 200 && JSON.parse(body).status.code == 0) {
-              resolve(body);
-            } else {
-              console.log('Failed to add key');
-              reject(body);
-            }
-          });
-        }.bind(this)).catch(function(error) {
+      xhr.post({
+        url: this.serverBaseURI + '/keybase/key/add.json?' +
+             'public_key=' + encodeURIComponent(publicKey) + '&' +
+             'private_key=' + urlSafeBase64(privateKey) + '&' +
+             'is_primary=true'
+      }, function(error, response, body) {
+        console.log(response);
+        if (error) {
           reject(error);
-        });
+        } else if (response.statusCode == 200 && JSON.parse(body).status.code == 0) {
+          resolve(JSON.parse(body));
+        } else {
+          console.log('Failed to add key');
+          reject(body);
+        }
+      });
     }.bind(this));
   }
 

@@ -167,7 +167,7 @@ app.get('/invite/getKey', auth.ensureAuthenticated, function(req, res) {
     });
   }
 
-  pgp.generateKeyPair(recipient)
+  pgp.generateArmoredKeyPair(recipient)
     .then(encryptPrivateKey)
     .then(keys => db.storeInviteKeys(recipient, keys))
     .then(record => {
