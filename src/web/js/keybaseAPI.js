@@ -61,7 +61,11 @@ class KeybaseAPI {
       this._getSalt(this.username)
            .then(this._login.bind(this))
            .then(function(loginBody) {
-             fulfill(loginBody);
+             if (loginBody.status.code != 0) {
+               reject(loginBody);
+             } else {
+               fulfill(loginBody);
+             }
            }).catch(function(err) {
              reject(err);
            });
@@ -101,11 +105,20 @@ class KeybaseAPI {
       var hash = KeybaseAPI.computePasswordHash(this.passphrase, salt);
       var hmac_pwh = crypto.createHmac('SHA512', hash).update(login_session).digest('hex');
 
+      // We need to send the base64 encoded login session back to Keybase in the
+      // query string, so we need to make it URL safe. Annoyingly, Keybase
+      // doesn't use the conventional URL safe base64 encoding, instead we must
+      // replace the invalid characters with the URL escape characters.
+      let escapedLoginSession = saltDetails.login_session
+          .replace(/\+/g, '%2B')
+          .replace(/\//g, '%2F')
+          .replace(/\=/g, '%3D');
+
       xhr.post({
         url: this.serverBaseURI + '/login.json?' +
              'email_or_username=' + this.username + '&' +
              'hmac_pwh=' + hmac_pwh + '&' +
-             'login_session=' + saltDetails.login_session
+             'login_session=' + escapedLoginSession
       }, function (error, response, body) {
         if (error) {
           reject(body);
