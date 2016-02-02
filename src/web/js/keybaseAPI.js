@@ -103,7 +103,7 @@ class KeybaseAPI {
         url: this.serverBaseURI + '/keybase/login.json?' +
              'email_or_username=' + this.username + '&' +
              'hmac_pwh=' + hmac_pwh + '&' +
-             'login_session=' + urlSafeBase64(saltDetails.login_session)
+             'login_session=' + encodeURIComponent(saltDetails.login_session)
       }, function (error, response, body) {
         if (error) {
           reject(body);
@@ -146,7 +146,7 @@ class KeybaseAPI {
       xhr.post({
         url: this.serverBaseURI + '/keybase/key/add.json?' +
              'public_key=' + encodeURIComponent(publicKey) + '&' +
-             'private_key=' + urlSafeBase64(privateKey) + '&' +
+             'private_key=' + encodeURIComponent(privateKey) + '&' +
              'is_primary=true'
       }, function(error, response, body) {
         handleKeybaseResponse(error, response, body, resolve, reject);
@@ -300,17 +300,6 @@ function handleKeybaseResponse(error, response, body, resolve, reject) {
   } catch(e) {
     reject(body);
   }
-}
-
-// Escape special characters for URLs in base64 encoded data.
-// Annoyingly, Keybase doesn't use the conventional URL safe base64 encoding,
-// instead we must replace the invalid characters with the URL escape
-// characters.
-function urlSafeBase64(b64String) {
-    return b64String
-        .replace(/\+/g, '%2B')
-        .replace(/\//g, '%2F')
-        .replace(/\=/g, '%3D');
 }
 
 module.exports = KeybaseAPI;
