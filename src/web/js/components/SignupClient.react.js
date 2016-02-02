@@ -58,6 +58,13 @@ var SignupClient = React.createClass({
       return (
         <div className="box col-md-8 col-md-offset-2">
           <h2>Create a Keybase Account</h2>
+          <p>
+            To get started with Keymail, first you need to set up a Keybase
+            account. We use Keybase to store your cryptographic keys.
+          </p>
+          <p>
+            For more info, visit <a href="https://keybase.io" target="_blank">keybase.io</a>
+          </p>
           <form className="form-horizontal">
             <FormInput key="name" name="Name" onUpdate={this.updateName} />
             <FormInput key="email" name="Email" onUpdate={this.updateEmail} />
