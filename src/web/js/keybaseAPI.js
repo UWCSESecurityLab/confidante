@@ -52,19 +52,19 @@ class KeybaseAPI {
 
   /**
    * Perform the 2-step Keybase login flow using the username and password
-   * with which the API was initialized. This API fulfills whether the login
+   * with which the API was initialized. This API resolves whether the login
    * succeeded or not.
    * @return a Promise containing the body of the response to a login attempt.
    */
   login() {
-    return new Promise(function(fulfill, reject) {
+    return new Promise(function(resolve, reject) {
       this._getSalt(this.username)
            .then(this._login.bind(this))
            .then(function(loginBody) {
              if (loginBody.status.code != 0) {
                reject(loginBody);
              } else {
-               fulfill(loginBody);
+               resolve(loginBody);
              }
            }).catch(function(err) {
              reject(err);
@@ -78,15 +78,11 @@ class KeybaseAPI {
    */
   _getSalt() {
     console.log('Get salt...');
-    return new Promise(function(fulfill, reject) {
+    return new Promise(function(resolve, reject) {
       xhr.get({
         url: this.serverBaseURI + '/keybase/getsalt.json?email_or_username=' + this.username
       }, function(error, response, body) {
-        if (!error && response.statusCode == 200) {
-          fulfill(JSON.parse(body));
-        } else {
-          reject(error);
-        }
+        handleKeybaseResponse(error, response, body, resolve, reject);
       });
     }.bind(this));
   }
@@ -97,7 +93,7 @@ class KeybaseAPI {
    */
   _login(saltDetails) {
     console.log('Login...');
-    return new Promise(function(fulfill, reject) {
+    return new Promise(function(resolve, reject) {
       var salt = saltDetails.salt;
       var login_session = new Buffer(saltDetails.login_session, 'base64');
       var hash = KeybaseAPI.computePasswordHash(this.passphrase, salt);
@@ -112,7 +108,7 @@ class KeybaseAPI {
         if (error) {
           reject(body);
         } else if (response.statusCode == 200) {
-          fulfill(JSON.parse(body));
+          resolve(JSON.parse(body));
         } else {
           reject(body);
         }
@@ -135,13 +131,7 @@ class KeybaseAPI {
              'invitation_id=' + invitation_id + '&' +
              'pwh_version=3'
       }, function(error, response, body) {
-        if (error) {
-          reject(error);
-        } else if (JSON.parse(body).status.code == 0) {
-          resolve(body);
-        } else {
-          reject(body);
-        }
+        handleKeybaseResponse(error, response, body, resolve, reject);
       });
     }.bind(this));
   }
@@ -159,13 +149,7 @@ class KeybaseAPI {
              'private_key=' + urlSafeBase64(privateKey) + '&' +
              'is_primary=true'
       }, function(error, response, body) {
-        if (error) {
-          reject(error);
-        } else if (response.statusCode == 200 && JSON.parse(body).status.code == 0) {
-          resolve(JSON.parse(body));
-        } else {
-          reject(body);
-        }
+        handleKeybaseResponse(error, response, body, resolve, reject);
       });
     }.bind(this));
   }
@@ -176,14 +160,14 @@ class KeybaseAPI {
    * @return key.asc for the given user (an ASCII armored public key).
    */
   static publicKeyForUser(user) {
-    return new Promise(function(fulfill, reject) {
+    return new Promise(function(resolve, reject) {
       xhr.get({
         url: 'https://keybase.io/' + user + '/key.asc'
       }, function(error, response, body) {
         if (error) {
           reject('Internal error attempting to fetch key for user ' + user);
         } else if (response.statusCode == 200) {
-          fulfill(body);
+          resolve(body);
         } else {
           reject('Error code ' + response.statusCode + ' from keybase for key.asc for user ' + user);
         }
@@ -198,14 +182,14 @@ class KeybaseAPI {
    * @return A promise containing a kbpgp.KeyManager for the given public key.
    */
   static managerFromPublicKey(pubkey) {
-    return new Promise(function(fulfill, reject) {
+    return new Promise(function(resolve, reject) {
       kbpgp.KeyManager.import_from_armored_pgp({
         armored: pubkey
       }, function(err, keyManager) {
         if (err) {
           reject(err);
         } else {
-          fulfill(keyManager);
+          resolve(keyManager);
         }
       });
     });
@@ -220,7 +204,7 @@ class KeybaseAPI {
    * key.
    */
   static getPrivateManager() {
-    return new Promise(function(fulfill, reject) {
+    return new Promise(function(resolve, reject) {
       var me = JSON.parse(localStorage.getItem('keybase'));
       if (!me) {
         reject('Nothing stored in local storage for me.');
@@ -234,7 +218,7 @@ class KeybaseAPI {
           armored: armoredKey
         }, function(err, manager) {
           if (!err) {
-            fulfill(manager);
+            resolve(manager);
           } else{
             console.log(err);
             reject(err);
@@ -258,7 +242,7 @@ class KeybaseAPI {
    */
   static decrypt(ciphertext) {
     return function(privateManager) {
-      return new Promise(function(fulfill, reject) {
+      return new Promise(function(resolve, reject) {
         var ring = new kbpgp.keyring.KeyRing();
         ring.add_key_manager(privateManager);
         kbpgp.unbox(
@@ -270,7 +254,7 @@ class KeybaseAPI {
             if (err !== null) {
               reject(err);
             } else {
-              fulfill(literals[0].toString());
+              resolve(literals[0].toString());
             }
           });
       });
@@ -278,15 +262,11 @@ class KeybaseAPI {
   }
 
   static autocomplete(q) {
-    return new Promise(function(fulfill, reject) {
+    return new Promise(function(resolve, reject) {
       xhr.get({
         url: 'https://keybase.io/_/api/1.0/user/autocomplete.json?q=' + q
       }, function (error, response, body) {
-        if (!error && response.statusCode == 200) {
-          fulfill(body);
-        } else {
-          reject(error);
-        }
+        handleKeybaseResponse(error, response, body, resolve, reject);
       });
     });
   }
@@ -295,6 +275,30 @@ class KeybaseAPI {
     var buf = new Buffer(loginBody.me.private_keys.primary.bundle, 'base64');
     var p3skbObj = purepack.unpack(buf);
     return p3skbObj;
+  }
+}
+
+/**
+ * Common logic for handling responses from the Keybase API using promises.
+ */
+function handleKeybaseResponse(error, response, body, resolve, reject) {
+  if (error) {
+    reject(error);
+    return;
+  }
+  if (response.statusCode != 200) {
+    reject(body);
+    return;
+  }
+  try {
+    let json = JSON.parse(body);
+    if (json.status.code == 0) {
+      resolve(json);
+    } else {
+     reject(json);
+    }
+  } catch(e) {
+    reject(body);
   }
 }
 

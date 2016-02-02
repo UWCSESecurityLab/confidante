@@ -75,7 +75,12 @@ var SignupClient = React.createClass({
           </form>
           <div className="col-sm-10 col-sm-offset-2">
             <button onClick={this.signup} className="btn btn-primary">Submit</button>
-            <div className="alert alert-danger" id="error">{this.state.error}</div>
+            <div className="alert alert-danger" id="error">
+              { this.state.error ?
+                <p>Oops! We couldn't create your account because:<br/>
+                {this.state.error.status.name}: {this.state.error.status.desc}</p>
+                : null }
+            </div>
           </div>
         </div>
       );
