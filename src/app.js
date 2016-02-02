@@ -59,7 +59,7 @@ app.use(express.static(__dirname + '/web/js'));
 app.use(express.static(__dirname + '/web/html'));
 app.use(express.static(__dirname + '/web/css'));
 
-let STAGING = true;
+let STAGING = false;
 var KEYBASE_URL;
 if (STAGING) {
   KEYBASE_URL = 'https://stage0.keybase.io';
@@ -70,7 +70,8 @@ if (STAGING) {
 app.get('/', function(req, res) {
   res.render('index', {
     email: req.session.email,
-    loggedIn: auth.isAuthenticated(req.session)
+    loggedIn: auth.isAuthenticated(req.session),
+    staging: STAGING
   });
 });
 
@@ -78,12 +79,24 @@ app.get('/login', function(req, res) {
   if (auth.isAuthenticated(req.session)) {
     res.redirect('/mail');
   } else {
-    res.render('login', { email: req.session.email, loggedIn: false });
+    res.render('login', {
+      email: req.session.email,
+      loggedIn: false,
+      staging: STAGING
+    });
   }
 });
 
 app.get('/mail', auth.ensureAuthenticated, function(req, res) {
-  res.render('mail', { email: req.session.email, loggedIn: true });
+  res.render('mail', {
+    email: req.session.email,
+    loggedIn: true,
+    staging: STAGING
+  });
+});
+
+app.get('/signup', function(req, res) {
+  res.render('signup', { loggedIn: false, staging: STAGING });
 });
 
 app.get('/inbox', auth.ensureAuthenticated, function(req, res) {
@@ -91,10 +104,6 @@ app.get('/inbox', auth.ensureAuthenticated, function(req, res) {
   gmailClient.getEncryptedInbox().then(function(threads) {
     res.json(threads);
   });
-});
-
-app.get('/signup', function(req, res) {
-  res.render('signup', { loggedIn: false });
 });
 
 app.post('/sendMessage', auth.ensureAuthenticated, function(req, res) {
