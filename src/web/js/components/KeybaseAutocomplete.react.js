@@ -46,13 +46,21 @@ var KeybaseAutocomplete = React.createClass({
         <ul className="autocompletions">
           { this.state.results.completions ?
             this.state.results.completions.map(function(completion) {
-              var username = completion.components.username.val;
+              // Parse the autocomplete profile into a simpler object
+              // representing the user and their attributes.
+              let user = {};
+              for (var component in completion.components) {
+                if (component != 'websites') {
+                  user[component] = completion.components[component].val;
+                }
+              }
+              user.picture = completion.thumbnail;
               return (
-                 <li key={username}>
+                <li key={ user.username }>
                   <KeybaseCompletion
-                    onClick={this.resultClicked.bind(this, username)}
-                    components={completion.components} />
-                 </li>
+                    onClick={this.resultClicked.bind(this, user.username)}
+                    user={user}/>
+                </li>
               );
             }.bind(this)) : null }
         </ul>

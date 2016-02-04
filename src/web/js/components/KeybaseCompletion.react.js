@@ -1,28 +1,28 @@
-'use strict'; 
+'use strict';
 
 var React = require('react');
 
 var KeybaseCompletion = React.createClass({
   render: function() {
-    let components = this.props.components;
+    let user = this.props.user;
     return (
-      <div onClick={this.props.onClick} className="completion">
-        { components.full_name ?
-          <strong>{ components.full_name.val } </strong>
+      <div onClick={user.onClick} className="completion">
+        { user.full_name ?
+          <strong>{ user.full_name } </strong>
           : null }
 
-        <a href={'https://keybase.io/' + components.username.val} target="_blank">
-          <span>{ components.username.val } </span>
+        <a href={'https://keybase.io/' + user.username} target="_blank">
+          <span>{ user.username } </span>
         </a>
 
-        { components.twitter ?
-          <a href={'https://twitter.com/' + components.twitter.val} target="_blank">
-            <span>@{ components.twitter.val } </span>
+        { user.twitter ?
+          <a href={'https://twitter.com/' + user.twitter} target="_blank">
+            <span>@{ user.twitter } </span>
           </a> : null }
 
-        { components.github ?
-          <a href={'https://github.com/' + components.github.val} target="_blank">
-          <span>{ components.github.val } </span>
+        { user.github ?
+          <a href={'https://github.com/' + user.github} target="_blank">
+          <span>{ user.github } </span>
           </a> : null }
       </div>
     );
