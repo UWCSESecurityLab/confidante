@@ -50,6 +50,16 @@ class KeybaseAPI {
     }
   }
 
+  static userLookup(keyFingerprint) {
+    return new Promise(function(resolve, reject) {
+      xhr.get({
+        url: 'https://keybase.io/_/api/1.0/user/lookup.json?key_fingerprint=' + keyFingerprint
+      }, function(error, response, body) {
+        handleKeybaseResponse(error, response, body, resolve, reject);
+      });
+    });
+  }
+
   /**
    * Perform the 2-step Keybase login flow using the username and password
    * with which the API was initialized. This API resolves whether the login
@@ -254,7 +264,7 @@ class KeybaseAPI {
             if (err !== null) {
               reject(err);
             } else {
-              resolve(literals[0].toString());
+              resolve(literals);
             }
           });
       });

@@ -25,6 +25,7 @@ var Thread = React.createClass({
     var messages = this.props.thread.messages.map(function(message) {
       return (<li key={message.id}>
                 <Message plaintext={this.props.plaintexts[message.id]}
+                         signer={this.props.signers[message.id]}
                          message={message}
                          error={this.props.errors[message.id]}/>
               </li>);

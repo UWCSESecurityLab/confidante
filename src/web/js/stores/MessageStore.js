@@ -9,10 +9,29 @@ var xhr = require('xhr');
 var _plaintexts = {};
 var _threads = {};
 var _errors = {};
+var _signers = {};
 
 // A promise containing our local private key.
 var _privateManager = keybaseAPI.getPrivateManager();
 
+_privateManager.then(function(pm) {
+  console.log(pm);
+});
+
+function _signerFromLiterals(literals) {
+  let ds = literals[0].get_data_signer();
+  let km;
+  if (ds) { 
+    km = ds.get_key_manager();
+  }
+  if (km) {
+    // console.log("Signed by PGP fingerprint");
+    // console.log(km.pgp.get_fingerprint().toString('hex'));
+    // return km.pgp.get_key_id().toString('hex');
+    return km;
+  }
+  return null;
+}
 function _decryptThread(thread) {
   thread.messages.forEach(function(message) {
     if (_plaintexts[message.id] === undefined) {
@@ -24,8 +43,23 @@ function _decryptMessage(message) {
   var body = messageParsing.getMessageBody(message);
   _privateManager
     .then(keybaseAPI.decrypt(body))
-    .then(function(plaintext) {
-      _plaintexts[message.id] = plaintext;
+    .then(function(literals) {
+      _plaintexts[message.id] = literals[0].toString();
+      _signers[message.id] = _signerFromLiterals(literals);
+
+      if (_signers[message.id]) {
+        let fingerprint = _signers[message.id].pgp.get_fingerprint().toString('hex');
+        keybaseAPI.userLookup(fingerprint).then(function(response) {
+          if (response.status.name === 'OK') {
+            _signers[message.id].user = response.them;
+            MessageStore.emitChange();
+          }
+        }).catch(function(error) {
+          console.log('Error looking up user by fingerprint');
+          console.log(error);
+        });
+      }
+
       delete _errors[message.id];
       MessageStore.emitChange();
     }).catch(function(err) {
@@ -62,11 +96,16 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
     this.removeListener('CHANGE', callback);
   },
 
+  getPrivateManager: function() {
+    return _privateManager;
+  },
+
   getAll: function() {
     return {
       errors: _errors,
       threads: _threads,
-      plaintexts: _plaintexts
+      plaintexts: _plaintexts,
+      signers: _signers,
     };
   },
 
