@@ -1,0 +1,41 @@
+.keybase-card {
+  border: 1px solid #E5E5E5;
+  display: inline-flex;
+}
+
+.keybase-card:hover {
+  background: #FFEAC4;
+}
+
+.keybase-btn {
+  margin-left: 2em;
+}
+
+.github-img {
+  margin-right: 4px;
+}
+
+.linked-account {
+  padding-right: 1em;
+}
+
+.pic-section {
+  background: #EFEFEF;
+  padding: 0.25em;
+}
+
+.profile-pic {
+  border-radius: 50%;
+  max-height: 6em;
+}
+
+.top-line {
+  display: flex;
+  align-items: center;
+  padding: 0.5em 1em 0em 1em;
+}
+
+.bottom-line {
+  display: flex;
+  padding: 0.5em 1em;
+}

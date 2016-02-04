@@ -86,7 +86,7 @@ var Message = React.createClass({
           Reply
         </button>
         <br />
-        {signer ? 'Signed by' : 'Not signed.'} {signer}
+        {signer ? null : 'Not signed.'} {signer}
       </div>
     );
   }
