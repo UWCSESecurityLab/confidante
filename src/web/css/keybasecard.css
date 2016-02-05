@@ -7,21 +7,18 @@
   background: #FFEAC4;
 }
 
-.keybase-btn {
-  margin-left: 2em;
-}
-
 .github-img {
-  margin-right: 4px;
+  margin: 0 4px;
 }
 
-.linked-account {
+.line-item {
   padding-right: 1em;
 }
 
 .pic-section {
   background: #EFEFEF;
   padding: 0.25em;
+  margin-left: -4px;
 }
 
 .profile-pic {
@@ -29,13 +26,9 @@
   max-height: 6em;
 }
 
-.top-line {
+.info-line {
   display: flex;
   align-items: center;
-  padding: 0.5em 1em 0em 1em;
-}
-
-.bottom-line {
-  display: flex;
-  padding: 0.5em 1em;
+  flex-flow: row wrap;
+  margin: 0.5em 1em;
 }

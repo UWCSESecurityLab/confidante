@@ -11,15 +11,16 @@ var KeybaseCompletion = React.createClass({
           <img className="profile-pic" src={ user.picture }></img>
         </div>
         <div className="text-section">
-          <div className="top-line">
-            <h4>{ user.full_name ? user.full_name : user.username}</h4>
-            <a className="btn btn-warning keybase-btn" href={ 'https://keybase.io/' + user.username } role="button">
+          <div className="info-line">
+            <h4 className="line-item">{ user.full_name ? user.full_name : user.username}</h4>
+            <a className="btn btn-warning keybase-btn" role="button" target="_blank"
+               href={ 'https://keybase.io/' + user.username }>
               View profile on Keybase
             </a>
           </div>
-          <div className="bottom-line">
+          <div className="info-line">
             { user.twitter ?
-              <span className="linked-account">
+              <span className="line-item">
                 <img src="twitter.png" height="24px"></img>
                 <a href={'https://twitter.com/' + user.twitter} target="_blank">
                   <span>@{ user.twitter } </span>
@@ -27,7 +28,7 @@ var KeybaseCompletion = React.createClass({
               </span> : null }
 
             { user.github ?
-              <span className="linked-account">
+              <span className="line-item">
                 <img src="github.png" className="github-img" height="16px"></img>
                 <a href={'https://github.com/' + user.github} target="_blank">
                   <span>{ user.github }</span>
