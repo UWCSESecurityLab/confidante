@@ -4,10 +4,16 @@
 .keybase-card {
   border: 1px solid #E5E5E5;
   display: inline-flex;
+  max-width: 500px;
+  width: 100%;
 }
 
 .keybase-card:hover {
   background: #FFEAC4;
+}
+
+.keybase-btn {
+  padding: 4px 8px;
 }
 
 .github-img {
@@ -29,9 +35,22 @@
   max-height: 6em;
 }
 
-.info-line {
+.accounts-line {
   display: flex;
   align-items: center;
-  flex-flow: row wrap;
+  flex-direction: row;
+  flex-flow: wrap;
   margin: 0.5em 1em;
+}
+
+.name-line {
+  display: flex;
+  align-items: center;
+  flex-flow: wrap;
+  justify-content: space-between;
+  margin: 0.5em 1em;
+}
+
+.text-section {
+  width: 100%;
 }
