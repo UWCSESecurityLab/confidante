@@ -1,3 +1,8 @@
+/**
+ * Styles for the inbox interface. This covers mostly the mail-related
+ * components, like Thread, ThreadSnippet, Message, and the UI buttons, as well
+ * as the general layout.
+ */
 ul {
   list-style-type: none;
   padding: 0;
@@ -5,25 +10,6 @@ ul {
 
 .alert:empty {
   display: none;
-}
-
-.autocompletions {
-  background-color: #FFFFFF;
-  border: 1px solid #DDDDDD;
-  padding: 1em 0em;
-  position: absolute;
-}
-
-.autocompletions:empty {
-  display: none;
-}
-
-.completion {
-  padding: 0em 1em;
-}
-.completion:hover {
-  background-color: #CCF2FF;
-  padding: 0em 1em;
 }
 
 /* Margin in compose window */
