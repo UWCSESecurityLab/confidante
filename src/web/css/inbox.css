@@ -38,6 +38,11 @@ ul {
   padding: 0.5em;
 }
 
+.signature-header {
+  color: #707070;
+  margin: 1em;
+}
+
 .subjectLine {
   padding-left: 1.5em;
 }

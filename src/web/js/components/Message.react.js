@@ -85,8 +85,13 @@ var Message = React.createClass({
         <button type="button" className="btn btn-primary reply" data-toggle="modal" data-target="#composeMessage" onClick={this.reply}>
           Reply
         </button>
-        <br />
-        {signer ? null : 'Not signed.'} {signer}
+
+        { signer
+          ? <div>
+              <p className="signature-header">Message was signed by:</p>
+              {signer}
+            </div>
+          : null }
       </div>
     );
   }
