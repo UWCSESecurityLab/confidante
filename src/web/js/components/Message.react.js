@@ -3,7 +3,7 @@
 var React = require('react');
 var keybaseAPI = require('../keybaseAPI');
 var messageParsing = require('../messageParsing');
-var KeybaseCompletion = require('./KeybaseCompletion.react');
+var KeybaseCompletion = require('./KeybaseCard.react');
 
 /*eslint-disable no-unused-vars*/
 var InboxActions = require('../actions/InboxActions');

@@ -3,7 +3,7 @@
 var React = require('react');
 var keybaseAPI = require('../keybaseAPI');
 var ComposeStore = require('../stores/ComposeStore');
-var KeybaseCompletion = require('./KeybaseCompletion.react');
+var KeybaseCompletion = require('./KeybaseCard.react');
 
 var KeybaseAutocomplete = React.createClass({
   getInitialState: function() {
