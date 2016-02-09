@@ -50,7 +50,8 @@ var KeybaseAutocomplete = React.createClass({
               // representing the user and their attributes.
               let user = {};
               for (var component in completion.components) {
-                if (component != 'websites') {
+                if (completion.components.hasOwnProperty(component) &&
+                    component != 'websites') {
                   user[component] = completion.components[component].val;
                 }
               }
