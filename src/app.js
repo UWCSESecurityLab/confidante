@@ -60,10 +60,19 @@ app.use(express.static(__dirname + '/web/html'));
 app.use(express.static(__dirname + '/web/css'));
 app.use(express.static(__dirname + '/web/img'));
 
+let STAGING = false;
+var KEYBASE_URL;
+if (STAGING) {
+  KEYBASE_URL = 'https://stage0.keybase.io';
+} else {
+  KEYBASE_URL = 'https://keybase.io';
+}
+
 app.get('/', function(req, res) {
   res.render('index', {
     email: req.session.email,
-    loggedIn: auth.isAuthenticated(req.session)
+    loggedIn: auth.isAuthenticated(req.session),
+    staging: STAGING
   });
 });
 
@@ -71,12 +80,24 @@ app.get('/login', function(req, res) {
   if (auth.isAuthenticated(req.session)) {
     res.redirect('/mail');
   } else {
-    res.render('login', { email: req.session.email, loggedIn: false });
+    res.render('login', {
+      email: req.session.email,
+      loggedIn: false,
+      staging: STAGING
+    });
   }
 });
 
 app.get('/mail', auth.ensureAuthenticated, function(req, res) {
-  res.render('mail', { email: req.session.email, loggedIn: true });
+  res.render('mail', {
+    email: req.session.email,
+    loggedIn: true,
+    staging: STAGING
+  });
+});
+
+app.get('/signup', function(req, res) {
+  res.render('signup', { loggedIn: false, staging: STAGING });
 });
 
 app.get('/inbox', auth.ensureAuthenticated, function(req, res) {
@@ -156,7 +177,7 @@ app.get('/invite/getKey', auth.ensureAuthenticated, function(req, res) {
     });
   }
 
-  pgp.generateKeyPair(recipient)
+  pgp.generateArmoredKeyPair(recipient)
     .then(encryptPrivateKey)
     .then(keys => db.storeInviteKeys(recipient, keys))
     .then(record => {
@@ -356,81 +377,124 @@ app.get('/contacts.json', auth.ensureAuthenticated, function(req, res) {
  * critical, since the passphrase protects the private key, which the server may
  * also later eavesdrop (in encrypted form) if it is stored in keybase.
  */
-app.get('/getsalt.json', function(req, res) {
-  // /getsalt.json
+app.get('/keybase/getsalt.json', function(req, res) {
+  // /keybase/getsalt.json
   // Inputs: email_or_username
   // Outputs: guest_id, status, login_session, pwh_version
-  //
-  var GET_SALT_URL = 'https://keybase.io/_/api/1.0/getsalt.json';
-  request(
-    { method: 'GET',
-      url: GET_SALT_URL,
-      qs: req.query
-    },
-    function(error, response, body) {
-      if (error) {
-        res.status(500).send('Failed to contact keybase /getsalt.json endpoint.');
-        return;
-      }
-      // Echo the response with the same status code.
-      res.status(response.statusCode).send(body);
-    });
+  var GET_SALT_URL = KEYBASE_URL + '/_/api/1.0/getsalt.json';
+  request({
+    method: 'GET',
+    url: GET_SALT_URL,
+    qs: req.query
+  }, function(error, response, body) {
+    if (error) {
+      res.status(500).send('Failed to contact keybase /getsalt.json endpoint.');
+      return;
+    }
+    // Echo the response with the same status code.
+    res.status(response.statusCode).send(body);
+  });
 });
 
-app.post('/login.json', function(req, res) {
-  // /login.json
+app.post('/keybase/login.json', function(req, res) {
+  // /keybase/login.json
   // Inputs: email_or_username, hmac_pwh, login_session
   // Outputs: status, session, me, csrf_token
   //
-  var LOGIN_URL = 'https://keybase.io/_/api/1.0/login.json';
-  request(
-    {
-      method: 'POST',
-      url: LOGIN_URL,
-      qs: req.query
-    },
-    function (error, response, body) {
-      if (error) {
-        res.status(500).send('Failed to contact keybase /login.json endpoint.');
-        return;
-      }
-      var keybase = JSON.parse(body);
-
-      // Early exit if the login failed
-      if (keybase.status.code != 0) {
-        res.status(response.statusCode).send(body);
-        return;
-      }
-
-      // Save the user's id and Keybase cookies in their session.
-      req.session.keybaseId = keybase.me.id;
-      var parsedCookies = response.headers['set-cookie'].map(
-        function(cookie) {
-          return Cookie.parse(cookie);
-        }
-      );
-      req.session.keybaseCookie = parsedCookies.find(function(cookie) {
-        return cookie.session !== undefined;
-      });
-
-      // Save the CSRF token in the user's session.
-      req.session.keybaseCSRF = keybase.csrf_token;
-
-      // Create a User record for this user if necessary.
-      db.storeKeybaseCredentials(keybase).then(function() {
-        // Echo the response with the same status code on success.
-        res.status(response.statusCode).send(body);
-      }).catch(function(mongoError) {
-        req.session.destroy(function(sessionError) {
-          if (sessionError) {
-            res.status(500).send(sessionError + mongoError);
-          } else {
-            res.status(500).send(mongoError);
-          }
-        });
-      });
+  var LOGIN_URL = KEYBASE_URL + '/_/api/1.0/login.json';
+  request({
+    method: 'POST',
+    url: LOGIN_URL,
+    qs: req.query
+  }, function (error, response, body) {
+    if (error) {
+      res.status(500).send('Failed to contact keybase /login.json endpoint.');
+      return;
     }
-  );
+    var keybase = JSON.parse(body);
+
+    // Early exit if the login failed
+    if (keybase.status.code != 0) {
+      console.log('login.json failed');
+      console.log(body);
+      res.status(response.statusCode).send(body);
+      return;
+    }
+
+    // Save the user's id and Keybase cookies in their session.
+    req.session.keybaseId = keybase.me.id;
+    var parsedCookies = response.headers['set-cookie'].map(
+      function(cookie) {
+        return Cookie.parse(cookie);
+      }
+    );
+    req.session.keybaseCookie = parsedCookies.find(function(cookie) {
+      if (STAGING) {
+        return cookie.s0_session !== undefined;
+      } else {
+        return cookie.session !== undefined;
+      }
+    });
+
+    // Save the CSRF token in the user's session.
+    req.session.keybaseCSRF = keybase.csrf_token;
+
+    // Create a User record for this user if necessary.
+    db.storeKeybaseCredentials(keybase).then(function() {
+      // Echo the response with the same status code on success.
+      res.status(response.statusCode).send(body);
+    }).catch(function(mongoError) {
+      req.session.destroy(function(sessionError) {
+        if (sessionError) {
+          res.status(500).send(sessionError + mongoError);
+        } else {
+          res.status(500).send(mongoError);
+        }
+      });
+    });
+  });
+});
+
+app.post('/keybase/signup.json', function(req, res) {
+  if (auth.isAuthenticated(req.session)) {
+    res.status(400).send('Already logged in!');
+    return;
+  }
+  request({
+    method: 'POST',
+    url: KEYBASE_URL + '/_/api/1.0/signup.json',
+    qs: req.query
+  }, function(error, response, body) {
+    if (error) {
+      res.send(error);
+    } else {
+      res.send(body);
+    }
+  });
+});
+
+app.post('/keybase/key/add.json', function(req, res) {
+  if (!auth.isAuthenticatedWithKeybase(req.session)) {
+    console.log('POST /keybase/key/add.json failed: need Keybase authentication');
+    res.status(403).send('Cannot add keys without logging into Keybase');
+    return;
+  }
+
+  request({
+    method: 'POST',
+    url: KEYBASE_URL + '/_/api/1.0/key/add.json',
+    qs: req.query,
+    jar: getKeybaseCookieJar(req.session),
+    headers: {
+      'X-CSRF-Token': req.session.keybaseCSRF
+    }
+  }, function(error, response, body) {
+    if (error) {
+      res.send(error);
+    } else {
+      res.send(body);
+    }
+  });
 });
 
 app.get('/logout', function(req, res) {
@@ -466,8 +530,13 @@ module.exports = app; // For testing
  */
 function getKeybaseCookieJar(session) {
   let cookieJar = request.jar();
-  let cookieString = 'session=' + session.keybaseCookie.session;
-  cookieJar.setCookie(cookieString, 'https://keybase.io');
+  let cookieString;
+  if (STAGING) {
+    cookieString = 's0_session=' + session.keybaseCookie.s0_session;
+  } else {
+    cookieString = 'session=' +  session.keybaseCookie.session;
+  }
+  cookieJar.setCookie(cookieString, KEYBASE_URL);
   return cookieJar;
 }
 

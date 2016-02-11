@@ -1,5 +1,6 @@
 'use strict'
 var kbpgp = require('kbpgp');
+var armor = require('pgp-utils').armor;
 
 // Strings used to build PGP Armor
 var ARMOR_LINE = '-----';
@@ -48,13 +49,57 @@ exports.containsPGPMessage = function(text) {
 };
 
 /**
- * Generates a PGP key pair.
+ * Generates an Armored PGP key pair.
  * @param emailAddress The email address of the key's owner.
+ * @param passphrase (optional)
  * @return a Promise containing an object with the following data:
  *   publicKey: The PGP public key
  *   privateKey: The PGP private key
  */
-exports.generateKeyPair = function(emailAddress) {
+exports.generateArmoredKeyPair = function(emailAddress, passphrase) {
+  return new Promise(function(resolve, reject) {
+    generateKeyPair(emailAddress)
+      .then(function(keyManager) {
+        return Promise.all([
+          exportArmoredPublicKey(keyManager),
+          exportArmoredPrivateKey(keyManager, passphrase)
+        ]);
+      }).then(function(keys) {
+        resolve({ publicKey: keys[0], privateKey: keys[1] });
+      }).catch(function(err) {
+        reject(err);
+      });
+  });
+}
+
+/**
+ * Generates a PGP key pair, and exports them in a format to upload to Keybase.
+ * @param emailAddress The email address of the key's owner.
+ * @param passphrase The Keybase passphrase to encrypt the private key with.
+ * @return a Promise containing an object with the following data:
+ *   publicKey: Armored public key
+ *   p3skbPrivateKey: Base64-encoded MsgPacked P3SKB private key
+ */
+exports.generateKeysForUpload = function(emailAddress, passphrase) {
+  return new Promise(function(resolve, reject) {
+    generateKeyPair(emailAddress)
+      .then(function(keyManager) {
+        return Promise.all([
+          exportArmoredPublicKey(keyManager),
+          exportP3skbPrivateKey(keyManager, passphrase)
+        ]);
+      }).then(function(keyData) {
+        resolve({
+          publicKey: keyData[0],
+          p3skbPrivateKey: keyData[1]
+        });
+      }).catch(function(err) {
+        reject(err);
+      });
+  });
+}
+
+function generateKeyPair(emailAddress) {
   return new Promise(function(resolve, reject) {
     let generateEccKeys = function(id) {
       return new Promise(function(resolve, reject) {
@@ -80,40 +125,55 @@ exports.generateKeyPair = function(emailAddress) {
       });
     };
 
-    let exportKeys = function(keyManager) {
-      // Create promises for exporting both the public and private key
-      let exportPublic = new Promise(function(resolve, reject) {
-        keyManager.export_pgp_public({}, function(err, pgp_public) {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(pgp_public)
-          }
-        });
-      });
-      let exportPrivate = new Promise(function(resolve, reject) {
-        keyManager.export_pgp_private({}, function(err, pgp_private) {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(pgp_private);
-          }
-        });
-      });
-      return Promise.all([exportPublic, exportPrivate]);
-    }
-
     generateEccKeys('<' + emailAddress + '>')
       .then(signKeys)
-      .then(exportKeys)
-      .then(function(keypair) {
-        resolve({
-          publicKey: keypair[0],
-          privateKey: keypair[1]
-        });
-      })
-      .catch(function(err) {
+      .then(function(keyManager) {
+        resolve(keyManager);
+      }).catch(function(err) {
         reject(err);
       });
+  });
+}
+
+function exportArmoredPublicKey(keyManager) {
+  return new Promise(function(resolve, reject) {
+    keyManager.export_pgp_public({}, function(err, pgp_public) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(pgp_public)
+      }
+    });
+  });
+}
+
+function exportArmoredPrivateKey(keyManager, passphrase) {
+  return new Promise(function(resolve, reject) {
+    let opts = {};
+    if (passphrase) {
+      opts.passphrase = passphrase;
+    }
+    keyManager.export_pgp_private(opts, function(err, pgp_private) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(pgp_private);
+      }
+    });
+  });
+}
+
+function exportP3skbPrivateKey(keyManager, passphrase) {
+  return new Promise(function(resolve, reject) {
+    keyManager.export_private({
+      passphrase: passphrase,
+      p3skb: true,
+    }, function(err, p3skb) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(p3skb);
+      }
+    });
   });
 }

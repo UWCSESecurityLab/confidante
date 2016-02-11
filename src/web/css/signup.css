@@ -1,0 +1,17 @@
+.alert-danger {
+  margin-top: 1em;
+}
+
+.box {
+  border: 1px solid #E5E5E5;
+  box-shadow: 0px 0px 5px 3px #EEEEEE;
+  padding: 2em;
+}
+
+.loading {
+  text-align: center;
+}
+
+#error:empty {
+  visibility: hidden;
+}

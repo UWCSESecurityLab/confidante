@@ -9,10 +9,16 @@
         <span class="icon-bar"></span>
       </button>
 			<% if (!loggedIn) { %>
-      	<a class="navbar-brand" href="/">Keymail</a>
+      	<a class="navbar-brand" href="/">
 			<% } else { %>
-				<a class="navbar-brand" href="/mail">Keymail</a>
+				<a class="navbar-brand" href="/mail">
 			<% } %>
+      <% if (!staging) { %>
+        Keymail
+      <% } else { %>
+        Keymail <sub>Staging</sub>
+      <% } %>
+      </a>
     </div>
 		<!-- Collect the nav links, forms, and other content for toggling -->
 		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
@@ -24,7 +30,8 @@
 			</ul>
     	<ul class="nav navbar-nav navbar-right">
 				<% if (!loggedIn) { %>
-        	<li><a href="/login">Sign In</a></li>
+        	<li><a href="/login">Log In</a></li>
+          <li><a href="/signup">Sign Up</a></li>
 				<% } else { %>
           <li><a id="myEmail" href="#"><%= email %></a></li>
 					<li><a href="/logout">Log Out</a></li>
