@@ -3,7 +3,7 @@
 var React = require('react');
 var keybaseAPI = require('../keybaseAPI');
 var messageParsing = require('../messageParsing');
-var KeybaseCompletion = require('./KeybaseCompletion.react');
+var KeybaseCompletion = require('./KeybaseCard.react');
 
 /*eslint-disable no-unused-vars*/
 var InboxActions = require('../actions/InboxActions');
@@ -11,22 +11,18 @@ var ErrorBody = require('./ErrorBody.react');
 /*eslint-enable no-unused-vars*/
 
 function getTwitterFromUser(user) {
-  console.log('getting twitter from user');
-  console.log(user);
   let proofs = user.proofs_summary.by_proof_type;
   if (proofs.twitter) {
     return proofs.twitter[0].nametag;
   }
 }
 function getGithubFromUser(user) {
-  console.log('getting github from user');
-  console.log(user);
   let proofs = user.proofs_summary.by_proof_type;
   if (proofs.github) {
     return proofs.github[0].nametag;
   }
 }
-  
+
 /**
  * A message is one email message inside a thread, displayed in the inbox.
  * It decrypts its contents.
@@ -68,15 +64,15 @@ var Message = React.createClass({
     if (this.props.signer && this.props.signer.user && this.props.signer.user.length === 1) {
       console.log(signer);
       let user = this.props.signer.user[0];
-      let components = {
-        'full_name': { 'val': user.profile.full_name },
-        'username': { 'val': user.basics.username },
-        'twitter': { 'val': getTwitterFromUser(user) },
-        'github': { 'val': getGithubFromUser(user) },
+      // Convert the user object into the format used for our Keybase component.
+      let formattedUser = {
+        'full_name': user.profile.full_name,
+        'username': user.basics.username,
+        'picture': user.pictures.primary.url,
+        'twitter': getTwitterFromUser(user),
+        'github': getGithubFromUser(user)
       };
-
-      // signer = this.props.signer.user[0].basics.username;
-      signer = ( <KeybaseCompletion components={components} /> );
+      signer = ( <KeybaseCompletion user={formattedUser}/> );
     }
 
     return (
@@ -89,8 +85,13 @@ var Message = React.createClass({
         <button type="button" className="btn btn-primary reply" data-toggle="modal" data-target="#composeMessage" onClick={this.reply}>
           Reply
         </button>
-        <br />
-        {signer ? 'Signed by' : 'Not signed.'} {signer}
+
+        { signer
+          ? <div>
+              <p className="signature-header">Message was signed by:</p>
+              {signer}
+            </div>
+          : null }
       </div>
     );
   }

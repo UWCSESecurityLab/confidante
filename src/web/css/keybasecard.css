@@ -1,0 +1,56 @@
+/**
+ * Styles for the KeybaseCompletion component.
+ */
+.keybase-card {
+  border: 1px solid #E5E5E5;
+  display: inline-flex;
+  max-width: 500px;
+  width: 100%;
+}
+
+.keybase-card:hover {
+  background: #FFEAC4;
+}
+
+.keybase-btn {
+  padding: 4px 8px;
+}
+
+.github-img {
+  margin: 0 4px;
+}
+
+.line-item {
+  padding-right: 1em;
+}
+
+.pic-section {
+  background: #EFEFEF;
+  padding: 0.25em;
+  margin-left: -4px;
+}
+
+.profile-pic {
+  border-radius: 50%;
+  max-height: 6em;
+}
+
+.accounts-line {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  flex-flow: wrap;
+  margin: 0.5em 1em;
+}
+
+.name-line {
+  display: flex;
+  align-items: center;
+  flex-flow: wrap;
+  justify-content: space-between;
+  margin: 0.5em 1em;
+}
+
+.text-section {
+  width: 100%;
+}

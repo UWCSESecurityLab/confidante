@@ -1,0 +1,21 @@
+/**
+ * Styles for autocomplete components: ContactsAutocomplete and
+ * KeybaseAutocomplete.
+ */
+.autocompletions {
+  background-color: #FFFFFF;
+  border: 1px solid #DDDDDD;
+  position: absolute;
+}
+
+.autocompletions:empty {
+  display: none;
+}
+
+.completion {
+  padding: 0em 1em;
+}
+.completion:hover {
+  background-color: #CCF2FF;
+  padding: 0em 1em;
+}

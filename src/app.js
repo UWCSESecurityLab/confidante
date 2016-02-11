@@ -58,6 +58,7 @@ app.use('/fonts', express.static(__dirname + '/web/fonts/3rdparty'));
 app.use(express.static(__dirname + '/web/js'));
 app.use(express.static(__dirname + '/web/html'));
 app.use(express.static(__dirname + '/web/css'));
+app.use(express.static(__dirname + '/web/img'));
 
 app.get('/', function(req, res) {
   res.render('index', {
