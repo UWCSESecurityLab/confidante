@@ -3,20 +3,22 @@
 var React = require('react');
 var ComposeStore = require('../stores/ComposeStore');
 var MessageStore = require('../stores/MessageStore');
-var ContactsAutocomplete = require('./ContactsAutocomplete.react');
 var InboxActions = require('../actions/InboxActions');
-var KeybaseAutocomplete = require('./KeybaseAutocomplete.react');
 var messageParsing = require('../messageParsing');
 var keybaseAPI = require('../keybaseAPI');
 var kbpgp = require('kbpgp');
 var xhr = require('xhr');
+/* eslint-disable no-unused-vars */
+var ContactsAutocomplete = require('./ContactsAutocomplete.react');
+var KeybaseAutocomplete = require('./KeybaseAutocomplete.react');
+/* eslint-enable no-unused-vars */
 
 var ourPrivateManager;
 MessageStore.getPrivateManager().then(function(privateManager) {
   ourPrivateManager = privateManager;
 });
 
-var ourPublicKeyManager = 
+var ourPublicKeyManager =
   Promise
     .reject(new Error('Key manager for local public key not yet created.'))
     .catch(function() {});
@@ -111,10 +113,17 @@ var ComposeArea = React.createClass({
   send: function() {
     this.setState({ sendingSpinner: true });
 
-    var toManager = keybaseAPI.publicKeyForUser(this.state.kbto)
-      .then(keybaseAPI.managerFromPublicKey);
+    let users = this.state.kbto
+      .split(',')
+      .map((token) => token.trim())
+      .filter((token) => token.length > 0);
 
-    Promise.all([toManager, ourPublicKeyManager])
+    let keyManagers = users.map((user) => {
+      return keybaseAPI.publicKeyForUser(user).then(keybaseAPI.managerFromPublicKey);
+    });
+    keyManagers.push(ourPublicKeyManager)
+
+    Promise.all(keyManagers)
       .then(this.encryptEmail)
       .then(function(encryptedEmail) {
         var email = {
@@ -150,7 +159,7 @@ var ComposeArea = React.createClass({
     let getKey = function(recipient) {
       return new Promise(function(resolve, reject) {
         xhr.get({
-          url: window.location.origin + '/invite/getKey?recipient=' + recipient,
+          url: window.location.origin + '/invite/getKey?recipient=' + recipient
         }, function(error, response, body) {
           if (error) {
             console.error(error);
@@ -175,7 +184,7 @@ var ComposeArea = React.createClass({
           kbpgp.box({
             msg: message,
             encrypt_for: invitee
-          }, function(err, armored, buf) {
+          }, function(err, armored) {
             if (err) {
               console.error(err);
               reject(err);
