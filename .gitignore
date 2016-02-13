@@ -4,5 +4,3 @@ src/web/*/3rdparty
 
 .DS_Store
 *.swp
-
-client_secret.json
