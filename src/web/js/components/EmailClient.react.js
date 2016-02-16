@@ -1,11 +1,11 @@
 'use strict';
 
-// Disable no-unused-vars since linter can't catch references that are only used in JSX.
 /*eslint-disable no-unused-vars*/
 var ComposeButton = require('./ComposeButton.react');
 var ComposeArea = require('./ComposeArea.react');
 var Inbox = require('./Inbox.react');
 var InviteButton = require('./InviteButton.react');
+var RefreshButton = require('./RefreshButton.react');
 /*eslint-enable no-unused-vars*/
 
 var React = require('react');
@@ -22,6 +22,7 @@ var EmailClient = React.createClass({
       <div>
         <ComposeButton />
         <InviteButton />
+        <RefreshButton />
         <ComposeArea />
         <Inbox />
       </div>

@@ -1,7 +1,7 @@
 'use strict';
 
-var InboxDispatcher = require('../dispatcher/InboxDispatcher');
 var EventEmitter = require('events').EventEmitter;
+var InboxDispatcher = require('../dispatcher/InboxDispatcher');
 var keybaseAPI = require('../keybaseAPI');
 var messageParsing = require('../messageParsing');
 var xhr = require('xhr');
@@ -21,17 +21,15 @@ _privateManager.then(function(pm) {
 function _signerFromLiterals(literals) {
   let ds = literals[0].get_data_signer();
   let km;
-  if (ds) { 
+  if (ds) {
     km = ds.get_key_manager();
   }
   if (km) {
-    // console.log("Signed by PGP fingerprint");
-    // console.log(km.pgp.get_fingerprint().toString('hex'));
-    // return km.pgp.get_key_id().toString('hex');
     return km;
   }
   return null;
 }
+
 function _decryptThread(thread) {
   thread.messages.forEach(function(message) {
     if (_plaintexts[message.id] === undefined) {
@@ -39,6 +37,7 @@ function _decryptThread(thread) {
     }
   });
 }
+
 function _decryptMessage(message) {
   var body = messageParsing.getMessageBody(message);
   _privateManager
@@ -83,7 +82,7 @@ function loadMail() {
 }
 
 loadMail();
-setInterval(loadMail, 5000);
+setInterval(loadMail, 60000);
 
 var MessageStore = Object.assign({}, EventEmitter.prototype, {
   emitChange: function() {
@@ -105,25 +104,27 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
       errors: _errors,
       threads: _threads,
       plaintexts: _plaintexts,
-      signers: _signers,
+      signers: _signers
     };
   },
 
   markAsRead: function(threadId) {
     xhr.post({
       url: window.location.origin + '/markAsRead?threadId=' + threadId
-    }, function(err, response, body) {
+    }, function(err) {
       if (err) {
         console.error(err);
       }
+      loadMail();
     });
   },
 
-  // Remove this disable when the below function does something.
   dispatchToken: InboxDispatcher.register(function(action) {
     if (action.type === 'MARK_AS_READ') {
       MessageStore.markAsRead(action.message);
       MessageStore.emitChange();
+    } else if (action.type === 'REFRESH') {
+      loadMail();
     }
   })
 });
