@@ -519,6 +519,7 @@ app.get('/logout', function(req, res) {
 });
 
 app.listen(3000);
+console.log('Keymail server listening on port 3000');
 
 module.exports = app; // For testing
 
