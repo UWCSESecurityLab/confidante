@@ -30,7 +30,7 @@ var KeybaseAutocomplete = React.createClass({
     let newValue = e.target.value;
     this.setState({ kbto: newValue });
     keybaseAPI.autocomplete(newValue).then(function(body) {
-      this.setState({ results: JSON.parse(body) });
+      this.setState({ results: body });
       this.props.updateParent(newValue);
     }.bind(this));
   },

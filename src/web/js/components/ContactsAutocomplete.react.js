@@ -61,7 +61,7 @@ var ContactsAutocomplete = React.createClass({
     let query = newString.slice(newString.lastIndexOf(',') + 1);
     autocompleteContacts(query).then(function(results) {
       this.setState({ results: results });
-      this.props.updateParent(e.target.value);
+      this.props.updateParent(newString);
     }.bind(this));
   },
 
