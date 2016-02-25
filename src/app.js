@@ -19,9 +19,7 @@ var auth = require('./auth.js');
 var credentials = require('../client_secret.json');
 var db = require('./db.js');
 var GmailClient = require('./gmailClient.js');
-var Invite = require('./models/invite.js');
 var messageParsing = require('./web/js/messageParsing');
-var User = require('./models/user.js');
 
 // Mongo session store setup.
 var store = new MongoSessionStore({
@@ -99,7 +97,7 @@ app.get('/login', function(req, res) {
   }
 });
 
-app.get('/mail', auth.ensureAuthenticated, function(req, res) {
+app.get('/mail', auth.webEndpoint, function(req, res) {
   res.render('mail', {
     email: req.session.email,
     loggedIn: true,
@@ -111,14 +109,14 @@ app.get('/signup', function(req, res) {
   res.render('signup', { loggedIn: false, staging: KEYBASE_STAGING });
 });
 
-app.get('/inbox', auth.ensureAuthenticated, function(req, res) {
+app.get('/inbox', auth.dataEndpoint, function(req, res) {
   var gmailClient = new GmailClient(req.session.googleToken);
   gmailClient.getEncryptedInbox().then(function(threads) {
     res.json(threads);
   });
 });
 
-app.post('/sendMessage', auth.ensureAuthenticated, function(req, res) {
+app.post('/sendMessage', auth.dataEndpoint, function(req, res) {
   var gmailClient = new GmailClient(req.session.googleToken);
   let parent = req.body.parentMessage;
   let parentId = messageParsing.getMessageHeader(parent, 'Message-ID');
@@ -142,7 +140,7 @@ app.post('/sendMessage', auth.ensureAuthenticated, function(req, res) {
   });
 });
 
-app.post('/markAsRead', auth.ensureAuthenticated, function(req, res) {
+app.post('/markAsRead', auth.dataEndpoint, function(req, res) {
   if (!req.query.threadId) {
     res.status(400).send('Missing thread id');
   }
@@ -165,7 +163,7 @@ app.post('/markAsRead', auth.ensureAuthenticated, function(req, res) {
  * The response body contains a JSON object containing the invite id,
  * and the public key. When calling /invite/sendInvite, pass back the invite id.
  */
-app.get('/invite/getKey', auth.ensureAuthenticated, function(req, res) {
+app.get('/invite/getKey', auth.dataEndpoint, function(req, res) {
   let recipient = req.query.recipient;
   if (!recipient) {
     res.status(500).send('No recipient provided');
@@ -204,7 +202,7 @@ app.get('/invite/getKey', auth.ensureAuthenticated, function(req, res) {
  * Sends an invite to a non-Keymail user. The client should provide a JSON
  * object containing 'message', 'inviteId', and 'subject'.
  */
-app.post('/invite/sendInvite', auth.ensureAuthenticated, function(req, res) {
+app.post('/invite/sendInvite', auth.dataEndpoint, function(req, res) {
   if (!req.session.tempPassphrase || !req.body.inviteId || !req.body.message || !req.body.subject) {
     res.status(400).send('Bad request');
     return;
@@ -366,7 +364,7 @@ app.get('/auth/google/return', function(req, res) {
   });
 });
 
-app.get('/contacts.json', auth.ensureAuthenticated, function(req, res) {
+app.get('/contacts.json', auth.dataEndpoint, function(req, res) {
   let gmailClient = new GmailClient(req.session.googleToken);
   gmailClient.searchContacts(req.query.q).then(function(body) {
     res.json(body);
@@ -487,7 +485,7 @@ app.post('/keybase/signup.json', function(req, res) {
 app.post('/keybase/key/add.json', function(req, res) {
   if (!auth.isAuthenticatedWithKeybase(req.session)) {
     console.log('POST /keybase/key/add.json failed: need Keybase authentication');
-    res.status(403).send('Cannot add keys without logging into Keybase');
+    res.status(401).send('Cannot add keys without logging into Keybase');
     return;
   }
 

@@ -6,7 +6,30 @@ module.exports = {
   isAuthenticated: isAuthenticated,
   isAuthenticatedWithGoogle: isAuthenticatedWithGoogle,
   isAuthenticatedWithKeybase: isAuthenticatedWithKeybase,
-  ensureAuthenticated: ensureAuthenticated
+  webEndpoint: webEndpoint,
+  dataEndpoint: dataEndpoint
+}
+
+/**
+ * Express middleware to ensure the user is authenticated, for web pages.
+ * Redirects to login page if not authenticated.
+ */
+function webEndpoint(req, res, next) {
+  if (isAuthenticated(req.session)) {
+    return next();
+  }
+  res.redirect('/login');
+}
+/**
+ * Express middleware to ensure the user is authenticated, for data endpoints.
+ * Sends bad status code if not authenticated.
+ */
+function dataEndpoint(req, res, next) {
+  if (isAuthenticated(req.session)) {
+    next();
+  } else {
+    res.status(401).send('You must be logged in to access this resource');
+  }
 }
 
 /**
@@ -57,17 +80,4 @@ function isAuthenticatedWithGoogle(session) {
     return false;
   }
   return true;
-}
-
-/**
- * Simple route middleware to ensure user is authenticated.
- * If the request is authenticated (typically via a persistent login session),
- * the request will proceed.  Otherwise, the user will be redirected to the
- * login page.
- */
-function ensureAuthenticated(req, res, next) {
-  if (isAuthenticated(req.session)) {
-    return next();
-  }
-  res.redirect('/login');
 }
