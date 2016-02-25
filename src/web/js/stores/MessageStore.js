@@ -10,6 +10,7 @@ var _plaintexts = {};
 var _threads = {};
 var _errors = {};
 var _signers = {};
+var _netError = '';
 
 // A promise containing our local private key.
 var _privateManager = keybaseAPI.getPrivateManager();
@@ -21,7 +22,7 @@ _privateManager.then(function(pm) {
 function _signerFromLiterals(literals) {
   let ds = literals[0].get_data_signer();
   let km;
-  if (ds) { 
+  if (ds) {
     km = ds.get_key_manager();
   }
   if (km) {
@@ -72,7 +73,14 @@ function loadMail() {
   xhr.get({
     url: window.location.origin + '/inbox'
   }, function(error, response, body) {
-    if (!error) {
+    if (error) {
+      _netError = 'NETWORK';
+      MessageStore.emitChange();
+    } else if (response.statusCode == 401) {
+      _netError = 'AUTHENTICATION';
+      MessageStore.emitChange();
+    } else {
+      _netError = '';
       _threads = JSON.parse(body);
       _threads.forEach(function(thread) {
         _decryptThread(thread);
@@ -105,16 +113,27 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
       errors: _errors,
       threads: _threads,
       plaintexts: _plaintexts,
-      signers: _signers,
+      signers: _signers
     };
+  },
+
+  getNetError: function() {
+    return _netError;
   },
 
   markAsRead: function(threadId) {
     xhr.post({
       url: window.location.origin + '/markAsRead?threadId=' + threadId
-    }, function(err, response, body) {
+    }, function(err, response) {
       if (err) {
-        console.error(err);
+        _netError = 'NETWORK';
+        console.err(err);
+        MessageStore.emitChange();
+      } else if (response.statusCode != 200) {
+        _netError = 'AUTHENTICATION';
+        MessageStore.emitChange();
+      } else {
+        _netError = '';
       }
     });
   },

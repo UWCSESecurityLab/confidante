@@ -14,8 +14,7 @@ var React = require('react');
 var Inbox = React.createClass({
   getInitialState: function() {
     return {
-      threads: [],
-      listname: 'Inbox'
+      threads: []
     };
   },
 
@@ -39,14 +38,12 @@ var Inbox = React.createClass({
     if (snippets.length == 0) {
       return (
         <div>
-          <h1> {this.state.listname} </h1>
           <div className="row snippet">No encrypted emails!</div>
         </div>
       );
     }
     return (
       <div>
-        <h1> {this.state.listname} </h1>
         <ul>
           {snippets}
         </ul>
