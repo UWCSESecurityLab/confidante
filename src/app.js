@@ -63,6 +63,14 @@ app.use(express.static(__dirname + '/web/img'));
 // Configure command line options
 
 let PRODUCTION = process.argv.indexOf('--prod') != -1;
+
+let GOOGLE_OAUTH_REDIRECT_URI;
+if (PRODUCTION) {
+  GOOGLE_OAUTH_REDIRECT_URI = credentials.web.redirect_uris[0];
+} else {
+  GOOGLE_OAUTH_REDIRECT_URI = credentials.web.redirect_uris[1];
+}
+
 let KEYBASE_STAGING = process.argv.indexOf('--keybase-staging') != -1;
 var KEYBASE_URL;
 if (KEYBASE_STAGING) {
@@ -554,7 +562,7 @@ function redirectToGoogleOAuthUrl(req, res) {
       'https://www.googleapis.com/auth/contacts.readonly',
       'https://www.googleapis.com/auth/gmail.modify'
     ],
-    redirect_uri: credentials.web.redirect_uris[0]
+    redirect_uri: GOOGLE_OAUTH_REDIRECT_URI
   });
   res.redirect(authUrl);
 }
@@ -564,17 +572,10 @@ function redirectToGoogleOAuthUrl(req, res) {
  */
 function buildGoogleOAuthClient() {
   var googleAuth = new googleAuthLibrary();
-  let redirectUri;
-  if (PRODUCTION) {
-    redirectUri = credentials.web.redirect_uris[0];
-  } else {
-    redirectUri = credentials.web.redirect_uris[1];
-  }
-
   return new googleAuth.OAuth2(
     credentials.web.client_id,
     credentials.web.client_secret,
-    redirectUri
+    GOOGLE_OAUTH_REDIRECT_URI
   );
 }
 
