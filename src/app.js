@@ -62,8 +62,8 @@ app.use(express.static(__dirname + '/web/img'));
 
 // Configure command line options
 
-let PRODUCTION = process.argv.includes('--prod');
-let KEYBASE_STAGING = process.argv.includes('--keybase-staging');
+let PRODUCTION = process.argv.indexOf('--prod') != -1;
+let KEYBASE_STAGING = process.argv.indexOf('--keybase-staging') != -1;
 var KEYBASE_URL;
 if (KEYBASE_STAGING) {
   KEYBASE_URL = 'https://stage0.keybase.io';
