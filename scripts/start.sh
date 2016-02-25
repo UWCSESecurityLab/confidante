@@ -5,4 +5,4 @@ do
   echo "Waiting for mongo to start..."
   sleep 3
 done
-node src/app.js
+node src/app.js --prod
