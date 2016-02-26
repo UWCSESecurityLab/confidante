@@ -9,15 +9,15 @@ var URLSafeBase64 = require('urlsafe-base64');
 
 var mongoose = require('mongoose');
 var MongoSessionStore = require('connect-mongodb-session')(session);
-var googleAuthLibrary = require('google-auth-library');
 
 var crypto = require('crypto');
 var p3skb = require('./p3skb');
 var pgp = require('./pgp.js');
 
 var auth = require('./auth.js');
-var credentials = require('../client_secret.json');
 var db = require('./db.js');
+var flags = require('./flags.js');
+var GoogleOAuth = require('./googleOAuth.js');
 var GmailClient = require('./gmailClient.js');
 var messageParsing = require('./web/js/messageParsing');
 
@@ -58,20 +58,8 @@ app.use(express.static(__dirname + '/web/html'));
 app.use(express.static(__dirname + '/web/css'));
 app.use(express.static(__dirname + '/web/img'));
 
-// Configure command line options
-
-let PRODUCTION = process.argv.indexOf('--prod') != -1;
-
-let GOOGLE_OAUTH_REDIRECT_URI;
-if (PRODUCTION) {
-  GOOGLE_OAUTH_REDIRECT_URI = credentials.web.redirect_uris[0];
-} else {
-  GOOGLE_OAUTH_REDIRECT_URI = credentials.web.redirect_uris[1];
-}
-
-let KEYBASE_STAGING = process.argv.indexOf('--keybase-staging') != -1;
-var KEYBASE_URL;
-if (KEYBASE_STAGING) {
+let KEYBASE_URL;
+if (flags.KEYBASE_STAGING) {
   KEYBASE_URL = 'https://stage0.keybase.io';
 } else {
   KEYBASE_URL = 'https://keybase.io';
@@ -81,7 +69,7 @@ app.get('/', function(req, res) {
   res.render('index', {
     email: req.session.email,
     loggedIn: auth.isAuthenticated(req.session),
-    staging: KEYBASE_STAGING
+    staging: flags.KEYBASE_STAGING
   });
 });
 
@@ -92,7 +80,7 @@ app.get('/login', function(req, res) {
     res.render('login', {
       email: req.session.email,
       loggedIn: false,
-      staging: KEYBASE_STAGING
+      staging: flags.KEYBASE_STAGING
     });
   }
 });
@@ -101,12 +89,12 @@ app.get('/mail', auth.webEndpoint, function(req, res) {
   res.render('mail', {
     email: req.session.email,
     loggedIn: true,
-    staging: KEYBASE_STAGING
+    staging: flags.KEYBASE_STAGING
   });
 });
 
 app.get('/signup', function(req, res) {
-  res.render('signup', { loggedIn: false, staging: KEYBASE_STAGING });
+  res.render('signup', { loggedIn: false, staging: flags.KEYBASE_STAGING });
 });
 
 app.get('/inbox', auth.dataEndpoint, function(req, res) {
@@ -307,15 +295,16 @@ app.get('/auth/google', function(req, res) {
     if (user.google.refreshToken) {
       // If the user has logged in with Google before, get an access token
       // using the refresh token.
-      refreshGoogleOAuthToken(user.google.refreshToken).then(function(token) {
+      GoogleOAuth.refreshAccessToken(user.google.refreshToken).then(function(token) {
         req.session.googleToken = token;
         req.session.email = user.google.email;
         res.redirect('/mail');
       }).catch(function() {
-        redirectToGoogleOAuthUrl(req, res);
+        // If the refresh fails, make them do the OAuth flow.
+        GoogleOAuth.redirectToGoogleOAuthUrl(req, res);
       });
     } else {
-      redirectToGoogleOAuthUrl(req, res);
+      GoogleOAuth.redirectToGoogleOAuthUrl(req, res);
     }
   }).catch(function(err) {
     res.statusCode(500).send(err);
@@ -333,7 +322,7 @@ app.get('/auth/google/return', function(req, res) {
   }
 
   // Get tokens, then lookup email address.
-  var tokenPromise = getInitialGoogleOAuthTokens(code);
+  var tokenPromise = GoogleOAuth.getInitialTokens(code);
   var emailPromise = tokenPromise.then(function(token) {
     var gmailClient = new GmailClient(token);
     return gmailClient.getEmailAddress();
@@ -438,7 +427,7 @@ app.post('/keybase/login.json', function(req, res) {
       }
     );
     req.session.keybaseCookie = parsedCookies.find(function(cookie) {
-      if (KEYBASE_STAGING) {
+      if (flags.KEYBASE_STAGING) {
         return cookie.s0_session !== undefined;
       } else {
         return cookie.session !== undefined;
@@ -541,75 +530,11 @@ module.exports = app; // For testing
 function getKeybaseCookieJar(session) {
   let cookieJar = request.jar();
   let cookieString;
-  if (KEYBASE_STAGING) {
+  if (flags.KEYBASE_STAGING) {
     cookieString = 's0_session=' + session.keybaseCookie.s0_session;
   } else {
     cookieString = 'session=' +  session.keybaseCookie.session;
   }
   cookieJar.setCookie(cookieString, KEYBASE_URL);
   return cookieJar;
-}
-
-function redirectToGoogleOAuthUrl(req, res) {
-  // Otherwise, we need to send them through the Google OAuth flow.
-  var oauth2Client = buildGoogleOAuthClient();
-  var authUrl = oauth2Client.generateAuthUrl({
-    access_type: 'offline',
-    scope: [
-      'email',
-      'https://www.googleapis.com/auth/contacts.readonly',
-      'https://www.googleapis.com/auth/gmail.modify'
-    ],
-    redirect_uri: GOOGLE_OAUTH_REDIRECT_URI
-  });
-  res.redirect(authUrl);
-}
-
-/**
- * Constructs a Google OAuth client with the app's credentials.
- */
-function buildGoogleOAuthClient() {
-  var googleAuth = new googleAuthLibrary();
-  return new googleAuth.OAuth2(
-    credentials.web.client_id,
-    credentials.web.client_secret,
-    GOOGLE_OAUTH_REDIRECT_URI
-  );
-}
-
-/**
- * Requests an access token and refresh token (if applicable) from Google.
- * @param authCode the authorization code sent in the OAuth callback
- * @return Promise containing the access token/refresh token object
- */
-function getInitialGoogleOAuthTokens(authCode) {
-  return new Promise(function(resolve, reject) {
-    var oauth2Client = buildGoogleOAuthClient();
-    oauth2Client.getToken(authCode, function(err, token) {
-      if (err) {
-        reject(Error('Error while tring to retrieve access token' + err));
-      } else {
-        resolve(token);
-      }
-    });
-  });
-}
-
-/**
- * Get the access token given a refresh token.
- * @param refreshToken The user's refresh token.
- * @return Promise containing the access token.
- */
-function refreshGoogleOAuthToken(refreshToken) {
-  return new Promise(function(resolve, reject) {
-    var oauth2Client = buildGoogleOAuthClient();
-    oauth2Client.credentials.refresh_token = refreshToken;
-    oauth2Client.getAccessToken(function(err, token, response) {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(response.body);
-      }
-    });
-  });
 }
