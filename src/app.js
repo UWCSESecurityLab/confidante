@@ -60,9 +60,20 @@ app.use(express.static(__dirname + '/web/html'));
 app.use(express.static(__dirname + '/web/css'));
 app.use(express.static(__dirname + '/web/img'));
 
-let STAGING = false;
+// Configure command line options
+
+let PRODUCTION = process.argv.indexOf('--prod') != -1;
+
+let GOOGLE_OAUTH_REDIRECT_URI;
+if (PRODUCTION) {
+  GOOGLE_OAUTH_REDIRECT_URI = credentials.web.redirect_uris[0];
+} else {
+  GOOGLE_OAUTH_REDIRECT_URI = credentials.web.redirect_uris[1];
+}
+
+let KEYBASE_STAGING = process.argv.indexOf('--keybase-staging') != -1;
 var KEYBASE_URL;
-if (STAGING) {
+if (KEYBASE_STAGING) {
   KEYBASE_URL = 'https://stage0.keybase.io';
 } else {
   KEYBASE_URL = 'https://keybase.io';
@@ -72,7 +83,7 @@ app.get('/', function(req, res) {
   res.render('index', {
     email: req.session.email,
     loggedIn: auth.isAuthenticated(req.session),
-    staging: STAGING
+    staging: KEYBASE_STAGING
   });
 });
 
@@ -83,7 +94,7 @@ app.get('/login', function(req, res) {
     res.render('login', {
       email: req.session.email,
       loggedIn: false,
-      staging: STAGING
+      staging: KEYBASE_STAGING
     });
   }
 });
@@ -92,12 +103,12 @@ app.get('/mail', auth.ensureAuthenticated, function(req, res) {
   res.render('mail', {
     email: req.session.email,
     loggedIn: true,
-    staging: STAGING
+    staging: KEYBASE_STAGING
   });
 });
 
 app.get('/signup', function(req, res) {
-  res.render('signup', { loggedIn: false, staging: STAGING });
+  res.render('signup', { loggedIn: false, staging: KEYBASE_STAGING });
 });
 
 app.get('/inbox', auth.ensureAuthenticated, function(req, res) {
@@ -429,7 +440,7 @@ app.post('/keybase/login.json', function(req, res) {
       }
     );
     req.session.keybaseCookie = parsedCookies.find(function(cookie) {
-      if (STAGING) {
+      if (KEYBASE_STAGING) {
         return cookie.s0_session !== undefined;
       } else {
         return cookie.session !== undefined;
@@ -519,6 +530,7 @@ app.get('/logout', function(req, res) {
 });
 
 app.listen(3000);
+console.log('Keymail server listening on port 3000');
 
 module.exports = app; // For testing
 
@@ -531,7 +543,7 @@ module.exports = app; // For testing
 function getKeybaseCookieJar(session) {
   let cookieJar = request.jar();
   let cookieString;
-  if (STAGING) {
+  if (KEYBASE_STAGING) {
     cookieString = 's0_session=' + session.keybaseCookie.s0_session;
   } else {
     cookieString = 'session=' +  session.keybaseCookie.session;
@@ -550,7 +562,7 @@ function redirectToGoogleOAuthUrl(req, res) {
       'https://www.googleapis.com/auth/contacts.readonly',
       'https://www.googleapis.com/auth/gmail.modify'
     ],
-    redirect_uri: credentials.web.redirect_uris[0]
+    redirect_uri: GOOGLE_OAUTH_REDIRECT_URI
   });
   res.redirect(authUrl);
 }
@@ -563,7 +575,7 @@ function buildGoogleOAuthClient() {
   return new googleAuth.OAuth2(
     credentials.web.client_id,
     credentials.web.client_secret,
-    credentials.web.redirect_uris[0]
+    GOOGLE_OAUTH_REDIRECT_URI
   );
 }
 
