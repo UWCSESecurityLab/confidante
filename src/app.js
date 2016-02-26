@@ -287,27 +287,15 @@ app.get('/invite', function(req, res) {
  * authenticated with Keybase so we can identify them.
  */
 app.get('/auth/google', function(req, res) {
-  db.getUser(req.session.keybaseId).then(function(user) {
-    if (!user) {
-      // If there is no Keybase id, send them back to the initial login.
-      res.redirect('/login');
-    }
-    if (user.google.refreshToken) {
-      // If the user has logged in with Google before, get an access token
-      // using the refresh token.
-      GoogleOAuth.refreshAccessToken(user.google.refreshToken).then(function(token) {
-        req.session.googleToken = token;
-        req.session.email = user.google.email;
-        res.redirect('/mail');
-      }).catch(function() {
-        // If the refresh fails, make them do the OAuth flow.
-        GoogleOAuth.redirectToGoogleOAuthUrl(req, res);
-      });
-    } else {
-      GoogleOAuth.redirectToGoogleOAuthUrl(req, res);
-    }
+  if (!req.session.keybaseId) {
+    res.statusCode(403).send('No Keybase ID associated with this session');
+    return;
+  }
+  auth.attemptGoogleReauthentication(req.session).then(function() {
+    res.redirect('/mail');
   }).catch(function(err) {
-    res.statusCode(500).send(err);
+    console.log(err);
+    GoogleOAuth.redirectToGoogleOAuthUrl(req, res);
   });
 });
 
@@ -337,7 +325,7 @@ app.get('/auth/google/return', function(req, res) {
 
     // If a refresh token was returned, we need to store it in the database.
     if (token.refresh_token) {
-      db.storeGoogleCredentials(req.session.keybaseId, email,token.refresh_token)
+      db.storeGoogleCredentials(req.session.keybaseId, email, token.refresh_token)
         .then(function() {
           res.redirect('/');
         }).catch(function(error) {
