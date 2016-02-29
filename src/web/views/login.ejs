@@ -15,17 +15,16 @@
       <div class="col-md-6">
         <form>
           <h2>Sign in with your Keybase Account</h2>
+          <img src="keybase_logo.png" id="keybase-logo">
           <div class="form-group">
-            <label for="username">Username:</label>
-            <input type="text" class="form-control" id="username"/>
+            <input type="text" class="form-control" id="username" placeholder="Email or Username"/>
           </div>
           <div class="form-group">
-            <label for="password">Password:</label>
-            <input type="password" class="form-control" id="password"/>
+            <input type="password" class="form-control" id="password" placeholder="Password"/>
           </div>
         </form>
         <div>
-          <button class="btn btn-default" id="submit">Sign In</button>
+          <button class="btn btn-primary" id="submit">Sign In</button>
           <span class="spinner" id="spinner" aria-hidden="true"></span>
         </div>
         <div class="alert alert-danger" role="alert" id="error"></div>
@@ -34,10 +33,14 @@
     <div class="col-md-5">
       <h3>Don't have a Keybase Account?</h3>
       <p>
-        Keybase is a directory of people and their PGP encryption keys. We use Keybase to encrypt and decrypt your email.
+        Keybase is a directory of people and their PGP keys. We use Keybase to
+        make encrypting and decrypting your mail easier.
       </p>
-      <a class="btn btn-primary" href="https://keybase.io/">
-        Sign up for an account at keybase.io
+      <a class="btn btn-primary" href="/signup">
+        Sign Up
+      </a>
+      <a class="btn btn-info" href="https://keybase.io" target="_blank">
+        Learn More
       </a>
     </div>
   </div>

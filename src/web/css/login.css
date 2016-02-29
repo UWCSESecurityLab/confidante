@@ -2,3 +2,8 @@
   margin-top: 1em;
   visibility: hidden;
 }
+
+#keybase-logo {
+  margin: 0.75em 0;
+  width: 213px;
+}

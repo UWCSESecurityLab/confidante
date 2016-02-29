@@ -352,13 +352,13 @@ app.get('/auth/google/return', function(req, res) {
     if (token.refresh_token) {
       db.storeGoogleCredentials(req.session.keybaseId, email,token.refresh_token)
         .then(function() {
-          res.redirect('/');
+          res.redirect('/mail');
         }).catch(function(error) {
           console.error(error);
           res.redirect('/login');
         });
     } else {
-      res.redirect('/');
+      res.redirect('/mail');
     }
   }).catch(function(error) {
     console.error(error);
