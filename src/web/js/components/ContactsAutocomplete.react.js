@@ -2,7 +2,6 @@
 
 var React = require('react');
 var ComposeStore = require('../stores/ComposeStore');
-var keybaseAPI = require('../keybaseAPI');
 var xhr = require('xhr');
 
 function autocompleteContacts(query) {
@@ -36,17 +35,25 @@ var ContactsAutocomplete = React.createClass({
     this.setState({ results: [] });
   },
   resultClicked: function(contact) {
+    // Format the email address so it can be added to the "To:" field
     let contactAddr = '';
     if (contact.name.length != 0) {
+      // If the contact includes a name, wrap the email address in "< >"
       contactAddr = contact.name + ' <' + contact.email + '>, ';
     } else {
+      // Otherwise just append a comma
       contactAddr = contact.email + ', ';
     }
 
+    // Figure out how to append the new contact.
     let updated = '';
     if (this.state.to.lastIndexOf(',') == -1) {
+      // If there are no complete emails in the field, replace all content with
+      // the autocomplete result.
       updated = contactAddr;
     } else {
+      // Otherwise replace all content after the comma with the autocomplete
+      // result.
       updated = this.state.to.slice(0, this.state.to.lastIndexOf(',') + 1) + ' ' + contactAddr;
     }
 
@@ -58,7 +65,7 @@ var ContactsAutocomplete = React.createClass({
   updateTo: function(e) {
     let newString = e.target.value;
     this.setState({ to: newString });
-    let query = newString.slice(newString.lastIndexOf(',') + 1);
+    let query = newString.slice(newString.lastIndexOf(',') + 1).trim();
     autocompleteContacts(query).then(function(results) {
       this.setState({ results: results });
       this.props.updateParent(newString);
