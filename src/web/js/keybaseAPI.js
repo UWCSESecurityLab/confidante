@@ -7,10 +7,17 @@ var purepack = require('purepack');
 var scrypt = scrypt_module_factory(67108864);
 var xhr = require('xhr');
 
+/**
+ * Client for accessing the Keybase API from the browser.
+ * CORS enabled calls are implemented as static methods.
+ * Non-CORS enabled calls require the class to be instantiated.
+ */
 class KeybaseAPI {
-  constructor(username, passphrase, serverBaseURI) {
-    this.passphrase = passphrase;
-    this.username = username;
+  /**
+   * Creates a new KeybaseAPI instance. We need to do this to set the URL of occurred
+   * local server, which could be localhost or some other domain.
+   */
+  constructor(serverBaseURI) {
     this.serverBaseURI = serverBaseURI;
   }
 
@@ -66,19 +73,20 @@ class KeybaseAPI {
    * succeeded or not.
    * @return a Promise containing the body of the response to a login attempt.
    */
-  login() {
+  login(emailOrUsername, passphrase) {
     return new Promise(function(resolve, reject) {
-      this._getSalt(this.username)
-           .then(this._login.bind(this))
-           .then(function(loginBody) {
-             if (loginBody.status.code != 0) {
-               reject(loginBody);
-             } else {
-               resolve(loginBody);
-             }
-           }).catch(function(err) {
-             reject(err);
-           });
+      this._getSalt(emailOrUsername)
+        .then(function(saltDetails) {
+          return this._login(emailOrUsername, passphrase, saltDetails);
+        }.bind(this)).then(function(loginBody) {
+          if (loginBody.status.code != 0) {
+            reject(loginBody);
+          } else {
+            resolve(loginBody);
+          }
+        }).catch(function(err) {
+         reject(err);
+        });
     }.bind(this));
   }
 
@@ -86,11 +94,11 @@ class KeybaseAPI {
    * Get the salt for the username with which the API was configured.
    * @return a Promise containing the response to the getSalt/ api.
    */
-  _getSalt() {
+  _getSalt(emailOrUsername) {
     console.log('Get salt...');
     return new Promise(function(resolve, reject) {
       xhr.get({
-        url: this.serverBaseURI + '/keybase/getsalt.json?email_or_username=' + this.username
+        url: this.serverBaseURI + '/keybase/getsalt.json?email_or_username=' + emailOrUsername
       }, function(error, response, body) {
         handleKeybaseResponse(error, response, body, resolve, reject);
       });
@@ -101,17 +109,17 @@ class KeybaseAPI {
    * Perform the /login.json step of the Keybase login flow.
    * @return a Promise containing the body of the response to a login attempt.
    */
-  _login(saltDetails) {
+  _login(emailOrUsername, passphrase, saltDetails) {
     console.log('Login...');
     return new Promise(function(resolve, reject) {
-      var salt = saltDetails.salt;
-      var login_session = new Buffer(saltDetails.login_session, 'base64');
-      var hash = KeybaseAPI.computePasswordHash(this.passphrase, salt);
-      var hmac_pwh = crypto.createHmac('SHA512', hash).update(login_session).digest('hex');
+      let salt = saltDetails.salt;
+      let login_session = new Buffer(saltDetails.login_session, 'base64');
+      let hash = KeybaseAPI.computePasswordHash(passphrase, salt);
+      let hmac_pwh = crypto.createHmac('SHA512', hash).update(login_session).digest('hex');
 
       xhr.post({
         url: this.serverBaseURI + '/keybase/login.json?' +
-             'email_or_username=' + this.username + '&' +
+             'email_or_username=' + emailOrUsername + '&' +
              'hmac_pwh=' + hmac_pwh + '&' +
              'login_session=' + encodeURIComponent(saltDetails.login_session)
       }, function (error, response, body) {
@@ -126,16 +134,16 @@ class KeybaseAPI {
     }.bind(this));
   }
 
-  signup(name, email, invitation_id) {
+  signup(name, email, username, passphrase, invitation_id) {
     return new Promise(function(resolve, reject) {
       let salt = crypto.randomBytes(16);
-      let pwh = KeybaseAPI.computePasswordHash(this.passphrase, salt);
+      let pwh = KeybaseAPI.computePasswordHash(passphrase, salt);
 
       xhr.post({
         url: this.serverBaseURI + '/keybase/signup.json?' +
              'name=' + name + '&' +
              'email=' + email + '&' +
-             'username=' + this.username + '&' +
+             'username=' + username + '&' +
              'pwh=' + pwh.toString('hex') + '&' +
              'salt=' + salt.toString('hex') + '&' +
              'invitation_id=' + invitation_id + '&' +

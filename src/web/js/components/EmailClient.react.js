@@ -8,8 +8,8 @@ var ComposeButton = require('./ComposeButton.react');
 var ComposeArea = require('./ComposeArea.react');
 var Inbox = require('./Inbox.react');
 var InviteButton = require('./InviteButton.react');
+var RefreshButton = require('./RefreshButton.react');
 /*eslint-enable no-unused-vars*/
-
 
 /**
  * The EmailClient is the whole kit and kaboodle of the email client,
@@ -54,6 +54,7 @@ var EmailClient = React.createClass({
       <div>
         <ComposeButton />
         <InviteButton />
+        <RefreshButton />
         { this.state.error
           ? <div className="alert alert-warning" role="alert">
               {this.state.error} <a href={this.state.errorLink}>{this.state.errorLinkText}</a>

@@ -113,10 +113,17 @@ var ComposeArea = React.createClass({
   send: function() {
     this.setState({ sendingSpinner: true });
 
-    var toManager = keybaseAPI.publicKeyForUser(this.state.kbto)
-      .then(keybaseAPI.managerFromPublicKey);
+    let users = this.state.kbto
+      .split(',')
+      .map((token) => token.trim())
+      .filter((token) => token.length > 0);
 
-    Promise.all([toManager, ourPublicKeyManager])
+    let keyManagers = users.map((user) => {
+      return keybaseAPI.publicKeyForUser(user).then(keybaseAPI.managerFromPublicKey);
+    });
+    keyManagers.push(ourPublicKeyManager)
+
+    Promise.all(keyManagers)
       .then(this.encryptEmail)
       .then(function(encryptedEmail) {
         var email = {

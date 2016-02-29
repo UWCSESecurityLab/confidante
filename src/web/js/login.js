@@ -17,16 +17,16 @@ function login() {
   removeError();
   spinner.style.visibility = 'visible';
 
-  var username = document.getElementById('username').value;
-  var password = document.getElementById('password').value;
-  var keybase = new KeybaseAPI(username, password, window.location.origin);
+  let emailOrUsername = document.getElementById('username').value;
+  let password = document.getElementById('password').value;
+  let keybase = new KeybaseAPI(window.location.origin);
 
-  keybase.login().then(function(response) {
+  keybase.login(emailOrUsername, password).then(function(response) {
     localStorage.setItem('keybase', JSON.stringify(response.me));
     localStorage.setItem('keybasePassphrase', password);
     window.location.href = '/auth/google';
   }).catch(function(error) {
-    console.log(error.status);
+    console.log(error);
     spinner.style.visibility = 'hidden';
     addError('An error occurred when logging in<br/>' + error.status.name + ": " + error.status.desc);
   });
