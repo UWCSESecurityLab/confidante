@@ -1,11 +1,10 @@
 'use strict';
-var credentials = require('../client_secret.json');
+
 var google = require('googleapis');
-var googleAuth = require('google-auth-library');
+var GoogleOAuth = require('./googleOAuth.js');
 var pgp = require('./pgp.js');
 var request = require('request');
 var URLSafeBase64 = require('urlsafe-base64');
-
 
 class GmailClient {
   /**
@@ -13,12 +12,7 @@ class GmailClient {
    * @param token The token object provided by the Google OAuth library.
    */
   constructor(token) {
-    var auth = new googleAuth();
-    this.oauth2Client = new auth.OAuth2(
-      credentials.web.client_id,
-      credentials.web.client_secret,
-      credentials.web.redirect_uris[0]
-    );
+    this.oauth2Client = GoogleOAuth.buildClient();
     this.oauth2Client.credentials = token;
   }
 

@@ -139,11 +139,13 @@ var ComposeArea = React.createClass({
             withCredentials: true
           }, function(error, response) {
             if (error) {
-              this.setState({ feedback: 'Error: Couldn\'t reach Keymail server.' });
+              this.setState({ feedback: 'Couldn\'t connect to the Keymail server.' });
             } else if (response.statusCode == 200) {
               InboxActions.resetComposeFields();
+            } else if (response.statusCode == 401) {
+              this.setState({ feedback: 'Your login expired! Sign in again and try sending the email again.' });
             } else {
-              this.setState({ feedback: 'Error: something went wrong in the Keymail server.' });
+              this.setState({ feedback: 'Something in Keymail broke. Sorry!' });
             }
             this.setState({ sendingSpinner: false });
           }.bind(this)
@@ -163,7 +165,9 @@ var ComposeArea = React.createClass({
         }, function(error, response, body) {
           if (error) {
             console.error(error);
-            reject(error);
+            reject('Couldn\'t connect to Keymail. Try refreshing the page.');
+          } else if (response.statusCode == 401) {
+            reject('Your login expired! Sign in and try again.');
           } else {
             resolve(JSON.parse(body));
           }
@@ -205,10 +209,12 @@ var ComposeArea = React.createClass({
             message: message,
             subject: subject
           }
-        }, function(error) {
+        }, function(error, response) {
           if (error) {
             console.error(error);
-            reject(error);
+            reject('Couldn\'t connect to Keymail. Try refreshing the page.');
+          } else if (response.statusCode == 401) {
+            reject('Your login expired! Sign in and try again.');
           } else {
             resolve();
           }

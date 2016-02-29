@@ -9,19 +9,17 @@ var URLSafeBase64 = require('urlsafe-base64');
 
 var mongoose = require('mongoose');
 var MongoSessionStore = require('connect-mongodb-session')(session);
-var googleAuthLibrary = require('google-auth-library');
 
 var crypto = require('crypto');
 var p3skb = require('./p3skb');
 var pgp = require('./pgp.js');
 
 var auth = require('./auth.js');
-var credentials = require('../client_secret.json');
 var db = require('./db.js');
+var flags = require('./flags.js');
+var GoogleOAuth = require('./googleOAuth.js');
 var GmailClient = require('./gmailClient.js');
-var Invite = require('./models/invite.js');
 var messageParsing = require('./web/js/messageParsing');
-var User = require('./models/user.js');
 
 // Mongo session store setup.
 var store = new MongoSessionStore({
@@ -60,20 +58,8 @@ app.use(express.static(__dirname + '/web/html'));
 app.use(express.static(__dirname + '/web/css'));
 app.use(express.static(__dirname + '/web/img'));
 
-// Configure command line options
-
-let PRODUCTION = process.argv.indexOf('--prod') != -1;
-
-let GOOGLE_OAUTH_REDIRECT_URI;
-if (PRODUCTION) {
-  GOOGLE_OAUTH_REDIRECT_URI = credentials.web.redirect_uris[0];
-} else {
-  GOOGLE_OAUTH_REDIRECT_URI = credentials.web.redirect_uris[1];
-}
-
-let KEYBASE_STAGING = process.argv.indexOf('--keybase-staging') != -1;
-var KEYBASE_URL;
-if (KEYBASE_STAGING) {
+let KEYBASE_URL;
+if (flags.KEYBASE_STAGING) {
   KEYBASE_URL = 'https://stage0.keybase.io';
 } else {
   KEYBASE_URL = 'https://keybase.io';
@@ -83,7 +69,7 @@ app.get('/', function(req, res) {
   res.render('index', {
     email: req.session.email,
     loggedIn: auth.isAuthenticated(req.session),
-    staging: KEYBASE_STAGING
+    staging: flags.KEYBASE_STAGING
   });
 });
 
@@ -94,31 +80,31 @@ app.get('/login', function(req, res) {
     res.render('login', {
       email: req.session.email,
       loggedIn: false,
-      staging: KEYBASE_STAGING
+      staging: flags.KEYBASE_STAGING
     });
   }
 });
 
-app.get('/mail', auth.ensureAuthenticated, function(req, res) {
+app.get('/mail', auth.webEndpoint, function(req, res) {
   res.render('mail', {
     email: req.session.email,
     loggedIn: true,
-    staging: KEYBASE_STAGING
+    staging: flags.KEYBASE_STAGING
   });
 });
 
 app.get('/signup', function(req, res) {
-  res.render('signup', { loggedIn: false, staging: KEYBASE_STAGING });
+  res.render('signup', { loggedIn: false, staging: flags.KEYBASE_STAGING });
 });
 
-app.get('/inbox', auth.ensureAuthenticated, function(req, res) {
+app.get('/inbox', auth.dataEndpoint, function(req, res) {
   var gmailClient = new GmailClient(req.session.googleToken);
   gmailClient.getEncryptedInbox().then(function(threads) {
     res.json(threads);
   });
 });
 
-app.post('/sendMessage', auth.ensureAuthenticated, function(req, res) {
+app.post('/sendMessage', auth.dataEndpoint, function(req, res) {
   var gmailClient = new GmailClient(req.session.googleToken);
   let parent = req.body.parentMessage;
   let parentId = messageParsing.getMessageHeader(parent, 'Message-ID');
@@ -142,7 +128,7 @@ app.post('/sendMessage', auth.ensureAuthenticated, function(req, res) {
   });
 });
 
-app.post('/markAsRead', auth.ensureAuthenticated, function(req, res) {
+app.post('/markAsRead', auth.dataEndpoint, function(req, res) {
   if (!req.query.threadId) {
     res.status(400).send('Missing thread id');
   }
@@ -165,7 +151,7 @@ app.post('/markAsRead', auth.ensureAuthenticated, function(req, res) {
  * The response body contains a JSON object containing the invite id,
  * and the public key. When calling /invite/sendInvite, pass back the invite id.
  */
-app.get('/invite/getKey', auth.ensureAuthenticated, function(req, res) {
+app.get('/invite/getKey', auth.dataEndpoint, function(req, res) {
   let recipient = req.query.recipient;
   if (!recipient) {
     res.status(500).send('No recipient provided');
@@ -204,7 +190,7 @@ app.get('/invite/getKey', auth.ensureAuthenticated, function(req, res) {
  * Sends an invite to a non-Keymail user. The client should provide a JSON
  * object containing 'message', 'inviteId', and 'subject'.
  */
-app.post('/invite/sendInvite', auth.ensureAuthenticated, function(req, res) {
+app.post('/invite/sendInvite', auth.dataEndpoint, function(req, res) {
   if (!req.session.tempPassphrase || !req.body.inviteId || !req.body.message || !req.body.subject) {
     res.status(400).send('Bad request');
     return;
@@ -301,26 +287,15 @@ app.get('/invite', function(req, res) {
  * authenticated with Keybase so we can identify them.
  */
 app.get('/auth/google', function(req, res) {
-  db.getUser(req.session.keybaseId).then(function(user) {
-    if (!user) {
-      // If there is no Keybase id, send them back to the initial login.
-      res.redirect('/login');
-    }
-    if (user.google.refreshToken) {
-      // If the user has logged in with Google before, get an access token
-      // using the refresh token.
-      refreshGoogleOAuthToken(user.google.refreshToken).then(function(token) {
-        req.session.googleToken = token;
-        req.session.email = user.google.email;
-        res.redirect('/mail');
-      }).catch(function() {
-        redirectToGoogleOAuthUrl(req, res);
-      });
-    } else {
-      redirectToGoogleOAuthUrl(req, res);
-    }
+  if (!req.session.keybaseId) {
+    res.statusCode(403).send('No Keybase ID associated with this session');
+    return;
+  }
+  auth.attemptGoogleReauthentication(req.session).then(function() {
+    res.redirect('/mail');
   }).catch(function(err) {
-    res.statusCode(500).send(err);
+    console.log(err);
+    GoogleOAuth.redirectToGoogleOAuthUrl(req, res);
   });
 });
 
@@ -335,7 +310,7 @@ app.get('/auth/google/return', function(req, res) {
   }
 
   // Get tokens, then lookup email address.
-  var tokenPromise = getInitialGoogleOAuthTokens(code);
+  var tokenPromise = GoogleOAuth.getInitialTokens(code);
   var emailPromise = tokenPromise.then(function(token) {
     var gmailClient = new GmailClient(token);
     return gmailClient.getEmailAddress();
@@ -350,7 +325,7 @@ app.get('/auth/google/return', function(req, res) {
 
     // If a refresh token was returned, we need to store it in the database.
     if (token.refresh_token) {
-      db.storeGoogleCredentials(req.session.keybaseId, email,token.refresh_token)
+      db.storeGoogleCredentials(req.session.keybaseId, email, token.refresh_token)
         .then(function() {
           res.redirect('/mail');
         }).catch(function(error) {
@@ -366,7 +341,7 @@ app.get('/auth/google/return', function(req, res) {
   });
 });
 
-app.get('/contacts.json', auth.ensureAuthenticated, function(req, res) {
+app.get('/contacts.json', auth.dataEndpoint, function(req, res) {
   let gmailClient = new GmailClient(req.session.googleToken);
   gmailClient.searchContacts(req.query.q).then(function(body) {
     res.json(body);
@@ -440,7 +415,7 @@ app.post('/keybase/login.json', function(req, res) {
       }
     );
     req.session.keybaseCookie = parsedCookies.find(function(cookie) {
-      if (KEYBASE_STAGING) {
+      if (flags.KEYBASE_STAGING) {
         return cookie.s0_session !== undefined;
       } else {
         return cookie.session !== undefined;
@@ -487,7 +462,7 @@ app.post('/keybase/signup.json', function(req, res) {
 app.post('/keybase/key/add.json', function(req, res) {
   if (!auth.isAuthenticatedWithKeybase(req.session)) {
     console.log('POST /keybase/key/add.json failed: need Keybase authentication');
-    res.status(403).send('Cannot add keys without logging into Keybase');
+    res.status(401).send('Cannot add keys without logging into Keybase');
     return;
   }
 
@@ -543,75 +518,11 @@ module.exports = app; // For testing
 function getKeybaseCookieJar(session) {
   let cookieJar = request.jar();
   let cookieString;
-  if (KEYBASE_STAGING) {
+  if (flags.KEYBASE_STAGING) {
     cookieString = 's0_session=' + session.keybaseCookie.s0_session;
   } else {
     cookieString = 'session=' +  session.keybaseCookie.session;
   }
   cookieJar.setCookie(cookieString, KEYBASE_URL);
   return cookieJar;
-}
-
-function redirectToGoogleOAuthUrl(req, res) {
-  // Otherwise, we need to send them through the Google OAuth flow.
-  var oauth2Client = buildGoogleOAuthClient();
-  var authUrl = oauth2Client.generateAuthUrl({
-    access_type: 'offline',
-    scope: [
-      'email',
-      'https://www.googleapis.com/auth/contacts.readonly',
-      'https://www.googleapis.com/auth/gmail.modify'
-    ],
-    redirect_uri: GOOGLE_OAUTH_REDIRECT_URI
-  });
-  res.redirect(authUrl);
-}
-
-/**
- * Constructs a Google OAuth client with the app's credentials.
- */
-function buildGoogleOAuthClient() {
-  var googleAuth = new googleAuthLibrary();
-  return new googleAuth.OAuth2(
-    credentials.web.client_id,
-    credentials.web.client_secret,
-    GOOGLE_OAUTH_REDIRECT_URI
-  );
-}
-
-/**
- * Requests an access token and refresh token (if applicable) from Google.
- * @param authCode the authorization code sent in the OAuth callback
- * @return Promise containing the access token/refresh token object
- */
-function getInitialGoogleOAuthTokens(authCode) {
-  return new Promise(function(resolve, reject) {
-    var oauth2Client = buildGoogleOAuthClient();
-    oauth2Client.getToken(authCode, function(err, token) {
-      if (err) {
-        reject(Error('Error while tring to retrieve access token' + err));
-      } else {
-        resolve(token);
-      }
-    });
-  });
-}
-
-/**
- * Get the access token given a refresh token.
- * @param refreshToken The user's refresh token.
- * @return Promise containing the access token.
- */
-function refreshGoogleOAuthToken(refreshToken) {
-  return new Promise(function(resolve, reject) {
-    var oauth2Client = buildGoogleOAuthClient();
-    oauth2Client.credentials.refresh_token = refreshToken;
-    oauth2Client.getAccessToken(function(err, token, response) {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(response.body);
-      }
-    });
-  });
 }

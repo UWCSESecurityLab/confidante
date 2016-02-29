@@ -14,10 +14,14 @@ var querystring = require('querystring');
 var express = require('express');
 var session = require('express-session');
 
-// Stub out ensureAuthenticated middleware so we don't have to mess with the
+// Stub out authentication middleware so we don't have to mess with the
 // authentication stuff in sessions.
 var auth = require('../src/auth.js');
-sinon.stub(auth, "ensureAuthenticated", (req, res, next) => {
+sinon.stub(auth, "webEndpoint", (req, res, next) => {
+  return next();
+});
+
+sinon.stub(auth, "dataEndpoint", (req, res, next) => {
   return next();
 });
 
