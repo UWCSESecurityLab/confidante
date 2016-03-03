@@ -12,12 +12,13 @@ var xhr = require('xhr');
  * CORS enabled calls are implemented as static methods.
  * Non-CORS enabled calls require the class to be instantiated.
  */
-class KeybaseAPI {
+class KeybaseAPI extends kbpgp.KeyFetcher {
   /**
    * Creates a new KeybaseAPI instance. We need to do this to set the URL of occurred
    * local server, which could be localhost or some other domain.
    */
   constructor(serverBaseURI) {
+    super();
     this.serverBaseURI = serverBaseURI;
   }
 
@@ -173,6 +174,72 @@ class KeybaseAPI {
   }
 
   /**
+   * Fetch PGP key(s) by Key ID.
+   * @param pgpKeyIds the ids of the keys to fetch
+   * @param ops the operations the key will be used for, see Keybase docs
+   * @return a Promise containing object of status, array of keys
+   */
+  fetchKey(pgpKeyIds, ops) {
+    return new Promise(function(resolve, reject) {
+      xhr.get({
+        url: this.serverBaseURI + '/keybase/key/fetch.json?' +
+             'pgp_key_ids=' + pgpKeyIds.join(',') + '&' +
+             'ops=' + ops
+      }, function(error, response, body) {
+        handleKeybaseResponse(error, response, body, resolve, reject);
+      });
+    }.bind(this));
+  }
+
+  /**
+   * Implements the KeyFetcher interface.
+   * Fetch keys using the method for accessing the /keybase/key/fetch.json
+   * endpoint.
+   */
+  fetch(ids, ops, cb) {
+    let hexIds = ids.map((buf) => buf.toString('hex'));
+    console.log('KeybaseAPI.fetch(' + hexIds + ', ' + ops + ')');
+    this.fetchKey(hexIds, ops).then(function(response) {
+      for (let i = 0; i < hexIds.length; i++) {
+        let inputId = hexIds[i];
+        for (let j = 0; j < response.keys.length; j++) {
+          let key = response.keys[j];
+          let possibleIds = new Set();
+          possibleIds.add(key.kid);
+          for (var subkey in key.subkeys) {
+            possibleIds.add(subkey);
+          }
+          if (possibleIds.has(inputId)) {
+            let importKey;
+            if (key.bundle.includes('-----BEGIN PGP PUBLIC KEY BLOCK-----')) {
+              importKey = kbpgp.KeyManager.import_from_armored_pgp;
+            } else {
+              importKey = kbpgp.KeyManager.import_from_p3skb;
+            }
+            importKey({ armored: key.bundle }, function(err, keyManager) {
+              if (err) {
+                console.log('Failed to make KeyManager with bundle');
+                console.log(key.bundle);
+                cb([err]);
+              } else {
+                console.log(key.username);
+                console.log(keyManager);
+                cb([null, keyManager, i]);
+              }
+            });
+            return;
+          }
+        }
+      }
+      cb(['No matching keys found']);
+    }).catch(function(err) {
+      console.log('Couldn\'t fetch from Keybase');
+      console.log(err);
+      cb([err]);
+    });
+  }
+
+  /**
    * publicKeyForUser retrieves the given user's public key from Keybase.
    *
    * @return key.asc for the given user (an ASCII armored public key).
@@ -258,25 +325,25 @@ class KeybaseAPI {
    * @return A function which returns a promise which contains the
    * decryption of the ciphertext under the given private key.
    */
-  static decrypt(ciphertext) {
+  decrypt(ciphertext) {
     return function(privateManager) {
       return new Promise(function(resolve, reject) {
-        var ring = new kbpgp.keyring.KeyRing();
-        ring.add_key_manager(privateManager);
         kbpgp.unbox(
           {
-            keyfetch: ring,
+            keyfetch: this,
             armored: ciphertext
           },
           function(err, literals) {
             if (err !== null) {
+              console.log('Decryption fail');
+              console.log(err);
               reject(err);
             } else {
               resolve(literals);
             }
           });
-      });
-    };
+      }.bind(this));
+    }.bind(this);
   }
 
   static autocomplete(q) {

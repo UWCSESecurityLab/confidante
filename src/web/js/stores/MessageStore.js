@@ -2,7 +2,7 @@
 
 var EventEmitter = require('events').EventEmitter;
 var InboxDispatcher = require('../dispatcher/InboxDispatcher');
-var keybaseAPI = require('../keybaseAPI');
+var KeybaseAPI = require('../keybaseAPI');
 var messageParsing = require('../messageParsing');
 var xhr = require('xhr');
 
@@ -13,7 +13,7 @@ var _signers = {};
 var _netError = '';
 
 // A promise containing our local private key.
-var _privateManager = keybaseAPI.getPrivateManager();
+var _privateManager = KeybaseAPI.getPrivateManager();
 
 _privateManager.then(function(pm) {
   console.log(pm);
@@ -40,6 +40,7 @@ function _decryptThread(thread) {
 }
 
 function _decryptMessage(message) {
+  let keybaseAPI = new KeybaseAPI(window.location.origin);
   var body = messageParsing.getMessageBody(message);
   _privateManager
     .then(keybaseAPI.decrypt(body))
