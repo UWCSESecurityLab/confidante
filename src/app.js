@@ -483,6 +483,26 @@ app.post('/keybase/key/add.json', function(req, res) {
   });
 });
 
+app.get('/keybase/key/fetch.json', function(req, res) {
+  console.log(req.originalUrl);
+  request({
+    method: 'GET',
+    url: KEYBASE_URL + '/_/api/1.0/key/fetch.json',
+    qs: req.query,
+    jar: getKeybaseCookieJar(req.session),
+    headers: {
+      'X-CSRF-Token': req.session.keybaseCSRF
+    }
+  }, function(error, response, body) {
+    if (error) {
+      res.send(error);
+    } else {
+      console.log(JSON.parse(body).status);
+      res.send(body);
+    }
+  });
+});
+
 app.get('/logout', function(req, res) {
   if (auth.isAuthenticatedWithKeybase(req.session)) {
     request({
