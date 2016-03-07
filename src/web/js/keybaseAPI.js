@@ -12,13 +12,12 @@ var xhr = require('xhr');
  * CORS enabled calls are implemented as static methods.
  * Non-CORS enabled calls require the class to be instantiated.
  */
-class KeybaseAPI extends kbpgp.KeyFetcher {
+class KeybaseAPI {
   /**
    * Creates a new KeybaseAPI instance. We need to do this to set the URL of occurred
    * local server, which could be localhost or some other domain.
    */
   constructor(serverBaseURI) {
-    super();
     this.serverBaseURI = serverBaseURI;
   }
 
@@ -53,7 +52,7 @@ class KeybaseAPI extends kbpgp.KeyFetcher {
       var buf = new Buffer(res);
       return buf.slice(192);
     } catch (e) {
-      console.log('Password hash computation failed!');
+      console.error('Password hash computation failed!');
       return undefined;
     }
   }
@@ -179,64 +178,16 @@ class KeybaseAPI extends kbpgp.KeyFetcher {
    * @param ops the operations the key will be used for, see Keybase docs
    * @return a Promise containing object of status, array of keys
    */
-  fetchKey(pgpKeyIds, ops) {
+  static fetchKey(pgpKeyIds, ops) {
     return new Promise(function(resolve, reject) {
       xhr.get({
-        url: this.serverBaseURI + '/keybase/key/fetch.json?' +
+        url: window.location.origin + '/keybase/key/fetch.json?' +
              'pgp_key_ids=' + pgpKeyIds.join(',') + '&' +
              'ops=' + ops
       }, function(error, response, body) {
         handleKeybaseResponse(error, response, body, resolve, reject);
       });
     }.bind(this));
-  }
-
-  /**
-   * Implements the KeyFetcher interface.
-   * Fetch keys using the method for accessing the /keybase/key/fetch.json
-   * endpoint.
-   */
-  fetch(ids, ops, cb) {
-    let hexIds = ids.map((buf) => buf.toString('hex'));
-    console.log('KeybaseAPI.fetch(' + hexIds + ', ' + ops + ')');
-    this.fetchKey(hexIds, ops).then(function(response) {
-      for (let i = 0; i < hexIds.length; i++) {
-        let inputId = hexIds[i];
-        for (let j = 0; j < response.keys.length; j++) {
-          let key = response.keys[j];
-          let possibleIds = new Set();
-          possibleIds.add(key.kid);
-          for (var subkey in key.subkeys) {
-            possibleIds.add(subkey);
-          }
-          if (possibleIds.has(inputId)) {
-            let importKey;
-            if (key.bundle.includes('-----BEGIN PGP PUBLIC KEY BLOCK-----')) {
-              importKey = kbpgp.KeyManager.import_from_armored_pgp;
-            } else {
-              importKey = kbpgp.KeyManager.import_from_p3skb;
-            }
-            importKey({ armored: key.bundle }, function(err, keyManager) {
-              if (err) {
-                console.log('Failed to make KeyManager with bundle');
-                console.log(key.bundle);
-                cb([err]);
-              } else {
-                console.log(key.username);
-                console.log(keyManager);
-                cb([null, keyManager, i]);
-              }
-            });
-            return;
-          }
-        }
-      }
-      cb(['No matching keys found']);
-    }).catch(function(err) {
-      console.log('Couldn\'t fetch from Keybase');
-      console.log(err);
-      cb([err]);
-    });
   }
 
   /**
@@ -325,18 +276,17 @@ class KeybaseAPI extends kbpgp.KeyFetcher {
    * @return A function which returns a promise which contains the
    * decryption of the ciphertext under the given private key.
    */
-  decrypt(ciphertext) {
+  static decrypt(ciphertext) {
     return function(privateManager) {
       return new Promise(function(resolve, reject) {
+        let kf = new KeyFetcher(privateManager);
         kbpgp.unbox(
           {
-            keyfetch: this,
+            keyfetch: kf,
             armored: ciphertext
           },
           function(err, literals) {
             if (err !== null) {
-              console.log('Decryption fail');
-              console.log(err);
               reject(err);
             } else {
               resolve(literals);
@@ -363,6 +313,53 @@ class KeybaseAPI extends kbpgp.KeyFetcher {
   }
 }
 
+class KeyFetcher extends kbpgp.KeyFetcher {
+  constructor(privateManager) {
+    super();
+    this.privateManager = privateManager;
+  }
+  /**
+   * Implements the KeyFetcher interface.
+   * Fetch keys using the method for accessing the /keybase/key/fetch.json
+   * endpoint.
+   */
+  fetch(ids, ops, cb) {
+    let hexIds = ids.map((buf) => buf.toString('hex'));
+    KeybaseAPI.fetchKey(hexIds, ops).then(function(response) {
+      for (let i = 0; i < hexIds.length; i++) {
+        let inputId = hexIds[i];
+        for (let j = 0; j < response.keys.length; j++) {
+          let key = response.keys[j];
+          let possibleIds = new Set();
+          possibleIds.add(key.kid);
+          for (var subkey in key.subkeys) {
+            possibleIds.add(subkey);
+          }
+          if (possibleIds.has(inputId)) {
+            if (key.bundle.includes('-----BEGIN PGP PUBLIC KEY BLOCK-----')) {
+              kbpgp.KeyManager.import_from_armored_pgp({
+                armored: key.bundle
+              }, function(err, keyManager) {
+                if (err) {
+                  cb(err);
+                } else {
+                  cb(null, keyManager, i);
+                }
+              });
+            } else {
+              cb(null, this.privateManager, i);
+            }
+            return;
+          }
+        }
+      }
+      cb('No matching keys found');
+    }.bind(this)).catch(function(err) {
+      cb(err);
+    });
+  }
+}
+
 /**
  * Common logic for handling responses from the Keybase API using promises.
  */
@@ -380,7 +377,7 @@ function handleKeybaseResponse(error, response, body, resolve, reject) {
     if (json.status.code == 0) {
       resolve(json);
     } else {
-     reject(json);
+      reject(json);
     }
   } catch(e) {
     reject(body);

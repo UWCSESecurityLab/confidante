@@ -40,17 +40,16 @@ function _decryptThread(thread) {
 }
 
 function _decryptMessage(message) {
-  let keybaseAPI = new KeybaseAPI(window.location.origin);
   var body = messageParsing.getMessageBody(message);
   _privateManager
-    .then(keybaseAPI.decrypt(body))
+    .then(KeybaseAPI.decrypt(body))
     .then(function(literals) {
       _plaintexts[message.id] = literals[0].toString();
       _signers[message.id] = _signerFromLiterals(literals);
 
       if (_signers[message.id]) {
         let fingerprint = _signers[message.id].pgp.get_fingerprint().toString('hex');
-        keybaseAPI.userLookup(fingerprint).then(function(response) {
+        KeybaseAPI.userLookup(fingerprint).then(function(response) {
           if (response.status.name === 'OK') {
             _signers[message.id].user = response.them;
             MessageStore.emitChange();
