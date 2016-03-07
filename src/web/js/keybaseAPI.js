@@ -85,7 +85,7 @@ class KeybaseAPI {
             resolve(loginBody);
           }
         }).catch(function(err) {
-         reject(err);
+          reject(err);
         });
     }.bind(this));
   }
@@ -322,13 +322,22 @@ class KeyFetcher extends kbpgp.KeyFetcher {
    * Implements the KeyFetcher interface.
    * Fetch keys using the method for accessing the /keybase/key/fetch.json
    * endpoint.
+   * @param {Vec<Buffer>} ids Ids to look for, any will do.
+   * @param {number} ops The operations we need, represented as a compressed
+   *   bitmask of operations from kbpgp.const.ops
+   * @param {callback} cb The cb to call back when done; if successful,
+   *   with a (KeyManager, int) pair.  The KeyManager is the found key
+   *   to use, and the int is the index in the ids array it corresponds to.
    */
   fetch(ids, ops, cb) {
     let hexIds = ids.map((buf) => buf.toString('hex'));
     KeybaseAPI.fetchKey(hexIds, ops).then(function(response) {
+      // Iterate through requested key ids
       for (let i = 0; i < hexIds.length; i++) {
         let inputId = hexIds[i];
         for (let j = 0; j < response.keys.length; j++) {
+          // For each key, check if the requested key id matches the main key id
+          // or any of the subkey ids.
           let key = response.keys[j];
           let possibleIds = new Set();
           possibleIds.add(key.kid);
@@ -337,6 +346,7 @@ class KeyFetcher extends kbpgp.KeyFetcher {
           }
           if (possibleIds.has(inputId)) {
             if (key.bundle.includes('-----BEGIN PGP PUBLIC KEY BLOCK-----')) {
+              // If it matches a public key, use it to output the key manager
               kbpgp.KeyManager.import_from_armored_pgp({
                 armored: key.bundle
               }, function(err, keyManager) {
@@ -347,6 +357,7 @@ class KeyFetcher extends kbpgp.KeyFetcher {
                 }
               });
             } else {
+              // If it matches a private key, use the user's private key manager
               cb(null, this.privateManager, i);
             }
             return;
