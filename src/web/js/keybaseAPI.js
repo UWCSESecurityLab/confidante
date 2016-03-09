@@ -5,6 +5,7 @@ var kbpgp = require('kbpgp');
 var p3skb = require('../../p3skb');
 var purepack = require('purepack');
 var scrypt = scrypt_module_factory(67108864);
+var Sets = require('../../set.js');
 var xhr = require('xhr');
 
 /**
@@ -331,43 +332,73 @@ class KeyFetcher extends kbpgp.KeyFetcher {
    */
   fetch(ids, ops, cb) {
     let hexIds = ids.map((buf) => buf.toString('hex'));
+
+    // First, check if the user's private key matches.
+    let privateIds = new Set(this.privateManager.get_all_pgp_key_ids()
+      .map(buf => buf.toString('hex')));
+    let privateIdx = this.findMatchingIdIndex(hexIds, privateIds);
+    if (privateIdx != -1) {
+      cb(null, this.privateManager, privateIdx);
+      return;
+    }
+
+    // Otherwise, search the key/fetch endpoint for matching keys.
     KeybaseAPI.fetchKey(hexIds, ops).then(function(response) {
-      // Iterate through requested key ids
-      for (let i = 0; i < hexIds.length; i++) {
-        let inputId = hexIds[i];
-        for (let j = 0; j < response.keys.length; j++) {
-          // For each key, check if the requested key id matches the main key id
-          // or any of the subkey ids.
-          let key = response.keys[j];
-          let possibleIds = new Set();
-          possibleIds.add(key.kid);
-          for (var subkey in key.subkeys) {
-            possibleIds.add(subkey);
-          }
-          if (possibleIds.has(inputId)) {
-            if (key.bundle.includes('-----BEGIN PGP PUBLIC KEY BLOCK-----')) {
-              // If it matches a public key, use it to output the key manager
-              kbpgp.KeyManager.import_from_armored_pgp({
-                armored: key.bundle
-              }, function(err, keyManager) {
-                if (err) {
-                  cb(err);
-                } else {
-                  cb(null, keyManager, i);
-                }
-              });
+      for (var i = 0; i < response.keys.length; i++) {
+        let keyIds = this.makeKeyIdSet(response.keys[i]);
+        let idx = this.findMatchingIdIndex(hexIds, keyIds);
+        if (idx != -1) {
+          let key = response.keys[i];
+          kbpgp.KeyManager.import_from_armored_pgp({
+            armored: key.bundle
+          }, function(err, keyManager) {
+            if (err) {
+              cb(err);
             } else {
-              // If it matches a private key, use the user's private key manager
-              cb(null, this.privateManager, i);
+              cb(null, keyManager, idx);
             }
-            return;
-          }
+          });
+          return;
         }
       }
       cb('No matching keys found');
     }.bind(this)).catch(function(err) {
       cb(err);
     });
+  }
+
+  /**
+   * Converts the Keybase key object into a set containing the key ids of the
+   * key and subkeys.
+   * @param keyObj.kid A string representing the key id.
+   * @param keyObj.subkeys An object of subkeys, where the keys to the object
+   *        are the subkey ids.
+   */
+  makeKeyIdSet(keyObj) {
+    let keyIds = new Set();
+    keyIds.add(keyObj.kid);
+    for (var subkey in keyObj.subkeys) {
+      keyIds.add(subkey);
+    }
+    return keyIds;
+  }
+
+  /**
+   * Given a list of requested ids, and the ids of a key, check if the key
+   * matches.
+   * @param Iterable of requested key ids.
+   * @param Iterable of key ids and subkey ids belonging to a single key.
+   * @param Index of the input id matching the key. -1 if none exist.
+   */
+  findMatchingIdIndex(inputIds, keyIds) {
+    let input = new Set(inputIds);
+    let keys = new Set(keyIds);
+    let intersect = Sets.intersection(input, keys);
+    if (intersect.size > 0) {
+      return inputIds.indexOf(intersect.values().next().value);
+    } else {
+      return -1;
+    }
   }
 }
 
