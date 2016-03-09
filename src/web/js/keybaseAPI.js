@@ -5,6 +5,7 @@ var kbpgp = require('kbpgp');
 var p3skb = require('../../p3skb');
 var purepack = require('purepack');
 var scrypt = scrypt_module_factory(67108864);
+var Sets = require('../../set.js');
 var xhr = require('xhr');
 
 /**
@@ -52,7 +53,7 @@ class KeybaseAPI {
       var buf = new Buffer(res);
       return buf.slice(192);
     } catch (e) {
-      console.log('Password hash computation failed!');
+      console.error('Password hash computation failed!');
       return undefined;
     }
   }
@@ -85,7 +86,7 @@ class KeybaseAPI {
             resolve(loginBody);
           }
         }).catch(function(err) {
-         reject(err);
+          reject(err);
         });
     }.bind(this));
   }
@@ -166,6 +167,24 @@ class KeybaseAPI {
              'public_key=' + encodeURIComponent(publicKey) + '&' +
              'private_key=' + encodeURIComponent(privateKey) + '&' +
              'is_primary=true'
+      }, function(error, response, body) {
+        handleKeybaseResponse(error, response, body, resolve, reject);
+      });
+    }.bind(this));
+  }
+
+  /**
+   * Fetch PGP key(s) by Key ID.
+   * @param pgpKeyIds the ids of the keys to fetch
+   * @param ops the operations the key will be used for, see Keybase docs
+   * @return a Promise containing object of status, array of keys
+   */
+  static fetchKey(pgpKeyIds, ops) {
+    return new Promise(function(resolve, reject) {
+      xhr.get({
+        url: window.location.origin + '/keybase/key/fetch.json?' +
+             'pgp_key_ids=' + pgpKeyIds.join(',') + '&' +
+             'ops=' + ops
       }, function(error, response, body) {
         handleKeybaseResponse(error, response, body, resolve, reject);
       });
@@ -261,11 +280,10 @@ class KeybaseAPI {
   static decrypt(ciphertext) {
     return function(privateManager) {
       return new Promise(function(resolve, reject) {
-        var ring = new kbpgp.keyring.KeyRing();
-        ring.add_key_manager(privateManager);
+        let kf = new KeyFetcher(privateManager);
         kbpgp.unbox(
           {
-            keyfetch: ring,
+            keyfetch: kf,
             armored: ciphertext
           },
           function(err, literals) {
@@ -275,8 +293,8 @@ class KeybaseAPI {
               resolve(literals);
             }
           });
-      });
-    };
+      }.bind(this));
+    }.bind(this);
   }
 
   static autocomplete(q) {
@@ -293,6 +311,94 @@ class KeybaseAPI {
     var buf = new Buffer(loginBody.me.private_keys.primary.bundle, 'base64');
     var p3skbObj = purepack.unpack(buf);
     return p3skbObj;
+  }
+}
+
+class KeyFetcher extends kbpgp.KeyFetcher {
+  constructor(privateManager) {
+    super();
+    this.privateManager = privateManager;
+  }
+  /**
+   * Implements the KeyFetcher interface.
+   * Fetch keys using the method for accessing the /keybase/key/fetch.json
+   * endpoint.
+   * @param {Vec<Buffer>} ids Ids to look for, any will do.
+   * @param {number} ops The operations we need, represented as a compressed
+   *   bitmask of operations from kbpgp.const.ops
+   * @param {callback} cb The cb to call back when done; if successful,
+   *   with a (KeyManager, int) pair.  The KeyManager is the found key
+   *   to use, and the int is the index in the ids array it corresponds to.
+   */
+  fetch(ids, ops, cb) {
+    let hexIds = ids.map((buf) => buf.toString('hex'));
+
+    // First, check if the user's private key matches.
+    let privateIds = new Set(this.privateManager.get_all_pgp_key_ids()
+      .map(buf => buf.toString('hex')));
+    let privateIdx = this.findMatchingIdIndex(hexIds, privateIds);
+    if (privateIdx != -1) {
+      cb(null, this.privateManager, privateIdx);
+      return;
+    }
+
+    // Otherwise, search the key/fetch endpoint for matching keys.
+    KeybaseAPI.fetchKey(hexIds, ops).then(function(response) {
+      for (var i = 0; i < response.keys.length; i++) {
+        let keyIds = this.makeKeyIdSet(response.keys[i]);
+        let idx = this.findMatchingIdIndex(hexIds, keyIds);
+        if (idx != -1) {
+          let key = response.keys[i];
+          kbpgp.KeyManager.import_from_armored_pgp({
+            armored: key.bundle
+          }, function(err, keyManager) {
+            if (err) {
+              cb(err);
+            } else {
+              cb(null, keyManager, idx);
+            }
+          });
+          return;
+        }
+      }
+      cb('No matching keys found');
+    }.bind(this)).catch(function(err) {
+      cb(err);
+    });
+  }
+
+  /**
+   * Converts the Keybase key object into a set containing the key ids of the
+   * key and subkeys.
+   * @param keyObj.kid A string representing the key id.
+   * @param keyObj.subkeys An object of subkeys, where the keys to the object
+   *        are the subkey ids.
+   */
+  makeKeyIdSet(keyObj) {
+    let keyIds = new Set();
+    keyIds.add(keyObj.kid);
+    for (var subkey in keyObj.subkeys) {
+      keyIds.add(subkey);
+    }
+    return keyIds;
+  }
+
+  /**
+   * Given a list of requested ids, and the ids of a key, check if the key
+   * matches.
+   * @param Iterable of requested key ids.
+   * @param Iterable of key ids and subkey ids belonging to a single key.
+   * @param Index of the input id matching the key. -1 if none exist.
+   */
+  findMatchingIdIndex(inputIds, keyIds) {
+    let input = new Set(inputIds);
+    let keys = new Set(keyIds);
+    let intersect = Sets.intersection(input, keys);
+    if (intersect.size > 0) {
+      return inputIds.indexOf(intersect.values().next().value);
+    } else {
+      return -1;
+    }
   }
 }
 
@@ -313,7 +419,7 @@ function handleKeybaseResponse(error, response, body, resolve, reject) {
     if (json.status.code == 0) {
       resolve(json);
     } else {
-     reject(json);
+      reject(json);
     }
   } catch(e) {
     reject(body);
