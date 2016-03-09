@@ -57,7 +57,6 @@ module.exports = {
    */
   getPeopleInThread: function(thread, me) {
     let participants = [];
-    let count = 0;
 
     thread.messages.forEach(function(message) {
       let headers = message.payload.headers;
@@ -73,7 +72,7 @@ module.exports = {
     });
 
     if (participants.length > 2) {
-      return participants[0] + " ... " + participants[participants.length - 1] +
+      return participants[0] + ' ... ' + participants[participants.length - 1] +
           ' (' + participants.length + ')';
     } else {
       return participants.join(', ');
