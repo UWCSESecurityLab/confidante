@@ -62,7 +62,7 @@ module.exports = {
     thread.messages.forEach(function(message) {
       let headers = message.payload.headers;
       for (let i = 0; i < headers.length; i++) {
-        if (headers[i].name == 'To') {
+        if (headers[i].name == 'From') {
           if (headers[i].value.includes(me)) {
             participants.push('me');
           } else {
