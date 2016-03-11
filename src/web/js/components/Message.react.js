@@ -62,7 +62,6 @@ var Message = React.createClass({
 
     let signer;
     if (this.props.signer && this.props.signer.user && this.props.signer.user.length === 1) {
-      console.log(signer);
       let user = this.props.signer.user[0];
       // Convert the user object into the format used for our Keybase component.
       let formattedUser = {

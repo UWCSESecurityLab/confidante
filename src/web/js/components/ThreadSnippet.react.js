@@ -43,22 +43,22 @@ var ThreadSnippet = React.createClass({
         document.getElementById('myEmail').innerHTML
       );
 
-      let snippetClass = "row snippet";
+      let snippetClass = 'row snippet';
       if (this.isUnread()) {
-        snippetClass += " unreadSnippet";
+        snippetClass += ' unreadSnippet';
       }
 
       return (
         <div className={snippetClass} onClick={this.openThread}>
-          <div className="col-md-1">
+          <span className="col-md-1">
             <input type="checkbox" value={this.state.checked} onchange={this.handleChange}></input>
-          </div>
-          <div className="col-md-3">
+          </span>
+          <span className="col-md-3">
             {threadFrom}
-          </div>
-          <div className="col-md-8">
+          </span>
+          <span className="col-md-8">
             {threadSubject}
-          </div>
+          </span>
         </div>
       );
     } else {

@@ -21,18 +21,14 @@ function autocompleteContacts(query) {
 var ContactsAutocomplete = React.createClass({
   getInitialState: function() {
     return {
-      to: '',
       results: []
     };
   },
   componentDidMount: function() {
-    ComposeStore.addResetListener(this._onReset);
-  },
-  _onReset: function() {
-    this.setState(this.getInitialState());
+    ComposeStore.addResetListener(this.hideCompletions);
   },
   hideCompletions: function() {
-    this.setState({ results: [] });
+    this.setState(this.getInitialState());
   },
   resultClicked: function(contact) {
     // Format the email address so it can be added to the "To:" field
@@ -47,24 +43,22 @@ var ContactsAutocomplete = React.createClass({
 
     // Figure out how to append the new contact.
     let updated = '';
-    if (this.state.to.lastIndexOf(',') == -1) {
+    if (this.props.to.lastIndexOf(',') == -1) {
       // If there are no complete emails in the field, replace all content with
       // the autocomplete result.
       updated = contactAddr;
     } else {
       // Otherwise replace all content after the comma with the autocomplete
       // result.
-      updated = this.state.to.slice(0, this.state.to.lastIndexOf(',') + 1) + ' ' + contactAddr;
+      updated = this.props.to.slice(0, this.props.to.lastIndexOf(',') + 1) + ' ' + contactAddr;
     }
 
-    this.setState({ to: updated });
     this.props.updateParent(updated);
     this.hideCompletions();
   },
 
   updateTo: function(e) {
     let newString = e.target.value;
-    this.setState({ to: newString });
     let query = newString.slice(newString.lastIndexOf(',') + 1).trim();
     autocompleteContacts(query).then(function(results) {
       this.setState({ results: results });
@@ -76,7 +70,7 @@ var ContactsAutocomplete = React.createClass({
     return (
       <div onMouseLeave={this.hideCompletions}>
         <input type="text"
-               value={this.state.to}
+               value={this.props.to}
                name="to"
                onChange={this.updateTo}
                className="form-control"></input>
@@ -95,7 +89,7 @@ var ContactsAutocomplete = React.createClass({
             }.bind(this)) : null }
         </ul>
       </div>
-    )
+    );
   }
 });
 

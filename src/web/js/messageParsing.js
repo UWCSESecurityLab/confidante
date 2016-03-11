@@ -57,12 +57,11 @@ module.exports = {
    */
   getPeopleInThread: function(thread, me) {
     let participants = [];
-    let count = 0;
 
     thread.messages.forEach(function(message) {
       let headers = message.payload.headers;
       for (let i = 0; i < headers.length; i++) {
-        if (headers[i].name == 'To') {
+        if (headers[i].name == 'From') {
           if (headers[i].value.includes(me)) {
             participants.push('me');
           } else {
@@ -73,7 +72,7 @@ module.exports = {
     });
 
     if (participants.length > 2) {
-      return participants[0] + " ... " + participants[participants.length - 1] +
+      return participants[0] + ' ... ' + participants[participants.length - 1] +
           ' (' + participants.length + ')';
     } else {
       return participants.join(', ');

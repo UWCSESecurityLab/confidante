@@ -121,7 +121,7 @@ var ComposeArea = React.createClass({
     let keyManagers = users.map((user) => {
       return keybaseAPI.publicKeyForUser(user).then(keybaseAPI.managerFromPublicKey);
     });
-    keyManagers.push(ourPublicKeyManager)
+    keyManagers.push(ourPublicKeyManager);
 
     Promise.all(keyManagers)
       .then(this.encryptEmail)
@@ -134,22 +134,21 @@ var ComposeArea = React.createClass({
         };
 
         xhr.post({
-            url: window.location.origin + '/sendMessage',
-            json: email,
-            withCredentials: true
-          }, function(error, response) {
-            if (error) {
-              this.setState({ feedback: 'Couldn\'t connect to the Keymail server.' });
-            } else if (response.statusCode == 200) {
-              InboxActions.resetComposeFields();
-            } else if (response.statusCode == 401) {
-              this.setState({ feedback: 'Your login expired! Sign in again and try sending the email again.' });
-            } else {
-              this.setState({ feedback: 'Something in Keymail broke. Sorry!' });
-            }
-            this.setState({ sendingSpinner: false });
-          }.bind(this)
-        );
+          url: window.location.origin + '/sendMessage',
+          json: email,
+          withCredentials: true
+        }, function(error, response) {
+          if (error) {
+            this.setState({ feedback: 'Couldn\'t connect to the Keymail server.' });
+          } else if (response.statusCode == 200) {
+            InboxActions.resetComposeFields();
+          } else if (response.statusCode == 401) {
+            this.setState({ feedback: 'Your login expired! Sign in again and try sending the email again.' });
+          } else {
+            this.setState({ feedback: 'Something in Keymail broke. Sorry!' });
+          }
+          this.setState({ sendingSpinner: false });
+        }.bind(this));
       }.bind(this))
       .catch(function(err) {
         this.setState({ feedback: err.toString(), sendingSpinner: false });
@@ -173,7 +172,7 @@ var ComposeArea = React.createClass({
           }
         });
       });
-    }
+    };
 
     let encryptMessage = function(message, publicKey) {
       return new Promise(function(resolve, reject) {
@@ -255,7 +254,7 @@ var ComposeArea = React.createClass({
               <form className="form-horizontal" autoComplete="off">
                 <div className="form-group">
                   <label htmlFor="to">To:</label>
-                  <ContactsAutocomplete updateParent={this.updateTo}/>
+                  <ContactsAutocomplete to={this.state.to} updateParent={this.updateTo}/>
                 </div>
                 { this.state.invite
                   ? null
