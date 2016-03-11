@@ -8,6 +8,7 @@ var messageParsing = require('../messageParsing');
 var keybaseAPI = require('../keybaseAPI');
 var kbpgp = require('kbpgp');
 var xhr = require('xhr');
+var addressParser = require('address-rfc2822'); 
 /* eslint-disable no-unused-vars */
 var ContactsAutocomplete = require('./ContactsAutocomplete.react');
 var KeybaseAutocomplete = require('./KeybaseAutocomplete.react');
@@ -69,14 +70,25 @@ var ComposeArea = React.createClass({
   _onComposeStoreChange: function() {
     let invite = ComposeStore.getInvite();
     let inReplyTo = ComposeStore.getReply();
+    let replyAll = ComposeStore.getReplyAll();
     let defaultTo = this.state.to;
     let defaultSubject = this.state.subject;
-    if (Object.keys(inReplyTo).length !== 0) {
-      let to = messageParsing.getMessageHeader(inReplyTo, 'To');
-      let from = messageParsing.getMessageHeader(inReplyTo, 'From');
-      let me = document.getElementById('myEmail').innerHTML;
-      defaultTo = (from !== me) ? from : to;
+    let me = document.getElementById('myEmail').innerHTML;
 
+    if (Object.keys(inReplyTo).length !== 0) {
+      if (replyAll) {
+        let messageParticipants = messageParsing.getParticipantsInMessage(inReplyTo);
+        messageParticipants = messageParticipants.filter((person) => {
+          return !messageParsing.isSameAddress(me, person);
+        });
+        defaultTo = messageParticipants.join(', ');
+      } else {
+        let to = messageParsing.getMessageHeader(inReplyTo, 'To');
+        let from = messageParsing.getMessageHeader(inReplyTo, 'From');
+        defaultTo = (from !== me) ? from : to;
+      }
+
+      // Subject handled identically regardless of replyAll status.
       let subject = messageParsing.getMessageHeader(inReplyTo, 'Subject');
       if (!subject.startsWith('Re:')) {
         subject = 'Re: ' + subject;

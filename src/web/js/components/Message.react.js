@@ -35,7 +35,17 @@ var Message = React.createClass({
   },
 
   reply: function() {
-    InboxActions.setInReplyTo(this.props.message);
+    InboxActions.setInReplyTo({
+      message: this.props.message,
+      replyAll: false
+    });
+  },
+
+  replyAll: function() {
+    InboxActions.setInReplyTo({
+      message: this.props.message,
+      replyAll: true
+    });
   },
 
   render: function() {
@@ -83,6 +93,9 @@ var Message = React.createClass({
         {body}
         <button type="button" className="btn btn-primary reply" data-toggle="modal" data-target="#composeMessage" onClick={this.reply}>
           Reply
+        </button>
+        <button type="button" className="btn btn-primary reply" data-toggle="modal" data-target="#composeMessage" onClick={this.replyAll}>
+          Reply All
         </button>
 
         { signer
