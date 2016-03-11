@@ -8,7 +8,6 @@ var messageParsing = require('../messageParsing');
 var keybaseAPI = require('../keybaseAPI');
 var kbpgp = require('kbpgp');
 var xhr = require('xhr');
-var addressParser = require('address-rfc2822'); 
 /* eslint-disable no-unused-vars */
 var ContactsAutocomplete = require('./ContactsAutocomplete.react');
 var KeybaseAutocomplete = require('./KeybaseAutocomplete.react');
@@ -74,6 +73,7 @@ var ComposeArea = React.createClass({
     let defaultTo = this.state.to;
     let defaultSubject = this.state.subject;
     let me = document.getElementById('myEmail').innerHTML;
+    console.log('replyall', replyAll);
 
     if (Object.keys(inReplyTo).length !== 0) {
       if (replyAll) {
