@@ -13,6 +13,7 @@
   },
   "author": "Eric Zeng",
   "dependencies": {
+    "address-rfc2822": "^1.0.0",
     "body-parser": "^1.14.1",
     "bootstrap": "^3.3.5",
     "compression": "^1.6.0",
