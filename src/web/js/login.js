@@ -17,9 +17,9 @@ function login() {
   removeError();
   spinner.style.visibility = 'visible';
 
-  let emailOrUsername = document.getElementById('username').value;
-  let password = document.getElementById('password').value;
-  let keybase = new KeybaseAPI(window.location.origin);
+  var emailOrUsername = document.getElementById('username').value;
+  var password = document.getElementById('password').value;
+  var keybase = new KeybaseAPI(window.location.origin);
 
   keybase.login(emailOrUsername, password).then(function(response) {
     localStorage.setItem('keybase', JSON.stringify(response.me));
@@ -33,7 +33,7 @@ function login() {
 }
 
 function addError(message) {
-  let error = document.getElementById('error');
+  var error = document.getElementById('error');
   error.innerHTML = message;
   error.style.visibility = 'visible';
 }
