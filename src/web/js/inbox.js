@@ -7,4 +7,5 @@ var EmailClient = require('./components/EmailClient.react');
 
 var ReactDOM = require('react-dom');
 
-ReactDOM.render(<EmailClient />, document.getElementById('app'));
+var threadToOpen = window.location.hash.replace('#', '');
+ReactDOM.render(<EmailClient threadToOpen={threadToOpen}/>, document.getElementById('app'));
