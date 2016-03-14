@@ -35,6 +35,11 @@ var ThreadSnippet = React.createClass({
       });
     });
   },
+  componentDidMount: function() {
+    if (this.props.startOpen) {
+      this.setState({ fullThread: true });
+    }
+  },
   render: function() {
     if (!this.state.fullThread) {
       let threadSubject = messageParsing.getThreadHeader(this.props.thread, 'Subject');

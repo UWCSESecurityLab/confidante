@@ -63,7 +63,7 @@ var EmailClient = React.createClass({
         }
         <h1>Inbox</h1>
         <ComposeArea />
-        <Inbox />
+        <Inbox threadToOpen={this.props.threadToOpen}/>
       </div>
     );
   }

@@ -32,7 +32,8 @@ var Inbox = React.createClass({
                 <ThreadSnippet thread={thread}
                                errors={this.state.errors}
                                signers={this.state.signers}
-                               plaintexts={this.state.plaintexts} />
+                               plaintexts={this.state.plaintexts} 
+                               startOpen={this.props.threadToOpen === thread.id}/>
               </li>);
     }.bind(this));
     if (snippets.length == 0) {
