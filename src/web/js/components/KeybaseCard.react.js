@@ -4,7 +4,7 @@ var React = require('react');
 
 var KeybaseCompletion = React.createClass({
   render: function() {
-    let user = this.props.user;
+    let user = this.props.data;
     return (
       <div className="keybase-card" onClick={this.props.onClick}>
         <div className="pic-section">

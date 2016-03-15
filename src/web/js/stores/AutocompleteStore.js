@@ -5,8 +5,24 @@ var InboxDispatcher = require('../dispatcher/InboxDispatcher');
 var KeybaseAPI = require('../keybaseAPI');
 var xhr = require('xhr');
 
-let _contacts = {};
-let _keybase = {};
+let _contacts = [];
+let _keybase = [];
+
+function simplifyKeybaseResults(kb) {
+  return kb.completions.map(function(completion) {
+    // Parse the autocomplete profile into a simpler object
+    // representing the user and their attributes.
+    let user = {};
+    for (var component in completion.components) {
+      if (completion.components.hasOwnProperty(component) &&
+          component != 'websites') {
+        user[component] = completion.components[component].val;
+      }
+    }
+    user.picture = completion.thumbnail;
+    return user;
+  });
+}
 
 var AutocompleteStore = Object.assign({}, EventEmitter.prototype, {
 
@@ -53,7 +69,7 @@ var AutocompleteStore = Object.assign({}, EventEmitter.prototype, {
       });
     } else if (action.type === 'GET_KEYBASE') {
       KeybaseAPI.autocomplete(action.query).then(function(kb) {
-        _keybase = kb;
+        _keybase = simplifyKeybaseResults(kb);
         AutocompleteStore.emitKeybaseChange();
       }).catch(function(err) {
         console.error(err);

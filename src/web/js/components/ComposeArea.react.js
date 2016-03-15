@@ -10,6 +10,7 @@ var keybaseAPI = require('../keybaseAPI');
 var kbpgp = require('kbpgp');
 var xhr = require('xhr');
 /* eslint-disable no-unused-vars */
+var ContactCompletion = require('./ContactCompletion.react')
 var KeybaseCard = require('./KeybaseCard.react');
 var Typeahead = require('react-typeahead-component');
 /* eslint-enable no-unused-vars */
@@ -70,11 +71,19 @@ var ComposeArea = React.createClass({
   handleKeybaseCompletions: function() {
     this.setState({ keybaseCompletions: AutocompleteStore.getKeybase() });
   },
-  handleContactSelected: function(event, option) {
-    this.updateTo(option);
+  handleContactSelected: function(event, contact) {
+    let contactAddr = '';
+    if (contact.name.length != 0) {
+      // If the contact includes a name, wrap the email address in "< >"
+      contactAddr = contact.name + ' <' + contact.email + '>, ';
+    } else {
+      // Otherwise just append a comma
+      contactAddr = contact.email + ', ';
+    }
+    this.updateTo(contactAddr);
   },
   handleKeybaseSelected: function(event, option) {
-    this.updateKBTo(option);
+    this.updateKBTo(option.username);
   },
   updateTo: function(to) {
     this.setState({ to: to });
@@ -299,7 +308,8 @@ var ComposeArea = React.createClass({
                              options={this.state.contactCompletions}
                              onChange={this.handleToChange}
                              onOptionChange={this.handleContactSelected}
-                             onOptionClick={this.handleContactSelected}/>
+                             onOptionClick={this.handleContactSelected}
+                             optionTemplate={ContactCompletion} />
                 </div>
                 { this.state.invite
                   ? null
@@ -310,7 +320,7 @@ var ComposeArea = React.createClass({
                                  onChange={this.handleKBToChange}
                                  onOptionChange={this.handleKeybaseSelected}
                                  onOptionClick={this.handleKeybaseSelected}
-                                 optionTemplate={KeybaseCard}/>
+                                 optionTemplate={KeybaseCard} />
                     </div>
                 }
                 <div className="form-group">
