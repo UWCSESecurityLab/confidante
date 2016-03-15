@@ -1,6 +1,7 @@
 'use strict';
 
 var React = require('react');
+var AutocompleteStore = require('../stores/AutocompleteStore');
 var ComposeStore = require('../stores/ComposeStore');
 var MessageStore = require('../stores/MessageStore');
 var InboxActions = require('../actions/InboxActions');
@@ -9,8 +10,8 @@ var keybaseAPI = require('../keybaseAPI');
 var kbpgp = require('kbpgp');
 var xhr = require('xhr');
 /* eslint-disable no-unused-vars */
-var ContactsAutocomplete = require('./ContactsAutocomplete.react');
-var KeybaseAutocomplete = require('./KeybaseAutocomplete.react');
+var KeybaseCard = require('./KeybaseCard.react');
+var Typeahead = require('react-typeahead-component');
 /* eslint-enable no-unused-vars */
 
 var ourPrivateManager;
@@ -46,9 +47,34 @@ var ComposeArea = React.createClass({
       email: '',
       feedback: '',
       sendingSpinner: false,
+      contactCompletions: AutocompleteStore.getContacts(),
+      keybaseCompletions: AutocompleteStore.getKeybase(),
       inReplyTo: ComposeStore.getReply(),
       invite: ComposeStore.getInvite()
     };
+  },
+
+  handleToChange: function(event) {
+    let to = event.target.value;
+    this.updateTo(to);
+    InboxActions.getContacts(to);
+  },
+  handleKBToChange: function(event) {
+    let kbto = event.target.value;
+    this.updateKBTo(kbto);
+    InboxActions.getKeybase(kbto);
+  },
+  handleContactCompletions: function() {
+    this.setState({ contactCompletions: AutocompleteStore.getContacts() });
+  },
+  handleKeybaseCompletions: function() {
+    this.setState({ keybaseCompletions: AutocompleteStore.getKeybase() });
+  },
+  handleContactSelected: function(event, option) {
+    this.updateTo(option);
+  },
+  handleKeybaseSelected: function(event, option) {
+    this.updateKBTo(option);
   },
   updateTo: function(to) {
     this.setState({ to: to });
@@ -62,9 +88,12 @@ var ComposeArea = React.createClass({
   updateEmail: function(e) {
     this.setState({ email: e.target.value });
   },
+
   componentDidMount: function() {
     ComposeStore.addChangeListener(this._onComposeStoreChange);
     ComposeStore.addResetListener(this._onReset);
+    AutocompleteStore.addKeybaseListener(this.handleKeybaseCompletions);
+    AutocompleteStore.addContactsListener(this.handleContactCompletions);
   },
   _onComposeStoreChange: function() {
     let invite = ComposeStore.getInvite();
@@ -266,13 +295,22 @@ var ComposeArea = React.createClass({
               <form className="form-horizontal" autoComplete="off">
                 <div className="form-group">
                   <label htmlFor="to">To:</label>
-                  <ContactsAutocomplete to={this.state.to} updateParent={this.updateTo}/>
+                  <Typeahead inputValue={this.state.to}
+                             options={this.state.contactCompletions}
+                             onChange={this.handleToChange}
+                             onOptionChange={this.handleContactSelected}
+                             onOptionClick={this.handleContactSelected}/>
                 </div>
                 { this.state.invite
                   ? null
                   : <div className="form-group">
                       <label htmlFor="kbto">Keybase ID of Recipient:</label>
-                      <KeybaseAutocomplete updateParent={this.updateKBTo}/>
+                      <Typeahead inputValue={this.state.kbto}
+                                 options={this.state.keybaseCompletions}
+                                 onChange={this.handleKBToChange}
+                                 onOptionChange={this.handleKeybaseSelected}
+                                 onOptionClick={this.handleKeybaseSelected}
+                                 optionTemplate={KeybaseCard}/>
                     </div>
                 }
                 <div className="form-group">

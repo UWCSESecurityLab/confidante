@@ -31,5 +31,19 @@ module.exports = {
     InboxDispatcher.dispatch({
       type: 'REFRESH'
     });
+  },
+
+  // AutocompleteStore actions
+  getContacts: function(query) {
+    InboxDispatcher.dispatch({
+      type: 'GET_CONTACTS',
+      query: query
+    });
+  },
+  getKeybase: function(query) {
+    InboxDispatcher.dispatch({
+      type: 'GET_KEYBASE',
+      query: query
+    });
   }
 };
