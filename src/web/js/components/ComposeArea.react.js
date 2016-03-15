@@ -12,7 +12,7 @@ var xhr = require('xhr');
 /* eslint-disable no-unused-vars */
 var ContactCompletion = require('./ContactCompletion.react')
 var KeybaseCard = require('./KeybaseCard.react');
-var Typeahead = require('react-typeahead-component');
+var Typeahead = require('@tappleby/react-typeahead-component');
 /* eslint-enable no-unused-vars */
 
 var ourPrivateManager;
