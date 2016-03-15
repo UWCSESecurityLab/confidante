@@ -2,20 +2,17 @@
  * Styles for autocomplete components: ContactsAutocomplete and
  * KeybaseAutocomplete.
  */
-.autocompletions {
+.react-typeahead-options {
   background-color: #FFFFFF;
   border: 1px solid #DDDDDD;
   position: absolute;
-}
-
-.autocompletions:empty {
-  display: none;
+  z-index: 2;
 }
 
 .completion {
   padding: 0em 1em;
 }
-.completion:hover {
+.completion-selected {
   background-color: #CCF2FF;
   padding: 0em 1em;
 }
