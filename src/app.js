@@ -73,6 +73,14 @@ app.get('/', function(req, res) {
   });
 });
 
+app.get('/help', function(req, res) {
+  res.render('help', {
+    email: req.session.email,
+    loggedIn: auth.isAuthenticated(req.session),
+    staging: flags.KEYBASE_STAGING
+  });
+});
+
 app.get('/login', function(req, res) {
   if (auth.isAuthenticated(req.session)) {
     res.redirect('/mail');
