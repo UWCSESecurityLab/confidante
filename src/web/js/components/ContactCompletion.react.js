@@ -12,12 +12,11 @@ var ContactCompletion = React.createClass({
     }
 
     return (
-      <li key={contact.email + contact.name}
-          className={className}>
+      <div className={className}>
         { contact.name.length != 0 ?
           <span id="name">{ contact.name } - </span> : null }
           <span id="email">{ contact.email }</span>
-      </li>
+      </div>
     );
   }
 });
