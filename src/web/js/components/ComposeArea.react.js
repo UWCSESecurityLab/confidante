@@ -58,12 +58,12 @@ var ComposeArea = React.createClass({
   handleToChange: function(event) {
     let to = event.target.value;
     this.updateTo(to);
-    InboxActions.getContacts(to);
+    InboxActions.getContacts(to.split(',').pop().trim());
   },
   handleKBToChange: function(event) {
     let kbto = event.target.value;
     this.updateKBTo(kbto);
-    InboxActions.getKeybase(kbto);
+    InboxActions.getKeybase(kbto.split(','.pop().trim()));
   },
   handleContactCompletions: function() {
     this.setState({ contactCompletions: AutocompleteStore.getContacts() });
@@ -80,8 +80,24 @@ var ComposeArea = React.createClass({
       // Otherwise just append a comma
       contactAddr = contact.email + ', ';
     }
-    this.updateTo(contactAddr);
+
+    let updated = '';
+    if (this.state.to.lastIndexOf(',') == -1) {
+      // If there are no complete emails in the field, replace all content with
+      // the autocomplete result.
+      updated = contactAddr;
+    } else {
+      // Otherwise replace all content after the comma with the autocomplete
+      // result.
+      updated = this.state.to.slice(0, this.state.to.lastIndexOf(',') + 1) + ' ' + contactAddr;
+    }
+    this.updateTo(updated);
   },
+
+  handleContactComplete: function(event, contact) {
+    console.log(contact);
+  },
+
   handleKeybaseSelected: function(event, option) {
     this.updateKBTo(option.username);
   },
@@ -315,9 +331,10 @@ var ComposeArea = React.createClass({
                   <Typeahead inputValue={this.state.to}
                              options={this.state.contactCompletions}
                              onChange={this.handleToChange}
-                             onOptionChange={this.handleContactSelected}
+                             onOptionChange={this.handleContactChanged}
                              onOptionClick={this.handleContactSelected}
-                             optionTemplate={ContactCompletion} />
+                             optionTemplate={ContactCompletion}
+                             onComplete={this.handleContactComplete} />
                 </div>
                 { this.state.invite
                   ? null
