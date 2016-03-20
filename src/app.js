@@ -271,6 +271,7 @@ app.get('/invite/viewInvite', function(req, res) {
     if (invite) {
       // Return page, invite, and encrypted message
       res.json({
+        staging: flags.KEYBASE_STAGING,
         expires: invite.expires.toString(),
         key: invite.pgp.private_key,
         message: invite.message,
