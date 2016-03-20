@@ -226,7 +226,7 @@ app.post('/invite/sendInvite', auth.dataEndpoint, function(req, res) {
 
   // Add an invite link to the message and send it over gmail.
   let sendMessage = function(invite) {
-    let inviteUrl = 'http://localhost:3000/invite?' +
+    let inviteUrl = 'http://keymail.cs.washington.edu:3000/invite?' +
         'id=' + req.body.inviteId + '&' +
         'pw=' + req.session.tempPassphrase;
     let inviteEmail = '<p>' + req.session.email +
