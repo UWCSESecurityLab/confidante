@@ -21,6 +21,8 @@ var GoogleOAuth = require('./googleOAuth.js');
 var GmailClient = require('./gmailClient.js');
 var messageParsing = require('./web/js/messageParsing');
 
+var TOOLNAME = 'TOOLNAME';
+
 // Mongo session store setup.
 var store = new MongoSessionStore({
   uri: 'mongodb://localhost:27017/test',
@@ -75,6 +77,7 @@ app.get('/', function(req, res) {
 
 app.get('/help', function(req, res) {
   res.render('help', {
+    toolname: TOOLNAME,
     email: req.session.email,
     loggedIn: auth.isAuthenticated(req.session),
     staging: flags.KEYBASE_STAGING
