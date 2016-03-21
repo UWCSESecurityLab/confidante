@@ -1,90 +1,98 @@
 'use strict';
 
 var React = require('react');
-var keybaseAPI = require('../keybaseAPI');
-var ComposeStore = require('../stores/ComposeStore');
-/* eslint-disable no-unused-vars */
-var KeybaseCompletion = require('./KeybaseCard.react');
-/* eslint-enable no-unused-vars */
+var AutocompleteStore = require('../stores/AutocompleteStore');
+var InboxActions = require('../actions/InboxActions');
+var KeybaseAPI = require('../keybaseAPI');
+var KeybaseCard = require('./KeybaseCard.react');
+var Typeahead = require('@tappleby/react-typeahead-component');
 
 var KeybaseAutocomplete = React.createClass({
   getInitialState: function() {
     return {
-      kbto: '',
+      completions: AutocompleteStore.getKeybase(),
+      kbto: this.props.kbto,
       results: {}
     };
   },
   componentDidMount: function() {
-    ComposeStore.addResetListener(this._onReset);
+    AutocompleteStore.addKeybaseListener(this.handleNewCompletions);
   },
-  _onReset: function() {
-    this.setState(this.getInitialState());
+
+  // Handles when new Autocomplete results become available.
+  handleNewCompletions: function() {
+    this.setState({ completions: AutocompleteStore.getKeybase() });
   },
-  hideCompletions: function() {
-    this.setState({ results: {} });
+
+  // Handles when the user selects an autocomplete result.
+  handleResultSelected: function(event, keybase) {
+    console.log(keybase);
+    let updated = this.replaceLastUncompletedWithKeybase(this.state.kbto, keybase.username);
+    this.updateKBTo(updated);
   },
-  resultClicked: function(username) {
+
+  // Handles when the user scrolls through autocomplete results with arrow keys.
+  handleResultScroll: function(event, keybase, index) {
+    if (index == -1) {
+      return;
+    }
+
+    // Remove the trailing comma if it is the last non whitespace character,
+    // because we want to replace the last full completion with a new one.
+    let input;
+    let trim = this.state.kbto.trim();
+    if (trim.endsWith(',')) {
+      input = trim.slice(0, trim.length - 1);
+    } else {
+      input = this.state.kbto;
+    }
+    let updated = this.replaceLastUncompletedWithKeybase(input, keybase.username);
+    this.updateKBTo(updated);
+  },
+
+  handleValueChanged: function(event) {
+    let kbto = event.target.value;
+    this.updateKBTo(kbto);
+    let trailing = kbto.split(',').pop().trim();
+    if (trailing.length > 1) {
+      InboxActions.getKeybase(trailing);
+    }
+  },
+
+  /**
+   * When the user has typed a partial value, and then selects a completion,
+   * this function computes how to replace the partial value with the
+   * selected username, while retaining the previous comma separated usernames.
+   * @param inputValue The value the user has typed in
+   * @param contact The contact to insert
+   */
+  replaceLastUncompletedWithKeybase: function(inputValue, username) {
     // Figure out how to append the new keybase username.
     let updated = '';
-    if (this.state.kbto.lastIndexOf(',') == -1) {
+    if (inputValue.lastIndexOf(',') == -1) {
       // If there are no complete usernames in the field, replace all content
       // with the autocomplete result.
       updated = username + ', ';
     } else {
       // Otherwise replace all content after the comma with the autocomplete
       // result.
-      updated = this.state.kbto.slice(0, this.state.kbto.lastIndexOf(',') + 1) + ' ' + username + ', '
+      updated = inputValue.slice(0, inputValue.lastIndexOf(',') + 1) + ' ' + username + ', '
     }
-
-    this.setState({ kbto: updated });
-    this.props.updateParent(updated);
-    this.hideCompletions();
+    return updated;
   },
-  updateKBTo: function(e) {
-    let newString = e.target.value;
-    this.setState({ kbto: newString });
-    let query = newString.slice(newString.lastIndexOf(',') + 1).trim();
-    if (query.length == 0) {
-      return;
-    }
-    keybaseAPI.autocomplete(query).then(function(body) {
-      this.setState({ results: body });
-      this.props.updateParent(newString);
-    }.bind(this));
+
+  updateKBTo: function(updatedKBTo) {
+    this.setState({ kbto: updatedKBTo});
+    this.props.updateParent(updatedKBTo);
   },
 
   render: function() {
-    return (
-      <div onMouseLeave={this.hideCompletions}>
-        <input type="text"
-               value={this.state.kbto}
-               name="kbto"
-               onChange={this.updateKBTo}
-               className="form-control"></input>
-        <ul className="autocompletions">
-          { this.state.results.completions ?
-            this.state.results.completions.map(function(completion) {
-              // Parse the autocomplete profile into a simpler object
-              // representing the user and their attributes.
-              let user = {};
-              for (var component in completion.components) {
-                if (completion.components.hasOwnProperty(component) &&
-                    component != 'websites') {
-                  user[component] = completion.components[component].val;
-                }
-              }
-              user.picture = completion.thumbnail;
-              return (
-                <li key={ user.username }>
-                  <KeybaseCompletion
-                    onClick={this.resultClicked.bind(this, user.username)}
-                    user={user}/>
-                </li>
-              );
-            }.bind(this)) : null }
-        </ul>
-      </div>
-    );
+    return <Typeahead inputValue={this.state.kbto}
+                      onChange={this.handleValueChanged}
+                      onOptionChange={this.handleResultScroll}
+                      onOptionClick={this.handleResultSelected}
+                      options={this.state.completions}
+                      optionTemplate={KeybaseCard} />
   }
 });
 

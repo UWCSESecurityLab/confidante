@@ -10,7 +10,7 @@ var Typeahead = require('@tappleby/react-typeahead-component');
 var ContactsAutocomplete = React.createClass({
   getInitialState: function() {
     return {
-      contactCompletions: AutocompleteStore.getContacts(),
+      completions: AutocompleteStore.getContacts(),
       to: this.props.to,
       results: []
     };
@@ -22,7 +22,7 @@ var ContactsAutocomplete = React.createClass({
 
   // Handles when new Autocomplete results become available.
   handleNewCompletions: function() {
-    this.setState({ contactCompletions: AutocompleteStore.getContacts() });
+    this.setState({ completions: AutocompleteStore.getContacts() });
   },
 
   // Handles when the user selects an autocomplete result.
@@ -67,7 +67,6 @@ var ContactsAutocomplete = React.createClass({
    * @param contact The contact to insert
    */
   replaceLastUncompletedWithContact: function(inputValue, contact) {
-    console.log(contact);
     // Format the email address so it can be added to the "To:" field
     let contactAddr = '';
     if (contact.name.length != 0) {
@@ -104,7 +103,7 @@ var ContactsAutocomplete = React.createClass({
                       onChange={this.handleValueChanged}
                       onOptionChange={this.handleResultScroll}
                       onOptionClick={this.handleResultSelected}
-                      options={this.state.contactCompletions}
+                      options={this.state.completions}
                       optionTemplate={ContactCompletion} />
   }
 });

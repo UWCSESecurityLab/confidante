@@ -1,19 +1,15 @@
 'use strict';
 
 var React = require('react');
-var AutocompleteStore = require('../stores/AutocompleteStore');
 var ComposeStore = require('../stores/ComposeStore');
-var MessageStore = require('../stores/MessageStore');
-var InboxActions = require('../actions/InboxActions');
-var messageParsing = require('../messageParsing');
-var keybaseAPI = require('../keybaseAPI');
-var kbpgp = require('kbpgp');
-var xhr = require('xhr');
-/* eslint-disable no-unused-vars */
 var ContactsAutocomplete = require('./ContactsAutocomplete.react');
-var KeybaseCard = require('./KeybaseCard.react');
-var Typeahead = require('@tappleby/react-typeahead-component');
-/* eslint-enable no-unused-vars */
+var kbpgp = require('kbpgp');
+var KeybaseAutocomplete = require('./KeybaseAutocomplete.react');
+var InboxActions = require('../actions/InboxActions');
+var KeybaseAPI = require('../keybaseAPI');
+var messageParsing = require('../messageParsing');
+var MessageStore = require('../stores/MessageStore');
+var xhr = require('xhr');
 
 var ourPrivateManager;
 MessageStore.getPrivateManager().then(function(privateManager) {
@@ -29,7 +25,7 @@ var ourPublicKeyManager =
   try {
     var me = JSON.parse(localStorage.getItem('keybase'));
     var pubkey = me.public_keys.primary.bundle;
-    ourPublicKeyManager = keybaseAPI.managerFromPublicKey(pubkey);
+    ourPublicKeyManager = KeybaseAPI.managerFromPublicKey(pubkey);
   } catch (err) {
     ourPublicKeyManager = Promise.reject(new Error(err));
   }
@@ -48,23 +44,9 @@ var ComposeArea = React.createClass({
       email: '',
       feedback: '',
       sendingSpinner: false,
-      keybaseCompletions: AutocompleteStore.getKeybase(),
       inReplyTo: ComposeStore.getReply(),
       invite: ComposeStore.getInvite()
     };
-  },
-
-  handleKBToChange: function(event) {
-    let kbto = event.target.value;
-    this.updateKBTo(kbto);
-    InboxActions.getKeybase(kbto.split(','.pop().trim()));
-  },
-  handleKeybaseCompletions: function() {
-    this.setState({ keybaseCompletions: AutocompleteStore.getKeybase() });
-  },
-
-  handleKeybaseSelected: function(event, option) {
-    this.updateKBTo(option.username);
   },
   updateTo: function(to) {
     this.setState({ to: to });
@@ -82,10 +64,10 @@ var ComposeArea = React.createClass({
   componentDidMount: function() {
     ComposeStore.addChangeListener(this._onComposeStoreChange);
     ComposeStore.addResetListener(this._onReset);
-    AutocompleteStore.addKeybaseListener(this.handleKeybaseCompletions);
 
-    // Add 'form-control' class to Typeahead input box at runtime because
-    // the Typeahead component is encapsulated and can't add classes declaratively.
+    // Add 'form-control' class to Typeahead input boxes at runtime because
+    // the Typeahead component is encapsulated and can't add classes
+    // declaratively.
     let elements = document.getElementsByClassName('react-typeahead-input');
     for (var i = 0; i < elements.length; i++) {
       elements[i].className += ' form-control';
@@ -155,7 +137,7 @@ var ComposeArea = React.createClass({
       .filter((token) => token.length > 0);
 
     let keyManagers = users.map((user) => {
-      return keybaseAPI.publicKeyForUser(user).then(keybaseAPI.managerFromPublicKey);
+      return KeybaseAPI.publicKeyForUser(user).then(KeybaseAPI.managerFromPublicKey);
     });
     keyManagers.push(ourPublicKeyManager);
 
@@ -296,12 +278,7 @@ var ComposeArea = React.createClass({
                   ? null
                   : <div className="form-group">
                       <label htmlFor="kbto">Keybase ID of Recipient:</label>
-                      <Typeahead inputValue={this.state.kbto}
-                                 options={this.state.keybaseCompletions}
-                                 onChange={this.handleKBToChange}
-                                 onOptionChange={this.handleKeybaseSelected}
-                                 onOptionClick={this.handleKeybaseSelected}
-                                 optionTemplate={KeybaseCard} />
+                      <KeybaseAutocomplete kbto={this.state.kbto} updateParent={this.updateKBTo}/>
                     </div>
                 }
                 <div className="form-group">
