@@ -226,7 +226,10 @@ app.post('/invite/sendInvite', auth.dataEndpoint, function(req, res) {
 
   // Add an invite link to the message and send it over gmail.
   let sendMessage = function(invite) {
-    let inviteUrl = 'http://localhost:3000/invite?' +
+    let host = flags.PRODUCTION ? 
+               'https://keymail.cs.washington.edu' : 
+               'http://localhost:3000';
+    let inviteUrl = host + '/invite?' +
         'id=' + req.body.inviteId + '&' +
         'pw=' + req.session.tempPassphrase;
     let inviteEmail = '<p>' + req.session.email +
@@ -271,6 +274,7 @@ app.get('/invite/viewInvite', function(req, res) {
     if (invite) {
       // Return page, invite, and encrypted message
       res.json({
+        staging: flags.KEYBASE_STAGING,
         expires: invite.expires.toString(),
         key: invite.pgp.private_key,
         message: invite.message,
