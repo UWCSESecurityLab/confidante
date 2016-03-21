@@ -1,95 +1,111 @@
 'use strict';
 
 var React = require('react');
+var AutocompleteStore = require('../stores/AutocompleteStore');
 var ComposeStore = require('../stores/ComposeStore');
-var xhr = require('xhr');
-
-function autocompleteContacts(query) {
-  return new Promise(function(resolve, reject) {
-    xhr.get({
-      url: window.location.origin + '/contacts.json?q=' + query
-    }, function(error, response, body) {
-      if (!error && response.statusCode == 200) {
-        resolve(JSON.parse(body));
-      } else {
-        reject(error);
-      }
-    });
-  });
-}
+var ContactCompletion = require('./ContactCompletion.react');
+var InboxActions = require('../actions/InboxActions');
+var Typeahead = require('@tappleby/react-typeahead-component');
 
 var ContactsAutocomplete = React.createClass({
   getInitialState: function() {
     return {
+      contactCompletions: AutocompleteStore.getContacts(),
+      to: this.props.to,
       results: []
     };
   },
+
   componentDidMount: function() {
-    ComposeStore.addResetListener(this.hideCompletions);
+    AutocompleteStore.addContactsListener(this.handleNewCompletions);
   },
-  hideCompletions: function() {
-    this.setState(this.getInitialState());
+
+  // Handles when new Autocomplete results become available.
+  handleNewCompletions: function() {
+    this.setState({ contactCompletions: AutocompleteStore.getContacts() });
   },
-  resultClicked: function(contact) {
+
+  // Handles when the user selects an autocomplete result.
+  handleResultSelected: function(event, contact) {
+    let updated = this.replaceLastUncompletedWithContact(this.state.to, contact);
+    this.updateTo(updated);
+  },
+
+  // Handles when the user scrolls through autocomplete results with arrow keys.
+  handleResultScroll: function(event, contact, index) {
+    if (index == -1) {
+      return;
+    }
+
+    // Remove the trailing comma if it is the last non whitespace character,
+    // because we want to replace the last full completion with a new one.
+    let input;
+    let trim = this.state.to.trim();
+    if (trim.endsWith(',')) {
+      input = trim.slice(0, trim.length - 1);
+    } else {
+      input = this.state.to;
+    }
+
+    let updated = this.replaceLastUncompletedWithContact(input, contact);
+    this.updateTo(updated);
+  },
+
+  // Handles when the input element in the Typeahead component changes
+  // (when the user types something)
+  handleValueChanged: function(event) {
+    let to = event.target.value;
+    this.updateTo(to);
+    InboxActions.getContacts(to.split(',').pop().trim());
+  },
+
+  /**
+   * When the user has typed a partial contact, and then selects a completion,
+   * this function computes how to replace the partial contact with the
+   * selected contact, while retaining the previous comma separated contacts.
+   * @param inputValue The value the user has typed in
+   * @param contact The contact to insert
+   */
+  replaceLastUncompletedWithContact: function(inputValue, contact) {
+    console.log(contact);
     // Format the email address so it can be added to the "To:" field
     let contactAddr = '';
     if (contact.name.length != 0) {
       // If the contact includes a name, wrap the email address in "< >"
       contactAddr = contact.name + ' <' + contact.email + '>, ';
     } else {
-      // Otherwise just append a comma
+      // Otherwise just use the email address
       contactAddr = contact.email + ', ';
     }
 
     // Figure out how to append the new contact.
     let updated = '';
-    if (this.props.to.lastIndexOf(',') == -1) {
+    if (inputValue.lastIndexOf(',') == -1) {
       // If there are no complete emails in the field, replace all content with
       // the autocomplete result.
       updated = contactAddr;
     } else {
       // Otherwise replace all content after the comma with the autocomplete
       // result.
-      updated = this.props.to.slice(0, this.props.to.lastIndexOf(',') + 1) + ' ' + contactAddr;
+      updated = inputValue.slice(0, inputValue.lastIndexOf(',') + 1) + ' ' + contactAddr;
     }
 
-    this.props.updateParent(updated);
-    this.hideCompletions();
+    return updated;
   },
 
-  updateTo: function(e) {
-    let newString = e.target.value;
-    let query = newString.slice(newString.lastIndexOf(',') + 1).trim();
-    autocompleteContacts(query).then(function(results) {
-      this.setState({ results: results });
-      this.props.updateParent(newString);
-    }.bind(this));
+  // Updates the to field's state in this component and the parent.
+  updateTo: function(updatedTo) {
+    this.setState({ to: updatedTo });
+    this.props.updateParent(updatedTo);
   },
 
   render: function() {
-    return (
-      <div onMouseLeave={this.hideCompletions}>
-        <input type="text"
-               value={this.props.to}
-               name="to"
-               onChange={this.updateTo}
-               className="form-control"></input>
-        <ul className="autocompletions">
-          { this.state.results.length != 0 ?
-            this.state.results.map(function(contact) {
-              return (
-                <li key={contact.email + contact.name}
-                    onClick={this.resultClicked.bind(this, contact)}
-                    className="completion">
-                  { contact.name.length != 0 ?
-                    <span id="name">{ contact.name } - </span> : null }
-                  <span id="email">{ contact.email }</span>
-                </li>
-              );
-            }.bind(this)) : null }
-        </ul>
-      </div>
-    );
+    return <Typeahead inputValue={this.state.to}
+                      onChange={this.handleValueChanged}
+                      onOptionChange={this.handleResultScroll}
+                      onOptionClick={this.handleResultSelected}
+                      options={this.state.contactCompletions}
+                      optionTemplate={ContactCompletion} />
   }
 });
 

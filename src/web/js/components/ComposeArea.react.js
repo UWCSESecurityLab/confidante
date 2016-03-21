@@ -10,7 +10,7 @@ var keybaseAPI = require('../keybaseAPI');
 var kbpgp = require('kbpgp');
 var xhr = require('xhr');
 /* eslint-disable no-unused-vars */
-var ContactCompletion = require('./ContactCompletion.react')
+var ContactsAutocomplete = require('./ContactsAutocomplete.react');
 var KeybaseCard = require('./KeybaseCard.react');
 var Typeahead = require('@tappleby/react-typeahead-component');
 /* eslint-enable no-unused-vars */
@@ -48,54 +48,19 @@ var ComposeArea = React.createClass({
       email: '',
       feedback: '',
       sendingSpinner: false,
-      contactCompletions: AutocompleteStore.getContacts(),
       keybaseCompletions: AutocompleteStore.getKeybase(),
       inReplyTo: ComposeStore.getReply(),
       invite: ComposeStore.getInvite()
     };
   },
 
-  handleToChange: function(event) {
-    let to = event.target.value;
-    this.updateTo(to);
-    InboxActions.getContacts(to.split(',').pop().trim());
-  },
   handleKBToChange: function(event) {
     let kbto = event.target.value;
     this.updateKBTo(kbto);
     InboxActions.getKeybase(kbto.split(','.pop().trim()));
   },
-  handleContactCompletions: function() {
-    this.setState({ contactCompletions: AutocompleteStore.getContacts() });
-  },
   handleKeybaseCompletions: function() {
     this.setState({ keybaseCompletions: AutocompleteStore.getKeybase() });
-  },
-  handleContactSelected: function(event, contact) {
-    let contactAddr = '';
-    if (contact.name.length != 0) {
-      // If the contact includes a name, wrap the email address in "< >"
-      contactAddr = contact.name + ' <' + contact.email + '>, ';
-    } else {
-      // Otherwise just append a comma
-      contactAddr = contact.email + ', ';
-    }
-
-    let updated = '';
-    if (this.state.to.lastIndexOf(',') == -1) {
-      // If there are no complete emails in the field, replace all content with
-      // the autocomplete result.
-      updated = contactAddr;
-    } else {
-      // Otherwise replace all content after the comma with the autocomplete
-      // result.
-      updated = this.state.to.slice(0, this.state.to.lastIndexOf(',') + 1) + ' ' + contactAddr;
-    }
-    this.updateTo(updated);
-  },
-
-  handleContactComplete: function(event, contact) {
-    console.log(contact);
   },
 
   handleKeybaseSelected: function(event, option) {
@@ -118,14 +83,12 @@ var ComposeArea = React.createClass({
     ComposeStore.addChangeListener(this._onComposeStoreChange);
     ComposeStore.addResetListener(this._onReset);
     AutocompleteStore.addKeybaseListener(this.handleKeybaseCompletions);
-    AutocompleteStore.addContactsListener(this.handleContactCompletions);
 
     // Add 'form-control' class to Typeahead input box at runtime because
     // the Typeahead component is encapsulated and can't add classes declaratively.
     let elements = document.getElementsByClassName('react-typeahead-input');
     for (var i = 0; i < elements.length; i++) {
       elements[i].className += ' form-control';
-      console.log(elements[i]);
     }
   },
   _onComposeStoreChange: function() {
@@ -135,7 +98,6 @@ var ComposeArea = React.createClass({
     let defaultTo = this.state.to;
     let defaultSubject = this.state.subject;
     let me = document.getElementById('myEmail').innerHTML;
-    console.log('replyall', replyAll);
 
     if (Object.keys(inReplyTo).length !== 0) {
       if (replyAll) {
@@ -328,13 +290,7 @@ var ComposeArea = React.createClass({
               <form className="form-horizontal" autoComplete="off">
                 <div className="form-group">
                   <label htmlFor="to">To:</label>
-                  <Typeahead inputValue={this.state.to}
-                             options={this.state.contactCompletions}
-                             onChange={this.handleToChange}
-                             onOptionChange={this.handleContactChanged}
-                             onOptionClick={this.handleContactSelected}
-                             optionTemplate={ContactCompletion}
-                             onComplete={this.handleContactComplete} />
+                  <ContactsAutocomplete to={this.state.to} updateParent={this.updateTo}/>
                 </div>
                 { this.state.invite
                   ? null
