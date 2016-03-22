@@ -25,10 +25,18 @@ ul {
 
 .messageHeader {
   color: #707070;
+  display: inline-flex;
+  width: 100%;
+  justify-content: space-between;
 }
 
 .reply {
   margin-top: 1em;
+}
+
+.signature-header {
+  color: #707070;
+  margin: 1em;
 }
 
 .snippet {
@@ -36,11 +44,6 @@ ul {
   border: 1px solid #E5E5E5;
   cursor: pointer;
   padding: 0.5em;
-}
-
-.signature-header {
-  color: #707070;
-  margin: 1em;
 }
 
 .subjectLine {
@@ -71,4 +74,10 @@ ul {
 
 #composeButton {
   float: right;
+}
+
+@media all and (max-width: 640px) {
+  .messageHeader {
+    flex-direction: column;
+  }
 }

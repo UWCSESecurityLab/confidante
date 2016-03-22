@@ -1,14 +1,10 @@
 'use strict';
 
 var React = require('react');
-var keybaseAPI = require('../keybaseAPI');
-var messageParsing = require('../messageParsing');
-var KeybaseCompletion = require('./KeybaseCard.react');
-
-/*eslint-disable no-unused-vars*/
-var InboxActions = require('../actions/InboxActions');
 var ErrorBody = require('./ErrorBody.react');
-/*eslint-enable no-unused-vars*/
+var InboxActions = require('../actions/InboxActions');
+var KeybaseCard = require('./KeybaseCard.react');
+var messageParsing = require('../messageParsing');
 
 function getTwitterFromUser(user) {
   let proofs = user.proofs_summary.by_proof_type;
@@ -51,6 +47,7 @@ var Message = React.createClass({
   render: function() {
     var from = messageParsing.getMessageHeader(this.props.message, 'From');
     var to = messageParsing.getMessageHeader(this.props.message, 'To');
+    var date = new Date(messageParsing.getMessageHeader(this.props.message, 'Date'));
 
     var body;
     if (!this.props.error && this.props.plaintext) {
@@ -81,14 +78,19 @@ var Message = React.createClass({
         'twitter': getTwitterFromUser(user),
         'github': getGithubFromUser(user)
       };
-      signer = ( <KeybaseCompletion user={formattedUser}/> );
+      signer = ( <KeybaseCard user={formattedUser}/> );
     }
 
     return (
       <div className="message">
         <div className="messageHeader">
-          <strong>{from}</strong>
-          <p>To: {to}</p>
+          <div className="sender">
+            <strong>{from}</strong>
+            <p>To: {to}</p>
+          </div>
+          <div className="message-timestamp">
+            <p>{date.toLocaleString()}</p>
+          </div>
         </div>
         {body}
         <button type="button" className="btn btn-primary reply" data-toggle="modal" data-target="#composeMessage" onClick={this.reply}>
