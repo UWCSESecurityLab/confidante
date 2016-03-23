@@ -1,6 +1,7 @@
 'use strict';
 
 var React = require('react');
+var AddressParser = require('address-rfc2822');
 var AutocompleteStore = require('../stores/AutocompleteStore');
 var ComposeStore = require('../stores/ComposeStore');
 var ContactCompletion = require('./ContactCompletion.react');
@@ -10,9 +11,9 @@ var Typeahead = require('@tappleby/react-typeahead-component');
 var ContactsAutocomplete = React.createClass({
   getInitialState: function() {
     return {
-      completions: AutocompleteStore.getContacts(),
-      to: '',
-      results: []
+      completions: AutocompleteStore.getContacts(), // Autocomplete results
+      to: '',  // Current value of the input field
+      selected: []  // List of objects representing selected recipients
     };
   },
 
@@ -21,7 +22,7 @@ var ContactsAutocomplete = React.createClass({
   },
 
   componentWillReceiveProps: function(props) {
-    this.setState({ to: props.to });
+    this.setState({ selected: this.parseContacts(props.to)});
   },
 
   // Handles when new Autocomplete results become available.
@@ -31,8 +32,7 @@ var ContactsAutocomplete = React.createClass({
 
   // Handles when the user selects an autocomplete result.
   handleResultSelected: function(event, contact) {
-    let updated = this.replaceLastUncompletedWithContact(this.state.to, contact);
-    this.updateTo(updated);
+    this.addContactAndUpdate(contact);
   },
 
   // Handles when the user scrolls through autocomplete results with arrow keys.
@@ -40,72 +40,76 @@ var ContactsAutocomplete = React.createClass({
     if (index == -1) {
       return;
     }
-
-    // Remove the trailing comma if it is the last non whitespace character,
-    // because we want to replace the last full completion with a new one.
-    let input;
-    let trim = this.state.to.trim();
-    if (trim.endsWith(',')) {
-      input = trim.slice(0, trim.length - 1);
-    } else {
-      input = this.state.to;
-    }
-
-    let updated = this.replaceLastUncompletedWithContact(input, contact);
-    this.updateTo(updated);
+    this.setState({ to: this.formatContact(contact) });
   },
 
   // Handles when the input element in the Typeahead component changes
   // (when the user types something)
   handleValueChanged: function(event) {
     let to = event.target.value;
-    this.updateTo(to);
-    InboxActions.getContacts(to.split(',').pop().trim());
+    if (to.endsWith(',')) {
+      // Attempt to parse the input into an email contact
+      let contacts = this.parseContacts(to);
+      if (contacts.length == 1) {
+        this.addContactAndUpdate(contacts[0]);
+        return;
+      }
+    }
+    // If not an email address, update the input field and get more
+    // autocompletions.
+    this.setState({ to: to });
+    InboxActions.getContacts(to);
   },
 
-  /**
-   * When the user has typed a partial contact, and then selects a completion,
-   * this function computes how to replace the partial contact with the
-   * selected contact, while retaining the previous comma separated contacts.
-   * @param inputValue The value the user has typed in
-   * @param contact The contact to insert
-   */
-  replaceLastUncompletedWithContact: function(inputValue, contact) {
-    // Format the email address so it can be added to the "To:" field
+  // Add the contact to the selected contacts (component state), update the
+  // parent, and clear the input element.
+  addContactAndUpdate: function(contact) {
+    // Copy state.selected before appending new contact
+    let updated = this.state.selected.slice();
+    updated.push(contact);
+    this.setState({ selected: updated, to: '' });
+    this.props.updateParent(updated.map(this.formatContact).join(', '));
+  },
+
+  // Converts a JSON email contact to a RFC compliant string
+  formatContact: function(contact) {
     let contactAddr = '';
     if (contact.name.length != 0) {
       // If the contact includes a name, wrap the email address in "< >"
-      contactAddr = contact.name + ' <' + contact.email + '>, ';
+      contactAddr = contact.name + ' <' + contact.email + '>';
     } else {
       // Otherwise just use the email address
-      contactAddr = contact.email + ', ';
+      contactAddr = contact.email;
     }
-
-    // Figure out how to append the new contact.
-    let updated = '';
-    if (inputValue.lastIndexOf(',') == -1) {
-      // If there are no complete emails in the field, replace all content with
-      // the autocomplete result.
-      updated = contactAddr;
-    } else {
-      // Otherwise replace all content after the comma with the autocomplete
-      // result.
-      updated = inputValue.slice(0, inputValue.lastIndexOf(',') + 1) + ' ' + contactAddr;
-    }
-
-    return updated;
+    return contactAddr;
   },
 
-  // Updates the to field's state in this component and the parent.
-  updateTo: function(updatedTo) {
-    this.setState({ to: updatedTo });
-    this.props.updateParent(updatedTo);
+  // Converts an RFC string of addresses into JSON email contacts
+  parseContacts: function(string) {
+    let addresses = AddressParser.parse(string);
+    return addresses.map(function(address) {
+      return { email: address.address, name: address.name() }
+    });
   },
 
   render: function() {
+    let selected = this.state.selected.map(function(contact) {
+      return (
+        <li className="contact-token" key={contact.email}>
+          { contact.name
+            ? <span>{contact.name}</span>
+            : <span>{contact.email}</span>
+          }
+          <button type="button" className="close threadClose">&times;</button>
+        </li>
+      );
+    });
+
     return (
       <div className="autocomplete-input">
-        <div>Eric Zeng</div>
+        <ul className="contact-tokens">
+          {selected}
+        </ul>
         <Typeahead inputValue={this.state.to}
                    onChange={this.handleValueChanged}
                    onOptionChange={this.handleResultScroll}
