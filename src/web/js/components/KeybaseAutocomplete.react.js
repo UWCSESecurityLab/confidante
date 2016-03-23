@@ -11,12 +11,17 @@ var KeybaseAutocomplete = React.createClass({
   getInitialState: function() {
     return {
       completions: AutocompleteStore.getKeybase(),
-      kbto: this.props.kbto,
+      kbto: '',
       results: {}
     };
   },
+
   componentDidMount: function() {
     AutocompleteStore.addKeybaseListener(this.handleNewCompletions);
+  },
+
+  componentWillReceiveProps: function(props) {
+    this.setState({ kbto: props.kbto });
   },
 
   // Handles when new Autocomplete results become available.

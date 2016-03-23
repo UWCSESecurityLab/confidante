@@ -11,13 +11,17 @@ var ContactsAutocomplete = React.createClass({
   getInitialState: function() {
     return {
       completions: AutocompleteStore.getContacts(),
-      to: this.props.to,
+      to: '',
       results: []
     };
   },
 
   componentDidMount: function() {
     AutocompleteStore.addContactsListener(this.handleNewCompletions);
+  },
+
+  componentWillReceiveProps: function(props) {
+    this.setState({ to: props.to });
   },
 
   // Handles when new Autocomplete results become available.
