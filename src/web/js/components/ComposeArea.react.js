@@ -68,10 +68,10 @@ var ComposeArea = React.createClass({
     // Add 'form-control' class to Typeahead input boxes at runtime because
     // the Typeahead component is encapsulated and can't add classes
     // declaratively.
-    let elements = document.getElementsByClassName('react-typeahead-input');
-    for (var i = 0; i < elements.length; i++) {
-      elements[i].className += ' form-control';
-    }
+    // let elements = document.getElementsByClassName('react-typeahead-input');
+    // for (var i = 0; i < elements.length; i++) {
+    //   elements[i].className += ' form-control';
+    // }
   },
   _onComposeStoreChange: function() {
     let invite = ComposeStore.getInvite();

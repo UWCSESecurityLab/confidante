@@ -103,12 +103,17 @@ var ContactsAutocomplete = React.createClass({
   },
 
   render: function() {
-    return <Typeahead inputValue={this.state.to}
-                      onChange={this.handleValueChanged}
-                      onOptionChange={this.handleResultScroll}
-                      onOptionClick={this.handleResultSelected}
-                      options={this.state.completions}
-                      optionTemplate={ContactCompletion} />
+    return (
+      <div className="autocomplete-input">
+        <div>Eric Zeng</div>
+        <Typeahead inputValue={this.state.to}
+                   onChange={this.handleValueChanged}
+                   onOptionChange={this.handleResultScroll}
+                   onOptionClick={this.handleResultSelected}
+                   options={this.state.completions}
+                   optionTemplate={ContactCompletion} />
+      </div>
+    );
   }
 });
 
