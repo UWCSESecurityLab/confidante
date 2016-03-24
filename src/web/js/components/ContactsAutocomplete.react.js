@@ -71,6 +71,20 @@ var ContactsAutocomplete = React.createClass({
     this.props.updateParent(updated.map(this.formatContact).join(', '));
   },
 
+  // Remove the given contact from the selected contacts (if it exists)
+  deleteContact: function(contact) {
+    let idx = this.state.selected.findIndex(function(selected) {
+      return selected.name == contact.name && selected.email == contact.email;
+    });
+    if (idx == -1) {
+      return;
+    }
+    let updated = this.state.selected.slice();
+    updated.splice(idx, 1);
+    this.setState({ selected: updated });
+    this.props.updateParent(updated.map(this.formatContact).join(', '));
+  },
+
   // Converts a JSON email contact to a RFC compliant string
   formatContact: function(contact) {
     let contactAddr = '';
@@ -100,10 +114,14 @@ var ContactsAutocomplete = React.createClass({
             ? <span>{contact.name}</span>
             : <span>{contact.email}</span>
           }
-          <button type="button" className="close delete-contact">&times;</button>
+          <button type="button"
+                  className="close delete-contact"
+                  onClick={this.deleteContact.bind(this, contact)}>
+            &times;
+          </button>
         </li>
       );
-    });
+    }.bind(this));
 
     return (
       <ul className="autocomplete-input">
