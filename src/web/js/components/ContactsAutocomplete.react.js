@@ -100,23 +100,21 @@ var ContactsAutocomplete = React.createClass({
             ? <span>{contact.name}</span>
             : <span>{contact.email}</span>
           }
-          <button type="button" className="close threadClose">&times;</button>
+          <button type="button" className="close delete-contact">&times;</button>
         </li>
       );
     });
 
     return (
-      <div className="autocomplete-input">
-        <ul className="contact-tokens">
+      <ul className="autocomplete-input">
           {selected}
-        </ul>
-        <Typeahead inputValue={this.state.to}
-                   onChange={this.handleValueChanged}
-                   onOptionChange={this.handleResultScroll}
-                   onOptionClick={this.handleResultSelected}
-                   options={this.state.completions}
-                   optionTemplate={ContactCompletion} />
-      </div>
+          <Typeahead inputValue={this.state.to}
+                     onChange={this.handleValueChanged}
+                     onOptionChange={this.handleResultScroll}
+                     onOptionClick={this.handleResultSelected}
+                     options={this.state.completions}
+                     optionTemplate={ContactCompletion} />
+      </ul>
     );
   }
 });
