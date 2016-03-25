@@ -25,17 +25,30 @@ var ContactsAutocomplete = React.createClass({
     this.setState({ selected: this.parseContacts(props.to)});
   },
 
-  // Handles when new Autocomplete results become available.
+  // When the user navigates away from the input box, make it into a token.
+  handleFocusLost: function(event) {
+    let to = event.target.value;
+    let contacts = this.parseContacts(to);
+    if (contacts.length == 0) {
+      return;
+    }
+    // Assume only one contact exists because commas are handled immediately by
+    // this.handleValueChanged()
+    this.addContactAndUpdate(contacts[0]);
+  },
+
+  // Get the latest values from the AutocompleteStore and store it in state.
   handleNewCompletions: function() {
     this.setState({ completions: AutocompleteStore.getContacts() });
   },
 
-  // Handles when the user selects an autocomplete result.
+  // When a user selects an autocomplete result, add the email to selected.
   handleResultSelected: function(event, contact) {
     this.addContactAndUpdate(contact);
   },
 
-  // Handles when the user scrolls through autocomplete results with arrow keys.
+  // When the user scrolls through autocompletions, change the input value to
+  // the highlighted email address.
   handleResultScroll: function(event, contact, index) {
     if (index == -1) {
       return;
@@ -43,8 +56,8 @@ var ContactsAutocomplete = React.createClass({
     this.setState({ to: this.formatContact(contact) });
   },
 
-  // Handles when the input element in the Typeahead component changes
-  // (when the user types something)
+  // When the user types something, make it a token if it ends in a comma.
+  // Otherwise keep the input value updated.
   handleValueChanged: function(event) {
     let to = event.target.value;
     if (to.endsWith(',')) {
@@ -64,8 +77,10 @@ var ContactsAutocomplete = React.createClass({
   // Add the contact to the selected contacts (component state), update the
   // parent, and clear the input element.
   addContactAndUpdate: function(contact) {
-    // Copy state.selected before appending new contact
-    let updated = this.state.selected.slice();
+    if (this.state.selected.some(recipient => recipient.email == contact.email)) {
+      return;
+    }
+    let updated = this.state.selected.slice(); // Copy selected before modifying
     updated.push(contact);
     this.setState({ selected: updated, to: '' });
     this.props.updateParent(updated.map(this.formatContact).join(', '));
@@ -79,7 +94,7 @@ var ContactsAutocomplete = React.createClass({
     if (idx == -1) {
       return;
     }
-    let updated = this.state.selected.slice();
+    let updated = this.state.selected.slice(); // Copy selected before modifying
     updated.splice(idx, 1);
     this.setState({ selected: updated });
     this.props.updateParent(updated.map(this.formatContact).join(', '));
@@ -101,7 +116,11 @@ var ContactsAutocomplete = React.createClass({
   // Converts an RFC string of addresses into JSON email contacts
   parseContacts: function(string) {
     let addresses = AddressParser.parse(string);
-    return addresses.map(function(address) {
+    return addresses.filter(function(address) {
+      // First, filter out invalid email addresses.
+      return address.user() !== null && address.host() !== null;
+    }).map(function(address) {
+      // Then format it in the simple format we like.
       return { email: address.address, name: address.name() }
     });
   },
@@ -127,6 +146,7 @@ var ContactsAutocomplete = React.createClass({
       <ul className="autocomplete-input">
           {selected}
           <Typeahead inputValue={this.state.to}
+                     onBlur={this.handleFocusLost}
                      onChange={this.handleValueChanged}
                      onOptionChange={this.handleResultScroll}
                      onOptionClick={this.handleResultSelected}
