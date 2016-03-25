@@ -25,7 +25,7 @@ var KeybaseAutocomplete = React.createClass({
   },
 
   // When the user navigates away from the input box, make it into a token.
-  handleFocusLost(event) {
+  handleFocusLost: function(event) {
     let kbto = event.target.value;
     this.addUsernameAndUpdate(kbto);
   },
