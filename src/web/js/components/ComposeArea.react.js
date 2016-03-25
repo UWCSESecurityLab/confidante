@@ -48,6 +48,7 @@ var ComposeArea = React.createClass({
       invite: ComposeStore.getInvite()
     };
   },
+
   updateTo: function(to) {
     this.setState({ to: to });
   },
@@ -64,15 +65,8 @@ var ComposeArea = React.createClass({
   componentDidMount: function() {
     ComposeStore.addChangeListener(this._onComposeStoreChange);
     ComposeStore.addResetListener(this._onReset);
-
-    // Add 'form-control' class to Typeahead input boxes at runtime because
-    // the Typeahead component is encapsulated and can't add classes
-    // declaratively.
-    // let elements = document.getElementsByClassName('react-typeahead-input');
-    // for (var i = 0; i < elements.length; i++) {
-    //   elements[i].className += ' form-control';
-    // }
   },
+
   _onComposeStoreChange: function() {
     let invite = ComposeStore.getInvite();
     let inReplyTo = ComposeStore.getReply();
@@ -278,10 +272,21 @@ var ComposeArea = React.createClass({
                 }
                 <div className="form-group">
                   <label htmlFor="subject">Subject:</label>
-                  <input type="text" value={this.state.subject} name="subject" id="subject" onChange={this.updateSubject} className="form-control"></input><br />
+                  <input type="text"
+                         value={this.state.subject}
+                         name="subject" id="subject"
+                         onChange={this.updateSubject}
+                         className="form-control">
+                  </input>
+                  <br/>
                 </div>
                 <div className="form-group">
-                  <textarea value={this.state.email} name="email" id="email" onChange={this.updateEmail} className="form-control"></textarea><br />
+                  <textarea value={this.state.email}
+                            name="email"
+                            onChange={this.updateEmail}
+                            className="form-control">
+                  </textarea>
+                  <br/>
                 </div>
               </form>
             </div>
@@ -292,8 +297,12 @@ var ComposeArea = React.createClass({
                 : null
               }
               { this.state.invite
-                ? <button onClick={this.sendInvite} className="btn btn-primary">Encrypt and Invite</button>
-                : <button onClick={this.send} className="btn btn-primary">Encrypt and Send</button>
+                ? <button onClick={this.sendInvite} className="btn btn-primary">
+                    Encrypt and Invite
+                  </button>
+                : <button onClick={this.send} className="btn btn-primary">
+                    Encrypt and Send
+                  </button>
               }
             </div>
           </div>
