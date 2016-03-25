@@ -39,7 +39,7 @@ var ComposeArea = React.createClass({
   getInitialState: function() {
     return {
       to: '',
-      kbto: '',
+      kbto: [],
       subject: '',
       email: '',
       feedback: '',
@@ -131,12 +131,7 @@ var ComposeArea = React.createClass({
   send: function() {
     this.setState({ sendingSpinner: true });
 
-    let users = this.state.kbto
-      .split(',')
-      .map((token) => token.trim())
-      .filter((token) => token.length > 0);
-
-    let keyManagers = users.map((user) => {
+    let keyManagers = this.state.kbto.map((user) => {
       return KeybaseAPI.publicKeyForUser(user).then(KeybaseAPI.managerFromPublicKey);
     });
     keyManagers.push(ourPublicKeyManager);

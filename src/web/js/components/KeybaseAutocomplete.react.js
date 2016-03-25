@@ -11,8 +11,8 @@ var KeybaseAutocomplete = React.createClass({
   getInitialState: function() {
     return {
       completions: AutocompleteStore.getKeybase(),
-      kbto: '',
-      results: {}
+      kbto: '',     // Current Keybase username being typed
+      selected: []  // Array of selected Keybase usernames
     };
   },
 
@@ -21,83 +21,90 @@ var KeybaseAutocomplete = React.createClass({
   },
 
   componentWillReceiveProps: function(props) {
-    this.setState({ kbto: props.kbto });
+    this.setState({ selected: props.kbto });
   },
 
-  // Handles when new Autocomplete results become available.
+  // When the user navigates away from the input box, make it into a token.
+  handleFocusLost(event) {
+    let kbto = event.target.value;
+    this.addUsernameAndUpdate(kbto);
+  },
+
+  // Get the latest values from the AutocompleteStore and store it in state.
   handleNewCompletions: function() {
     this.setState({ completions: AutocompleteStore.getKeybase() });
   },
 
-  // Handles when the user selects an autocomplete result.
+  // When a user selects an autocomplete result, add the username to selected.
   handleResultSelected: function(event, keybase) {
-    console.log(keybase);
-    let updated = this.replaceLastUncompletedWithKeybase(this.state.kbto, keybase.username);
-    this.updateKBTo(updated);
+    this.addUsernameAndUpdate(keybase.username);
   },
 
-  // Handles when the user scrolls through autocomplete results with arrow keys.
+  // When the user scrolls through autocompletions, change the input value to
+  // the highlighted username.
   handleResultScroll: function(event, keybase, index) {
     if (index == -1) {
       return;
     }
-
-    // Remove the trailing comma if it is the last non whitespace character,
-    // because we want to replace the last full completion with a new one.
-    let input;
-    let trim = this.state.kbto.trim();
-    if (trim.endsWith(',')) {
-      input = trim.slice(0, trim.length - 1);
-    } else {
-      input = this.state.kbto;
-    }
-    let updated = this.replaceLastUncompletedWithKeybase(input, keybase.username);
-    this.updateKBTo(updated);
+    this.setState({ kbto: keybase.username });
   },
 
+  // When the user types something, make it a token if it ends in a comma.
+  // Otherwise keep the input value updated.
   handleValueChanged: function(event) {
     let kbto = event.target.value;
-    this.updateKBTo(kbto);
-    let trailing = kbto.split(',').pop().trim();
-    if (trailing.length > 1) {
-      InboxActions.getKeybase(trailing);
-    }
-  },
-
-  /**
-   * When the user has typed a partial value, and then selects a completion,
-   * this function computes how to replace the partial value with the
-   * selected username, while retaining the previous comma separated usernames.
-   * @param inputValue The value the user has typed in
-   * @param contact The contact to insert
-   */
-  replaceLastUncompletedWithKeybase: function(inputValue, username) {
-    // Figure out how to append the new keybase username.
-    let updated = '';
-    if (inputValue.lastIndexOf(',') == -1) {
-      // If there are no complete usernames in the field, replace all content
-      // with the autocomplete result.
-      updated = username + ', ';
+    if (kbto.endsWith(',')) {
+      this.addUsernameAndUpdate(kbto.slice(0, kbto.length - 1));
     } else {
-      // Otherwise replace all content after the comma with the autocomplete
-      // result.
-      updated = inputValue.slice(0, inputValue.lastIndexOf(',') + 1) + ' ' + username + ', '
+      this.setState({ kbto: kbto });
     }
-    return updated;
+    InboxActions.getKeybase(kbto);
   },
 
-  updateKBTo: function(updatedKBTo) {
-    this.setState({ kbto: updatedKBTo});
-    this.props.updateParent(updatedKBTo);
+  addUsernameAndUpdate: function(username) {
+    let updated = this.state.selected.slice();
+    updated.push(username);
+    this.setState({ selected: updated, kbto: '' });
+    this.props.updateParent(updated);
+  },
+
+  deleteUsername: function(username) {
+    let idx = this.state.selected.indexOf(username);
+    if (idx == -1) {
+      return;
+    }
+    let updated = this.state.selected.slice();
+    updated.slice(idx, 1);
+    this.setState({ selected: updated });
+    this.props.updateParent(updated);
   },
 
   render: function() {
-    return <Typeahead inputValue={this.state.kbto}
-                      onChange={this.handleValueChanged}
-                      onOptionChange={this.handleResultScroll}
-                      onOptionClick={this.handleResultSelected}
-                      options={this.state.completions}
-                      optionTemplate={KeybaseCard} />
+    let selected = this.state.selected.map(function(username) {
+      return (
+        <li className="contact-token" key={username}>
+          {username}
+          <button type="button"
+                  className="close delete-contact"
+                  onClick={this.deleteUsername.bind(this, username)}>
+            &times;
+          </button>
+        </li>
+      );
+    }.bind(this));
+
+    return (
+      <ul className="autocomplete-input">
+        {selected}
+        <Typeahead inputValue={this.state.kbto}
+                   onBlur={this.handleFocusLost}
+                   onChange={this.handleValueChanged}
+                   onOptionChange={this.handleResultScroll}
+                   onOptionClick={this.handleResultSelected}
+                   options={this.state.completions}
+                   optionTemplate={KeybaseCard} />
+      </ul>
+    );
   }
 });
 
