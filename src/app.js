@@ -21,6 +21,8 @@ var GoogleOAuth = require('./googleOAuth.js');
 var GmailClient = require('./gmailClient.js');
 var messageParsing = require('./web/js/messageParsing');
 
+var TOOLNAME = 'TOOLNAME';
+
 // Mongo session store setup.
 var store = new MongoSessionStore({
   uri: 'mongodb://localhost:27017/test',
@@ -67,6 +69,15 @@ if (flags.KEYBASE_STAGING) {
 
 app.get('/', function(req, res) {
   res.render('index', {
+    email: req.session.email,
+    loggedIn: auth.isAuthenticated(req.session),
+    staging: flags.KEYBASE_STAGING
+  });
+});
+
+app.get('/help', function(req, res) {
+  res.render('help', {
+    toolname: TOOLNAME,
     email: req.session.email,
     loggedIn: auth.isAuthenticated(req.session),
     staging: flags.KEYBASE_STAGING
@@ -215,7 +226,10 @@ app.post('/invite/sendInvite', auth.dataEndpoint, function(req, res) {
 
   // Add an invite link to the message and send it over gmail.
   let sendMessage = function(invite) {
-    let inviteUrl = 'http://localhost:3000/invite?' +
+    let host = flags.PRODUCTION ? 
+               'https://keymail.cs.washington.edu' : 
+               'http://localhost:3000';
+    let inviteUrl = host + '/invite?' +
         'id=' + req.body.inviteId + '&' +
         'pw=' + req.session.tempPassphrase;
     let inviteEmail = '<p>' + req.session.email +
@@ -260,6 +274,7 @@ app.get('/invite/viewInvite', function(req, res) {
     if (invite) {
       // Return page, invite, and encrypted message
       res.json({
+        staging: flags.KEYBASE_STAGING,
         expires: invite.expires.toString(),
         key: invite.pgp.private_key,
         message: invite.message,

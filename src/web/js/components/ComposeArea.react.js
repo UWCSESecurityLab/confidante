@@ -283,7 +283,9 @@ var ComposeArea = React.createClass({
                 <div className="form-group">
                   <textarea value={this.state.email}
                             name="email"
+                            id="email"
                             onChange={this.updateEmail}
+                            rows="8"
                             className="form-control">
                   </textarea>
                   <br/>
