@@ -26,8 +26,11 @@ var KeybaseAutocomplete = React.createClass({
 
   // When the user navigates away from the input box, make it into a token.
   handleFocusLost: function(event) {
-    let kbto = event.target.value;
-    this.addUsernameAndUpdate(kbto);
+    let kbto = event.target.value.trim();
+    // Make sure it's a real username first.
+    if (this.state.completions.some(completion => completion.username == kbto)) {
+      this.addUsernameAndUpdate(kbto);
+    }
   },
 
   // Get the latest values from the AutocompleteStore and store it in state.
@@ -61,20 +64,26 @@ var KeybaseAutocomplete = React.createClass({
     InboxActions.getKeybase(kbto);
   },
 
+  // Add the username to the array of selected usernames, update the parent, and
+  // clear the input element.
   addUsernameAndUpdate: function(username) {
-    let updated = this.state.selected.slice();
+    if (this.state.selected.includes(username)) {
+      return;
+    }
+    let updated = this.state.selected.slice(); // Copy selected before modifying
     updated.push(username);
     this.setState({ selected: updated, kbto: '' });
     this.props.updateParent(updated);
   },
 
+  // Remove the given username from the component state, and update the parent.
   deleteUsername: function(username) {
     let idx = this.state.selected.indexOf(username);
     if (idx == -1) {
       return;
     }
-    let updated = this.state.selected.slice();
-    updated.slice(idx, 1);
+    let updated = this.state.selected.slice(); // Copy selected before modifying
+    updated.splice(idx, 1);
     this.setState({ selected: updated });
     this.props.updateParent(updated);
   },
