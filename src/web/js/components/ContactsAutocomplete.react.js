@@ -130,7 +130,7 @@ var ContactsAutocomplete = React.createClass({
       return (
         <li className="contact-token" key={contact.email}>
           { contact.name
-            ? <span>{contact.name}</span>
+            ? <span title={contact.email}>{contact.name}</span>
             : <span>{contact.email}</span>
           }
           <button type="button"
