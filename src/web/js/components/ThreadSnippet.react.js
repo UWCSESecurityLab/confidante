@@ -23,6 +23,7 @@ var ThreadSnippet = React.createClass({
     this.setState({fullThread: true});
     if (this.isUnread()) {
       InboxActions.markAsRead(this.props.thread.id);
+      InboxActions.refresh();
     }
   },
   closeThread: function() {

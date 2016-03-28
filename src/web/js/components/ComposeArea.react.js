@@ -154,6 +154,7 @@ var ComposeArea = React.createClass({
             this.setState({ feedback: 'Couldn\'t connect to the Keymail server.' });
           } else if (response.statusCode == 200) {
             InboxActions.resetComposeFields();
+            InboxActions.refresh();
           } else if (response.statusCode == 401) {
             this.setState({ feedback: 'Your login expired! Sign in again and try sending the email again.' });
           } else {
@@ -280,9 +281,9 @@ var ComposeArea = React.createClass({
                   <input type="text" value={this.state.subject} name="subject" id="subject" onChange={this.updateSubject} className="form-control"></input><br />
                 </div>
                 <div className="form-group">
-                  <textarea value={this.state.email} 
-                            name="email" 
-                            id="email" 
+                  <textarea value={this.state.email}
+                            name="email"
+                            id="email"
                             onChange={this.updateEmail}
                             rows="8"
                             className="form-control"></textarea><br />
