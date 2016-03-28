@@ -1,7 +1,8 @@
 {
   "name": "keymail",
-  "version": "1.0.0",
-  "description": "Hello world",
+  "version": "0.2.3",
+  "license": "UNLICENSED",
+  "description": "Usable encrypted email",
   "main": "app.js",
   "scripts": {
     "build": "./scripts/build.sh",
@@ -13,6 +14,7 @@
   },
   "author": "Eric Zeng",
   "dependencies": {
+    "@tappleby/react-typeahead-component": "^0.10.0-alpha2",
     "address-rfc2822": "^1.0.0",
     "body-parser": "^1.14.1",
     "bootstrap": "^3.3.5",

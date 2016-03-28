@@ -1,94 +1,158 @@
 'use strict';
 
 var React = require('react');
+var AddressParser = require('address-rfc2822');
+var AutocompleteStore = require('../stores/AutocompleteStore');
 var ComposeStore = require('../stores/ComposeStore');
-var xhr = require('xhr');
-
-function autocompleteContacts(query) {
-  return new Promise(function(resolve, reject) {
-    xhr.get({
-      url: window.location.origin + '/contacts.json?q=' + query
-    }, function(error, response, body) {
-      if (!error && response.statusCode == 200) {
-        resolve(JSON.parse(body));
-      } else {
-        reject(error);
-      }
-    });
-  });
-}
+var ContactCompletion = require('./ContactCompletion.react');
+var InboxActions = require('../actions/InboxActions');
+var Typeahead = require('@tappleby/react-typeahead-component');
 
 var ContactsAutocomplete = React.createClass({
   getInitialState: function() {
     return {
-      results: []
+      completions: AutocompleteStore.getContacts(), // Autocomplete results
+      to: '',  // Current value of the input field
+      selected: []  // List of objects representing selected recipients
     };
   },
+
   componentDidMount: function() {
-    ComposeStore.addResetListener(this.hideCompletions);
+    AutocompleteStore.addContactsListener(this.handleNewCompletions);
   },
-  hideCompletions: function() {
-    this.setState(this.getInitialState());
+
+  componentWillReceiveProps: function(props) {
+    this.setState({ selected: this.parseContacts(props.to)});
   },
-  resultClicked: function(contact) {
-    // Format the email address so it can be added to the "To:" field
+
+  // When the user navigates away from the input box, make it into a token.
+  handleFocusLost: function(event) {
+    let to = event.target.value;
+    let contacts = this.parseContacts(to);
+    if (contacts.length == 0) {
+      return;
+    }
+    // Assume only one contact exists because commas are handled immediately by
+    // this.handleValueChanged()
+    this.addContactAndUpdate(contacts[0]);
+  },
+
+  // Get the latest values from the AutocompleteStore and store it in state.
+  handleNewCompletions: function() {
+    this.setState({ completions: AutocompleteStore.getContacts() });
+  },
+
+  // When a user selects an autocomplete result, add the email to selected.
+  handleResultSelected: function(event, contact) {
+    this.addContactAndUpdate(contact);
+  },
+
+  // When the user scrolls through autocompletions, change the input value to
+  // the highlighted email address.
+  handleResultScroll: function(event, contact, index) {
+    if (index == -1) {
+      return;
+    }
+    this.setState({ to: this.formatContact(contact) });
+  },
+
+  // When the user types something, make it a token if it ends in a comma.
+  // Otherwise keep the input value updated.
+  handleValueChanged: function(event) {
+    let to = event.target.value;
+    if (to.endsWith(',')) {
+      // Attempt to parse the input into an email contact
+      let contacts = this.parseContacts(to);
+      if (contacts.length == 1) {
+        this.addContactAndUpdate(contacts[0]);
+        return;
+      }
+    }
+    // If not an email address, update the input field and get more
+    // autocompletions.
+    this.setState({ to: to });
+    InboxActions.getContacts(to);
+  },
+
+  // Add the contact to the selected contacts (component state), update the
+  // parent, and clear the input element.
+  addContactAndUpdate: function(contact) {
+    if (this.state.selected.some(recipient => recipient.email == contact.email)) {
+      return;
+    }
+    let updated = this.state.selected.slice(); // Copy selected before modifying
+    updated.push(contact);
+    this.setState({ selected: updated, to: '' });
+    this.props.updateParent(updated.map(this.formatContact).join(', '));
+  },
+
+  // Remove the given contact from the selected contacts (if it exists)
+  deleteContact: function(contact) {
+    let idx = this.state.selected.findIndex(function(selected) {
+      return selected.name == contact.name && selected.email == contact.email;
+    });
+    if (idx == -1) {
+      return;
+    }
+    let updated = this.state.selected.slice(); // Copy selected before modifying
+    updated.splice(idx, 1);
+    this.setState({ selected: updated });
+    this.props.updateParent(updated.map(this.formatContact).join(', '));
+  },
+
+  // Converts a JSON email contact to a RFC compliant string
+  formatContact: function(contact) {
     let contactAddr = '';
     if (contact.name.length != 0) {
       // If the contact includes a name, wrap the email address in "< >"
-      contactAddr = contact.name + ' <' + contact.email + '>, ';
+      contactAddr = contact.name + ' <' + contact.email + '>';
     } else {
-      // Otherwise just append a comma
-      contactAddr = contact.email + ', ';
+      // Otherwise just use the email address
+      contactAddr = contact.email;
     }
-
-    // Figure out how to append the new contact.
-    let updated = '';
-    if (this.props.to.lastIndexOf(',') == -1) {
-      // If there are no complete emails in the field, replace all content with
-      // the autocomplete result.
-      updated = contactAddr;
-    } else {
-      // Otherwise replace all content after the comma with the autocomplete
-      // result.
-      updated = this.props.to.slice(0, this.props.to.lastIndexOf(',') + 1) + ' ' + contactAddr;
-    }
-
-    this.props.updateParent(updated);
-    this.hideCompletions();
+    return contactAddr;
   },
 
-  updateTo: function(e) {
-    let newString = e.target.value;
-    let query = newString.slice(newString.lastIndexOf(',') + 1).trim();
-    autocompleteContacts(query).then(function(results) {
-      this.setState({ results: results });
-      this.props.updateParent(newString);
-    }.bind(this));
+  // Converts an RFC string of addresses into JSON email contacts
+  parseContacts: function(string) {
+    let addresses = AddressParser.parse(string);
+    return addresses.filter(function(address) {
+      // First, filter out invalid email addresses.
+      return address.user() !== null && address.host() !== null;
+    }).map(function(address) {
+      // Then format it in the simple format we like.
+      return { email: address.address, name: address.name() }
+    });
   },
 
   render: function() {
+    let selected = this.state.selected.map(function(contact) {
+      return (
+        <li className="contact-token" key={contact.email}>
+          { contact.name
+            ? <span title={contact.email}>{contact.name}</span>
+            : <span>{contact.email}</span>
+          }
+          <button type="button"
+                  className="close delete-contact"
+                  onClick={this.deleteContact.bind(this, contact)}>
+            &times;
+          </button>
+        </li>
+      );
+    }.bind(this));
+
     return (
-      <div onMouseLeave={this.hideCompletions}>
-        <input type="text"
-               value={this.props.to}
-               name="to"
-               onChange={this.updateTo}
-               className="form-control"></input>
-        <ul className="autocompletions">
-          { this.state.results.length != 0 ?
-            this.state.results.map(function(contact) {
-              return (
-                <li key={contact.email + contact.name}
-                    onClick={this.resultClicked.bind(this, contact)}
-                    className="completion">
-                  { contact.name.length != 0 ?
-                    <span id="name">{ contact.name } - </span> : null }
-                  <span id="email">{ contact.email }</span>
-                </li>
-              );
-            }.bind(this)) : null }
-        </ul>
-      </div>
+      <ul className="autocomplete-input">
+          {selected}
+          <Typeahead inputValue={this.state.to}
+                     onBlur={this.handleFocusLost}
+                     onChange={this.handleValueChanged}
+                     onOptionChange={this.handleResultScroll}
+                     onOptionClick={this.handleResultSelected}
+                     options={this.state.completions}
+                     optionTemplate={ContactCompletion} />
+      </ul>
     );
   }
 });

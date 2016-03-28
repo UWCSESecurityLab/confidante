@@ -72,3 +72,10 @@ ul {
 #composeButton {
   float: right;
 }
+
+.react-typeahead-container {
+  background: white;
+}
+.form-control[disabled] {
+  background: initial;
+}

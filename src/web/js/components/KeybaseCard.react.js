@@ -4,9 +4,15 @@ var React = require('react');
 
 var KeybaseCompletion = React.createClass({
   render: function() {
-    let user = this.props.user;
+    let user = this.props.data;
+
+    let className = 'keybase-card';
+    if (this.props.isSelected) {
+      className += ' keybase-card-selected';
+    }
+
     return (
-      <div className="keybase-card" onClick={this.props.onClick}>
+      <div className={className} onClick={this.props.onClick}>
         <div className="pic-section">
           <img className="profile-pic" src={ user.picture }></img>
         </div>

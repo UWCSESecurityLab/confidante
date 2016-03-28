@@ -1,11 +1,10 @@
 'use strict';
 
 var React = require('react');
-var keybaseAPI = require('../keybaseAPI');
 var messageParsing = require('../messageParsing');
-var KeybaseCompletion = require('./KeybaseCard.react');
 
 /*eslint-disable no-unused-vars*/
+var KeybaseCard = require('./KeybaseCard.react');
 var InboxActions = require('../actions/InboxActions');
 var ErrorBody = require('./ErrorBody.react');
 /*eslint-enable no-unused-vars*/
@@ -81,7 +80,7 @@ var Message = React.createClass({
         'twitter': getTwitterFromUser(user),
         'github': getGithubFromUser(user)
       };
-      signer = ( <KeybaseCompletion user={formattedUser}/> );
+      signer = ( <KeybaseCard data={formattedUser}/> );
     }
 
     return (

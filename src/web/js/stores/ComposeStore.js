@@ -59,6 +59,9 @@ var ComposeStore = assign({}, EventEmitter.prototype, {
       _invite = action.message;
       ComposeStore.emitChange();
     } else if (action.type === 'RESET_FIELDS') {
+      _inReplyTo = {};
+      _replyAll = false;
+      _invite = false;
       ComposeStore.emitReset();
     }
   })
