@@ -149,6 +149,7 @@ var ComposeArea = React.createClass({
             this.setState({ feedback: 'Couldn\'t connect to the Keymail server.' });
           } else if (response.statusCode == 200) {
             InboxActions.resetComposeFields();
+            InboxActions.clearAutocompletions();
             InboxActions.refresh();
           } else if (response.statusCode == 401) {
             this.setState({ feedback: 'Your login expired! Sign in again and try sending the email again.' });

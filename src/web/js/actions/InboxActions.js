@@ -27,7 +27,7 @@ module.exports = {
   },
 
   /**
-   * Reset the entire ComposeStore.
+   * Reset the external ComposeArea state (inReplyTo, invite, replyAll)
    */
   resetComposeFields: function() {
     InboxDispatcher.dispatch({ type: 'RESET_FIELDS' });
@@ -72,6 +72,15 @@ module.exports = {
     InboxDispatcher.dispatch({
       type: 'GET_KEYBASE',
       query: query
+    });
+  },
+
+  /**
+   * Remove all autocomplete results.
+   */
+  clearAutocompletions: function() {
+    InboxDispatcher.dispatch({
+      type: 'CLEAR_AUTOCOMPLETIONS'
     });
   }
 };

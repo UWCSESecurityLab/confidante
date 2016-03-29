@@ -74,6 +74,11 @@ var AutocompleteStore = Object.assign({}, EventEmitter.prototype, {
       }).catch(function(err) {
         console.error(err);
       });
+    } else if (action.type === 'CLEAR_AUTOCOMPLETIONS') {
+      _contacts = [];
+      _keybase = [];
+      AutocompleteStore.emitKeybaseChange();
+      AutocompleteStore.emitContactsChange();
     }
   })
 });
