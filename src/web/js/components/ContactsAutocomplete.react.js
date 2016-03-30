@@ -19,22 +19,20 @@ var ContactsAutocomplete = React.createClass({
 
   componentDidMount: function() {
     AutocompleteStore.addContactsListener(this.handleNewCompletions);
+    AutocompleteStore.addSendListener(this.forceAddContact);
   },
 
   componentWillReceiveProps: function(props) {
     this.setState({ selected: this.parseContacts(props.to)});
   },
 
-  // When the user navigates away from the input box, make it into a token.
-  handleFocusLost: function(event) {
-    let to = event.target.value;
-    let contacts = this.parseContacts(to);
-    if (contacts.length == 0) {
-      return;
+  // When the send button is clicked, we need to force-tokenize the last contact.
+  forceAddContact: function(callback) {
+    let contacts = this.parseContacts(this.state.to);
+    if (contacts.length > 0) {
+      this.addContactAndUpdate(contacts[0]);
     }
-    // Assume only one contact exists because commas are handled immediately by
-    // this.handleValueChanged()
-    this.addContactAndUpdate(contacts[0]);
+    callback();  // This calls send() or sendInvite() in ComposeArea.
   },
 
   // Get the latest values from the AutocompleteStore and store it in state.
@@ -146,7 +144,6 @@ var ContactsAutocomplete = React.createClass({
       <ul className="autocomplete-input">
           {selected}
           <Typeahead inputValue={this.state.to}
-                     onBlur={this.handleFocusLost}
                      onChange={this.handleValueChanged}
                      onOptionChange={this.handleResultScroll}
                      onOptionClick={this.handleResultSelected}

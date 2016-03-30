@@ -122,6 +122,19 @@ var ComposeArea = React.createClass({
       });
     }.bind(this));
   },
+
+  /**
+   * Hacky code called when the send button is pressed. It triggers an action to
+   * force ContactsAutocomplete to resolve partial emails before sending.
+   * It passes either the sendInvite or send function to ContactsAutocomplete
+   * through the action, so that it can be called after the emails have between
+   * resolved.
+   */
+  presend: function() {
+    console.log('Presend called');
+    InboxActions.forceTokenize(this.state.invite ? this.sendInvite : this.send);
+  },
+
   send: function() {
     this.setState({ sendingSpinner: true });
 
@@ -149,6 +162,7 @@ var ComposeArea = React.createClass({
             this.setState({ feedback: 'Couldn\'t connect to the Keymail server.' });
           } else if (response.statusCode == 200) {
             InboxActions.resetComposeFields();
+            InboxActions.clearAutocompletions();
             InboxActions.refresh();
           } else if (response.statusCode == 401) {
             this.setState({ feedback: 'Your login expired! Sign in again and try sending the email again.' });
@@ -299,14 +313,12 @@ var ComposeArea = React.createClass({
                 ? <span className="spinner"></span>
                 : null
               }
-              { this.state.invite
-                ? <button onClick={this.sendInvite} className="btn btn-primary">
-                    Encrypt and Invite
-                  </button>
-                : <button onClick={this.send} className="btn btn-primary">
-                    Encrypt and Send
-                  </button>
-              }
+              <button onClick={this.presend} className="btn btn-primary">
+                { this.state.invite
+                  ? "Encrypt and Invite"
+                  : "Encrypt and Send"
+                }
+              </button>
             </div>
           </div>
         </div>
