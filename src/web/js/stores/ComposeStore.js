@@ -17,9 +17,6 @@ var ComposeStore = assign({}, EventEmitter.prototype, {
     this.emit('RESET');
   },
 
-  /**
-   * @param {function} callback
-   */
   addChangeListener: function(callback) {
     this.on('CHANGE', callback);
   },

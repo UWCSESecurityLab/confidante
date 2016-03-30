@@ -124,9 +124,11 @@ var ComposeArea = React.createClass({
   },
 
   /**
-   * Hacky code called to force ContactsAutocomplete to resolve partial emails
-   * before sending. On resolution of the event/callback chain, it will call
-   * either send or sendInvite, depending on the invite state.
+   * Hacky code called when the send button is pressed. It triggers an action to
+   * force ContactsAutocomplete to resolve partial emails before sending.
+   * It passes either the sendInvite or send function to ContactsAutocomplete
+   * through the action, so that it can be called after the emails have between
+   * resolved.
    */
   presend: function() {
     console.log('Presend called');

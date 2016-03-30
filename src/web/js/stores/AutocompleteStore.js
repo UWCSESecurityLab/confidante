@@ -26,31 +26,45 @@ function simplifyKeybaseResults(kb) {
 }
 
 var AutocompleteStore = Object.assign({}, EventEmitter.prototype, {
-
   addContactsListener: function(callback) {
     this.on('CONTACTS', callback);
   },
+
   addKeybaseListener: function(callback) {
     this.on('KEYBASE', callback);
   },
+
+  /**
+   * Registers an event listener for when the send button in ComposeArea is
+   * clicked. For resolving partial emails in ContactsAutocomplete before
+   * sending a message.
+   * @param callback The function that should be called when the send event
+   *                 is fired. It should take one parameter: a function that
+   *                 should be called once email address resolution is complete.
+   */
   addSendListener: function(callback) {
     this.on('SEND', function() {
       callback(_sendCallback);
     });
   },
+
   emitContactsChange: function() {
     this.emit('CONTACTS');
   },
+
   emitKeybaseChange: function() {
     this.emit('KEYBASE');
   },
+
   emitSend: function(callback) {
     _sendCallback = callback;
     this.emit('SEND');
   },
+
   getContacts: function() {
     return _contacts;
   },
+
   getKeybase: function() {
     return _keybase;
   },

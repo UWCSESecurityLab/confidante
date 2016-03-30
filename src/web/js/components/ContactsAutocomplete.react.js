@@ -32,7 +32,7 @@ var ContactsAutocomplete = React.createClass({
     if (contacts.length > 0) {
       this.addContactAndUpdate(contacts[0]);
     }
-    callback();
+    callback();  // This calls send() or sendInvite() in ComposeArea.
   },
 
   // Get the latest values from the AutocompleteStore and store it in state.
