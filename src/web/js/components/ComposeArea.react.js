@@ -122,6 +122,17 @@ var ComposeArea = React.createClass({
       });
     }.bind(this));
   },
+
+  /**
+   * Hacky code called to force ContactsAutocomplete to resolve partial emails
+   * before sending. On resolution of the event/callback chain, it will call
+   * either send or sendInvite, depending on the invite state.
+   */
+  presend: function() {
+    console.log('Presend called');
+    InboxActions.forceTokenize(this.state.invite ? this.sendInvite : this.send);
+  },
+
   send: function() {
     this.setState({ sendingSpinner: true });
 
@@ -300,14 +311,12 @@ var ComposeArea = React.createClass({
                 ? <span className="spinner"></span>
                 : null
               }
-              { this.state.invite
-                ? <button onClick={this.sendInvite} className="btn btn-primary">
-                    Encrypt and Invite
-                  </button>
-                : <button onClick={this.send} className="btn btn-primary">
-                    Encrypt and Send
-                  </button>
-              }
+              <button onClick={this.presend} className="btn btn-primary">
+                { this.state.invite
+                  ? "Encrypt and Invite"
+                  : "Encrypt and Send"
+                }
+              </button>
             </div>
           </div>
         </div>

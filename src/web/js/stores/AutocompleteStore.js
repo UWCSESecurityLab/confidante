@@ -7,6 +7,7 @@ var xhr = require('xhr');
 
 let _contacts = [];
 let _keybase = [];
+let _sendCallback = undefined;
 
 function simplifyKeybaseResults(kb) {
   return kb.completions.map(function(completion) {
@@ -32,11 +33,20 @@ var AutocompleteStore = Object.assign({}, EventEmitter.prototype, {
   addKeybaseListener: function(callback) {
     this.on('KEYBASE', callback);
   },
+  addSendListener: function(callback) {
+    this.on('SEND', function() {
+      callback(_sendCallback);
+    });
+  },
   emitContactsChange: function() {
     this.emit('CONTACTS');
   },
   emitKeybaseChange: function() {
     this.emit('KEYBASE');
+  },
+  emitSend: function(callback) {
+    _sendCallback = callback;
+    this.emit('SEND');
   },
   getContacts: function() {
     return _contacts;
@@ -79,6 +89,8 @@ var AutocompleteStore = Object.assign({}, EventEmitter.prototype, {
       _keybase = [];
       AutocompleteStore.emitKeybaseChange();
       AutocompleteStore.emitContactsChange();
+    } else if (action.type === 'FORCE_TOKENIZE') {
+      AutocompleteStore.emitSend(action.callback);
     }
   })
 });

@@ -82,5 +82,17 @@ module.exports = {
     InboxDispatcher.dispatch({
       type: 'CLEAR_AUTOCOMPLETIONS'
     });
+  },
+
+  /**
+   * Force any partial email addresses in <ContactsAutocomplete> to be tokenized
+   * for sending messages.
+   * @param callback The function that should be called once tokenization is done.
+   */
+  forceTokenize: function(callback) {
+    InboxDispatcher.dispatch({
+      type: 'FORCE_TOKENIZE',
+      callback: callback
+    });
   }
 };
