@@ -146,6 +146,8 @@ var ComposeArea = React.createClass({
     let linkids = MessageStore.getAll().linkids;
     if (this.state.inReplyTo) {
       var parentLinkID = linkids[this.state.inReplyTo.id];
+    } else {
+      var parentLinkID = null;
     }
     Promise.all(keyManagers)
       .then(this.encryptEmail)

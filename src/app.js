@@ -132,7 +132,7 @@ app.post('/sendMessage', auth.dataEndpoint, function(req, res) {
              'http://localhost:3000';
   let link = `${host}/mail#linkid:${linkid}`;
   let header = `View this message in your encrypted inbox: ${link}\n\n`;
-  var email = header + req.body.email;
+  let email = header + req.body.email;
 
   gmailClient.sendMessage({
     headers: {

@@ -54,8 +54,6 @@ function _getLinkIDForMessage(message) {
   let firstLine = body.split('\n')[0];
   let linkid = _getLinkIDFromFirstLine(firstLine);  
   _linkids[message.id] = linkid;
-  console.log(firstLine);
-  console.log(linkid);
 }
 
 function _decryptThread(thread) {

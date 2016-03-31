@@ -35,7 +35,6 @@ var Inbox = React.createClass({
           threadLinkid = linkids[message.id];
         }
       });
-      console.log(threadLinkid, this.props.linkidToOpen);
       return (<li key={thread.id}>
                 <ThreadSnippet thread={thread}
                                errors={this.state.errors}
