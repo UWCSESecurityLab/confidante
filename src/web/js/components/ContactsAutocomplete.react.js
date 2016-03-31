@@ -32,7 +32,13 @@ var ContactsAutocomplete = React.createClass({
    * @param onError calls setBadEmailAddress() in ComposeArea
    */
   forceAddContact: function(onSuccess, onError) {
-    let contacts = this.parseContacts(this.state.to);
+    let to = this.state.to.trim();
+    if (to.length == 0) {
+      onSuccess();
+      return;
+    }
+
+    let contacts = this.parseContacts(to);
     if (contacts.length > 0) {
       this.addContactAndUpdate(contacts[0], onSuccess);
     } else {
