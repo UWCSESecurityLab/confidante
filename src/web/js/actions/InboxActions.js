@@ -87,12 +87,14 @@ module.exports = {
   /**
    * Force any partial email addresses in <ContactsAutocomplete> to be tokenized
    * for sending messages.
-   * @param callback The function that should be called once tokenization is done.
+   * @param onSuccess The function that should be called once tokenization is done.
+   * @param onError The function that should be called if tokenization failed.
    */
-  forceTokenize: function(callback) {
+  forceTokenize: function(onSuccess, onError) {
     InboxDispatcher.dispatch({
       type: 'FORCE_TOKENIZE',
-      callback: callback
+      onSuccess: onSuccess,
+      onError: onError
     });
   }
 };

@@ -7,7 +7,8 @@ var xhr = require('xhr');
 
 let _contacts = [];
 let _keybase = [];
-let _sendCallback = undefined;
+let _onTokenizeSuccess = undefined;
+let _onTokenizeError = undefined;
 
 function simplifyKeybaseResults(kb) {
   return kb.completions.map(function(completion) {
@@ -39,12 +40,13 @@ var AutocompleteStore = Object.assign({}, EventEmitter.prototype, {
    * clicked. For resolving partial emails in ContactsAutocomplete before
    * sending a message.
    * @param callback The function that should be called when the send event
-   *                 is fired. It should take one parameter: a function that
-   *                 should be called once email address resolution is complete.
+   *                 is fired. It should take two parameter: a function that
+   *                 should be called once email address resolution is complete,
+   *                 and a function that is called if that resolution failed.
    */
   addSendListener: function(callback) {
     this.on('SEND', function() {
-      callback(_sendCallback);
+      callback(_onTokenizeSuccess, _onTokenizeError);
     });
   },
 
@@ -56,8 +58,9 @@ var AutocompleteStore = Object.assign({}, EventEmitter.prototype, {
     this.emit('KEYBASE');
   },
 
-  emitSend: function(callback) {
-    _sendCallback = callback;
+  emitSend: function(onSuccess, onError) {
+    _onTokenizeSuccess = onSuccess;
+    _onTokenizeError = onError;
     this.emit('SEND');
   },
 
@@ -104,7 +107,7 @@ var AutocompleteStore = Object.assign({}, EventEmitter.prototype, {
       AutocompleteStore.emitKeybaseChange();
       AutocompleteStore.emitContactsChange();
     } else if (action.type === 'FORCE_TOKENIZE') {
-      AutocompleteStore.emitSend(action.callback);
+      AutocompleteStore.emitSend(action.onSuccess, action.onError);
     }
   })
 });

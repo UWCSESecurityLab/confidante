@@ -27,12 +27,14 @@ var ContactsAutocomplete = React.createClass({
   },
 
   // When the send button is clicked, we need to force-tokenize the last contact.
-  forceAddContact: function(callback) {
+  forceAddContact: function(onSuccess, onError) {
     let contacts = this.parseContacts(this.state.to);
     if (contacts.length > 0) {
       this.addContactAndUpdate(contacts[0]);
+      onSuccess();  // This calls send() or sendInvite() in ComposeArea.
+    } else {
+      onError(this.state.to);
     }
-    callback();  // This calls send() or sendInvite() in ComposeArea.
   },
 
   // Get the latest values from the AutocompleteStore and store it in state.
