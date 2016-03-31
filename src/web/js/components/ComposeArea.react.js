@@ -144,10 +144,9 @@ var ComposeArea = React.createClass({
     keyManagers.push(ourPublicKeyManager);
 
     let linkids = MessageStore.getAll().linkids;
+    let parentLinkID = null;
     if (this.state.inReplyTo) {
-      var parentLinkID = linkids[this.state.inReplyTo.id];
-    } else {
-      var parentLinkID = null;
+      parentLinkID = linkids[this.state.inReplyTo.id];
     }
     Promise.all(keyManagers)
       .then(this.encryptEmail)
