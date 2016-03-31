@@ -10,6 +10,7 @@ var _plaintexts = {};
 var _threads = {};
 var _errors = {};
 var _signers = {};
+var _linkids = {};
 var _netError = '';
 
 // A promise containing our local private key.
@@ -29,6 +30,32 @@ function _signerFromLiterals(literals) {
     return km;
   }
   return null;
+}
+
+function _getLinkIDsForThread(thread) {
+  thread.messages.forEach(function(message) {
+    if (_linkids[message.id] === undefined) {
+      _getLinkIDForMessage(message);
+    }
+  });
+}
+
+function _getLinkIDFromFirstLine(firstLine) {
+  let linkIDRegex = /#linkid:(.+)/;
+  let match = linkIDRegex.exec(firstLine);
+  if (match && match.length === 2) {
+    return match[1];
+  } else {
+    return null;
+  }
+}
+function _getLinkIDForMessage(message) {
+  let body = messageParsing.getMessageBody(message);  
+  let firstLine = body.split('\n')[0];
+  let linkid = _getLinkIDFromFirstLine(firstLine);  
+  _linkids[message.id] = linkid;
+  console.log(firstLine);
+  console.log(linkid);
 }
 
 function _decryptThread(thread) {
@@ -83,6 +110,7 @@ function loadMail() {
       _threads = JSON.parse(body);
       _threads.forEach(function(thread) {
         _decryptThread(thread);
+        _getLinkIDsForThread(thread);
       });
       MessageStore.emitChange();
     }
@@ -112,7 +140,8 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
       errors: _errors,
       threads: _threads,
       plaintexts: _plaintexts,
-      signers: _signers
+      signers: _signers,
+      linkids: _linkids,
     };
   },
 

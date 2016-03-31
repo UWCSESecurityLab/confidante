@@ -20,6 +20,7 @@ var flags = require('./flags.js');
 var GoogleOAuth = require('./googleOAuth.js');
 var GmailClient = require('./gmailClient.js');
 var messageParsing = require('./web/js/messageParsing');
+var uuid = require('node-uuid');
 
 var TOOLNAME = 'TOOLNAME';
 
@@ -122,6 +123,17 @@ app.post('/sendMessage', auth.dataEndpoint, function(req, res) {
   let parentReferences = messageParsing.getMessageHeader(parent, 'References');
   let ourReferences = [parentReferences, parentId].join(' ');
 
+  let linkid = req.body.linkid || uuid.v4();
+
+  // Prepend plaintext thread pointer.
+  let threadId = req.body.parentMessage.threadId;
+  let host = flags.PRODUCTION ? 
+             'https://keymail.cs.washington.edu' :
+             'http://localhost:3000';
+  let link = `${host}/mail#linkid:${linkid}`;
+  let header = `View this message in your encrypted inbox: ${link}\n\n`;
+  var email = header + req.body.email;
+
   gmailClient.sendMessage({
     headers: {
       to: [req.body.to],
@@ -131,7 +143,7 @@ app.post('/sendMessage', auth.dataEndpoint, function(req, res) {
       inReplyTo: parentId,
       references: ourReferences
     },
-    body: req.body.email
+    body: email
   }, req.body.parentMessage.threadId).then(function() {
     res.status(200).send('OK');
   }).catch(function(error) {
