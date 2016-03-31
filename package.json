@@ -1,6 +1,6 @@
 {
   "name": "keymail",
-  "version": "0.2.3",
+  "version": "0.3.1",
   "license": "UNLICENSED",
   "description": "Usable encrypted email",
   "main": "app.js",
