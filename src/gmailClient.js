@@ -59,7 +59,14 @@ class GmailClient {
           threadRequestPromises.push(this.getThread(threadSnippet.id));
         }, this);
         Promise.all(threadRequestPromises).then(function(threads) {
-          resolve(this.filterPGPThreads(threads));
+          let filtered = this.filterPGPThreads(threads);
+          // By default, Gmail returns threads ordered by when the thread was
+          // created. Sort by when the last message in the thread was sent.
+          filtered.sort(function(a, b) {
+            return b.messages[b.messages.length - 1].internalDate -
+                   a.messages[a.messages.length - 1].internalDate;
+          });
+          resolve(filtered);
         }.bind(this)).catch(function(error){
           reject(error);
         });
