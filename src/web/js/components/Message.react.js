@@ -1,6 +1,7 @@
 'use strict';
 
 var React = require('react');
+var DateFormat = require('dateformat');
 var ErrorBody = require('./ErrorBody.react');
 var InboxActions = require('../actions/InboxActions');
 var KeybaseCard = require('./KeybaseCard.react');
@@ -45,11 +46,19 @@ var Message = React.createClass({
   },
 
   render: function() {
-    var from = messageParsing.getMessageHeader(this.props.message, 'From');
-    var to = messageParsing.getMessageHeader(this.props.message, 'To');
-    var date = new Date(messageParsing.getMessageHeader(this.props.message, 'Date'));
+    let from = messageParsing.getMessageHeader(this.props.message, 'From');
+    let to = messageParsing.getMessageHeader(this.props.message, 'To');
 
-    var body;
+    let date = new Date(messageParsing.getMessageHeader(this.props.message, 'Date'));
+    let now = new Date(Date.now());
+    let timestamp;
+    if (now.getYear() == date.getYear()) {
+      timestamp = DateFormat(date, "dddd, mmm d 'at' h:MM tt");
+    } else {
+      timestamp = DateFormat(date, "m/dd/yy 'at' h:MM tt");
+    }
+
+    let body;
     if (!this.props.error && this.props.plaintext) {
       body = (
         <div className="messageBody">
@@ -89,7 +98,7 @@ var Message = React.createClass({
             <p>To: {to}</p>
           </div>
           <div className="message-timestamp">
-            <p>{date.toLocaleString()}</p>
+            <p>{timestamp}</p>
           </div>
         </div>
         {body}

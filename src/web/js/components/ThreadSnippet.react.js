@@ -1,12 +1,10 @@
 'use strict';
 
-/*eslint-disable no-unused-vars*/
-var Thread = require('./Thread.react');
-/*eslint-enable no-unused-vars*/
-
 var React = require('react');
+var DateFormat = require('dateformat');
 var InboxActions = require('../actions/InboxActions.js');
 var messageParsing = require('../messageParsing');
+var Thread = require('./Thread.react');
 
 /**
  * A thread snippet is a preview of the email, which is displayed in the inbox
@@ -48,15 +46,18 @@ var ThreadSnippet = React.createClass({
         this.props.thread,
         document.getElementById('myEmail').innerHTML
       );
-      let lastDate = new Date(messageParsing.getMessageHeader(
+
+      let date = new Date(messageParsing.getMessageHeader(
           this.props.thread.messages[this.props.thread.messages.length - 1],
           'Date'));
-
+      let now = new Date(Date.now());
       let timestamp;
-      if (Date.now() - lastDate < 86400000) {
-        timestamp = lastDate.toLocaleTimeString();
-      }  else {
-        timestamp = lastDate.toLocaleDateString();
+      if (date.getDay() == now.getDay()) {
+        timestamp = DateFormat(date, 'h:MM tt');
+      } else if (date.getYear() == now.getYear()) {
+        timestamp = DateFormat(date, 'mmm d');
+      } else {
+        timestamp = DateFormat(date, 'm/d/yy');
       }
 
       let snippetClass = 'row snippet';
@@ -67,7 +68,7 @@ var ThreadSnippet = React.createClass({
       return (
         <div className={snippetClass} onClick={this.openThread}>
           <div className="col-md-4 col-xs-8">{threadFrom}</div>
-          <span className="col-md-2 col-xs-4 col-md-push-6 snippet-timestamp">{timestamp}</span>
+          <div className="col-md-2 col-xs-4 col-md-push-6 snippet-timestamp">{timestamp}</div>
           <div className="col-md-6 col-xs-12 col-md-pull-2">{threadSubject}</div>
         </div>
       );
