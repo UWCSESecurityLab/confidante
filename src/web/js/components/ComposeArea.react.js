@@ -93,9 +93,11 @@ var ComposeArea = React.createClass({
     let defaultSubject = this.state.subject;
     let me = document.getElementById('myEmail').innerHTML;
 
+    let kbto = [];
+    let signerKBID;
     if (inReplyTo && Object.keys(inReplyTo).length > 0) {
-      let signer = getKBIDFromSigner(MessageStore.getAll().signers[inReplyTo.id]);
-      console.log(`signer is ${signer}`);
+      signerKBID = getKBIDFromSigner(MessageStore.getAll().signers[inReplyTo.id]);
+      // console.log(`signer's KBID is ${signerKBID}`);
     }
 
     if (Object.keys(inReplyTo).length !== 0) {
@@ -108,6 +110,10 @@ var ComposeArea = React.createClass({
       } else {
         let to = messageParsing.getMessageHeader(inReplyTo, 'To');
         let from = messageParsing.getMessageHeader(inReplyTo, 'From');
+        if (signerKBID) {
+          kbto = [signerKBID];
+        }
+                
         defaultTo = (from !== me) ? from : to;
       }
 
@@ -122,7 +128,8 @@ var ComposeArea = React.createClass({
       to: defaultTo,
       inReplyTo: inReplyTo,
       invite: invite,
-      subject: defaultSubject
+      subject: defaultSubject,
+      kbto: kbto,
     });
   },
   _onReset: function() {
