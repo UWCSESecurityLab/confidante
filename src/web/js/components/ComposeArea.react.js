@@ -2,16 +2,14 @@
 
 var React = require('react');
 var ComposeStore = require('../stores/ComposeStore');
-var MessageStore = require('../stores/MessageStore');
-var InboxActions = require('../actions/InboxActions');
-var messageParsing = require('../messageParsing');
-var keybaseAPI = require('../keybaseAPI');
-var kbpgp = require('kbpgp');
-var xhr = require('xhr');
-/* eslint-disable no-unused-vars */
 var ContactsAutocomplete = require('./ContactsAutocomplete.react');
+var kbpgp = require('kbpgp');
 var KeybaseAutocomplete = require('./KeybaseAutocomplete.react');
-/* eslint-enable no-unused-vars */
+var InboxActions = require('../actions/InboxActions');
+var KeybaseAPI = require('../keybaseAPI');
+var messageParsing = require('../messageParsing');
+var MessageStore = require('../stores/MessageStore');
+var xhr = require('xhr');
 
 var ourPrivateManager;
 MessageStore.getPrivateManager().then(function(privateManager) {
@@ -27,7 +25,7 @@ var ourPublicKeyManager =
   try {
     var me = JSON.parse(localStorage.getItem('keybase'));
     var pubkey = me.public_keys.primary.bundle;
-    ourPublicKeyManager = keybaseAPI.managerFromPublicKey(pubkey);
+    ourPublicKeyManager = KeybaseAPI.managerFromPublicKey(pubkey);
   } catch (err) {
     ourPublicKeyManager = Promise.reject(new Error(err));
   }
@@ -41,7 +39,7 @@ var ComposeArea = React.createClass({
   getInitialState: function() {
     return {
       to: '',
-      kbto: '',
+      kbto: [],
       subject: '',
       email: '',
       feedback: '',
@@ -50,6 +48,7 @@ var ComposeArea = React.createClass({
       invite: ComposeStore.getInvite()
     };
   },
+
   updateTo: function(to) {
     this.setState({ to: to });
   },
@@ -62,10 +61,12 @@ var ComposeArea = React.createClass({
   updateEmail: function(e) {
     this.setState({ email: e.target.value });
   },
+
   componentDidMount: function() {
     ComposeStore.addChangeListener(this._onComposeStoreChange);
     ComposeStore.addResetListener(this._onReset);
   },
+
   _onComposeStoreChange: function() {
     let invite = ComposeStore.getInvite();
     let inReplyTo = ComposeStore.getReply();
@@ -73,7 +74,6 @@ var ComposeArea = React.createClass({
     let defaultTo = this.state.to;
     let defaultSubject = this.state.subject;
     let me = document.getElementById('myEmail').innerHTML;
-    console.log('replyall', replyAll);
 
     if (Object.keys(inReplyTo).length !== 0) {
       if (replyAll) {
@@ -122,16 +122,24 @@ var ComposeArea = React.createClass({
       });
     }.bind(this));
   },
+
+  /**
+   * Hacky code called when the send button is pressed. It triggers an action to
+   * force ContactsAutocomplete to resolve partial emails before sending.
+   * It passes either the sendInvite or send function to ContactsAutocomplete
+   * through the action, so that it can be called after the emails have between
+   * resolved.
+   */
+  presend: function() {
+    console.log('Presend called');
+    InboxActions.forceTokenize(this.state.invite ? this.sendInvite : this.send);
+  },
+
   send: function() {
     this.setState({ sendingSpinner: true });
 
-    let users = this.state.kbto
-      .split(',')
-      .map((token) => token.trim())
-      .filter((token) => token.length > 0);
-
-    let keyManagers = users.map((user) => {
-      return keybaseAPI.publicKeyForUser(user).then(keybaseAPI.managerFromPublicKey);
+    let keyManagers = this.state.kbto.map((user) => {
+      return KeybaseAPI.publicKeyForUser(user).then(KeybaseAPI.managerFromPublicKey);
     });
     keyManagers.push(ourPublicKeyManager);
 
@@ -154,6 +162,8 @@ var ComposeArea = React.createClass({
             this.setState({ feedback: 'Couldn\'t connect to the Keymail server.' });
           } else if (response.statusCode == 200) {
             InboxActions.resetComposeFields();
+            InboxActions.clearAutocompletions();
+            InboxActions.refresh();
           } else if (response.statusCode == 401) {
             this.setState({ feedback: 'Your login expired! Sign in again and try sending the email again.' });
           } else {
@@ -272,20 +282,28 @@ var ComposeArea = React.createClass({
                   ? null
                   : <div className="form-group">
                       <label htmlFor="kbto">Keybase ID of Recipient:</label>
-                      <KeybaseAutocomplete updateParent={this.updateKBTo}/>
+                      <KeybaseAutocomplete kbto={this.state.kbto} updateParent={this.updateKBTo}/>
                     </div>
                 }
                 <div className="form-group">
                   <label htmlFor="subject">Subject:</label>
-                  <input type="text" value={this.state.subject} name="subject" id="subject" onChange={this.updateSubject} className="form-control"></input><br />
+                  <input type="text"
+                         value={this.state.subject}
+                         name="subject" id="subject"
+                         onChange={this.updateSubject}
+                         className="form-control">
+                  </input>
+                  <br/>
                 </div>
                 <div className="form-group">
-                  <textarea value={this.state.email} 
-                            name="email" 
-                            id="email" 
+                  <textarea value={this.state.email}
+                            name="email"
+                            id="email"
                             onChange={this.updateEmail}
                             rows="8"
-                            className="form-control"></textarea><br />
+                            className="form-control">
+                  </textarea>
+                  <br/>
                 </div>
               </form>
             </div>
@@ -295,10 +313,12 @@ var ComposeArea = React.createClass({
                 ? <span className="spinner"></span>
                 : null
               }
-              { this.state.invite
-                ? <button onClick={this.sendInvite} className="btn btn-primary">Encrypt and Invite</button>
-                : <button onClick={this.send} className="btn btn-primary">Encrypt and Send</button>
-              }
+              <button onClick={this.presend} className="btn btn-primary">
+                { this.state.invite
+                  ? "Encrypt and Invite"
+                  : "Encrypt and Send"
+                }
+              </button>
             </div>
           </div>
         </div>

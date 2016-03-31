@@ -78,7 +78,7 @@ var Message = React.createClass({
         'twitter': getTwitterFromUser(user),
         'github': getGithubFromUser(user)
       };
-      signer = ( <KeybaseCard user={formattedUser}/> );
+      signer = ( <KeybaseCard data={formattedUser}/> );
     }
 
     return (

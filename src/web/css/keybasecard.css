@@ -8,7 +8,7 @@
   width: 100%;
 }
 
-.keybase-card:hover {
+.keybase-card-selected {
   background: #FFEAC4;
 }
 
