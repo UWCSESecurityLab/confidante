@@ -32,8 +32,8 @@ var InviteClient = React.createClass({
           this.setState({ status: 'Decrypting message...' })
           return KeybaseAPI.decrypt(invite.message)(manager);
         }.bind(this))
-        .then(function(plaintext) {
-          this.setState({ plaintext: plaintext });
+        .then(function(literals) {
+          this.setState({ plaintext: literals[0].toString() });
         }.bind(this)).catch(function(err) {
           this.setState({ error: err });
         }.bind(this));

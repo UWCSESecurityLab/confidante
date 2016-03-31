@@ -49,8 +49,10 @@ var ComposeArea = React.createClass({
     };
   },
 
-  updateTo: function(to) {
-    this.setState({ to: to });
+  // Update the to field, optionally pass a callback to be called when the state
+  // is changed.
+  updateTo: function(to, onUpdate) {
+    this.setState({ to: to }, onUpdate);
   },
   updateKBTo: function(kbto) {
     this.setState({ kbto: kbto });
@@ -128,11 +130,12 @@ var ComposeArea = React.createClass({
    * force ContactsAutocomplete to resolve partial emails before sending.
    * It passes either the sendInvite or send function to ContactsAutocomplete
    * through the action, so that it can be called after the emails have between
-   * resolved.
+   * resolved. It also passes setBadEmailAddress in case the partial email
+   * is invalid.
    */
   presend: function() {
-    console.log('Presend called');
-    InboxActions.forceTokenize(this.state.invite ? this.sendInvite : this.send);
+    InboxActions.forceTokenize(this.state.invite ? this.sendInvite : this.send,
+                               this.setBadEmailAddress);
   },
 
   send: function() {
@@ -260,6 +263,11 @@ var ComposeArea = React.createClass({
     }.bind(this)).catch(err => {
       this.setState({ feedback: err.toString(), sendingSpinner: false });
     });
+  },
+
+  setBadEmailAddress: function(invalidEmail) {
+    let msg = invalidEmail + ' is not a valid email address. Please correct it and try again.';
+    this.setState({ feedback: msg });
   },
 
   render: function() {

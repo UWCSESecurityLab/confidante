@@ -238,8 +238,8 @@ app.post('/invite/sendInvite', auth.dataEndpoint, function(req, res) {
 
   // Add an invite link to the message and send it over gmail.
   let sendMessage = function(invite) {
-    let host = flags.PRODUCTION ? 
-               'https://keymail.cs.washington.edu' : 
+    let host = flags.PRODUCTION ?
+               'https://keymail.cs.washington.edu' :
                'http://localhost:3000';
     let inviteUrl = host + '/invite?' +
         'id=' + req.body.inviteId + '&' +
@@ -306,7 +306,7 @@ app.get('/invite', function(req, res) {
     return;
   }
 
-  res.render('invite', { loggedIn: false });
+  res.render('invite', { loggedIn: false, staging: flags.KEYBASE_STAGING });
 });
 
 /**
