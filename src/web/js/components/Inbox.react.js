@@ -27,13 +27,21 @@ var Inbox = React.createClass({
   },
 
   render: function() {
+    let linkids = MessageStore.getAll().linkids;
     var snippets = this.state.threads.map(function(thread) {
+      let threadLinkid = null; 
+      thread.messages.forEach(function(message) {
+        if (linkids[message.id]) {
+          threadLinkid = linkids[message.id];
+        }
+      });
+      console.log(threadLinkid, this.props.linkidToOpen);
       return (<li key={thread.id}>
                 <ThreadSnippet thread={thread}
                                errors={this.state.errors}
                                signers={this.state.signers}
                                plaintexts={this.state.plaintexts} 
-                               startOpen={this.props.threadToOpen === thread.id}/>
+                               startOpen={this.props.linkidToOpen === threadLinkid}/>
               </li>);
     }.bind(this));
     if (snippets.length == 0) {
