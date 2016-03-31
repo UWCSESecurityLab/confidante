@@ -32,6 +32,10 @@ function _signerFromLiterals(literals) {
   return null;
 }
 
+/**
+ * Parse out the linkids for all messages in the thread.
+ * @param thread The thread to parse linkids out of.
+ */
 function _getLinkIDsForThread(thread) {
   thread.messages.forEach(function(message) {
     if (_linkids[message.id] === undefined) {
@@ -40,6 +44,11 @@ function _getLinkIDsForThread(thread) {
   });
 }
 
+/**
+ * Parse out the linkid from the first line of a message.
+ * @param firstLine The first (plaintext) line of a message, containing a link
+ * that includes the linkid in a fragment.
+ */
 function _getLinkIDFromFirstLine(firstLine) {
   let linkIDRegex = /#linkid:(.+)/;
   let match = linkIDRegex.exec(firstLine);
@@ -49,6 +58,11 @@ function _getLinkIDFromFirstLine(firstLine) {
     return null;
   }
 }
+
+/**
+ * Parse out the link id for a message and store it in _linkids.
+ * @param message The message to parse it out from.
+ */
 function _getLinkIDForMessage(message) {
   let body = messageParsing.getMessageBody(message);  
   let firstLine = body.split('\n')[0];
