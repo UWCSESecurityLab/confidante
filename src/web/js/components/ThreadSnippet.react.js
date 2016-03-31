@@ -48,6 +48,16 @@ var ThreadSnippet = React.createClass({
         this.props.thread,
         document.getElementById('myEmail').innerHTML
       );
+      let lastDate = new Date(messageParsing.getMessageHeader(
+          this.props.thread.messages[this.props.thread.messages.length - 1],
+          'Date'));
+
+      let timestamp;
+      if (Date.now() - lastDate < 86400000) {
+        timestamp = lastDate.toLocaleTimeString();
+      }  else {
+        timestamp = lastDate.toLocaleDateString();
+      }
 
       let snippetClass = 'row snippet';
       if (this.isUnread()) {
@@ -56,15 +66,9 @@ var ThreadSnippet = React.createClass({
 
       return (
         <div className={snippetClass} onClick={this.openThread}>
-          <span className="col-md-1">
-            <input type="checkbox" value={this.state.checked} onchange={this.handleChange}></input>
-          </span>
-          <span className="col-md-3">
-            {threadFrom}
-          </span>
-          <span className="col-md-8">
-            {threadSubject}
-          </span>
+          <div className="snippet-item">{threadFrom}</div>
+          <div className="snippet-item">{threadSubject}</div>
+          <div className="snippet-item snippet-timestamp">{timestamp}</div>
         </div>
       );
     } else {

@@ -22,10 +22,20 @@ ul {
 }
 
 .snippet {
+  display: flex;
+  padding: 0.5em;
+
   background-color: #EFEFEF;
   border: 1px solid #E5E5E5;
   cursor: pointer;
-  padding: 0.5em;
+}
+
+.snippet-item {
+  flex-grow: 1;
+}
+
+.snippet-timestamp {
+  text-align: right;
 }
 
 .subjectLine {
