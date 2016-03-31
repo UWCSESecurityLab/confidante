@@ -20,7 +20,10 @@
 }
 
 /* For small screens */
-@media all and (max-width: 640px) {
+@media all and (max-width: 768px) {
+  .message {
+    padding: 1.5em 2em;
+  }
   .messageHeader {
     flex-direction: column;  /* Show timestamp vertically under sender */
   }
