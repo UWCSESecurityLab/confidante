@@ -1,13 +1,11 @@
 'use strict';
 
 var React = require('react');
-var messageParsing = require('../messageParsing');
-
-/*eslint-disable no-unused-vars*/
-var KeybaseCard = require('./KeybaseCard.react');
-var InboxActions = require('../actions/InboxActions');
+var DateFormat = require('dateformat');
 var ErrorBody = require('./ErrorBody.react');
-/*eslint-enable no-unused-vars*/
+var InboxActions = require('../actions/InboxActions');
+var KeybaseCard = require('./KeybaseCard.react');
+var messageParsing = require('../messageParsing');
 
 function getTwitterFromUser(user) {
   let proofs = user.proofs_summary.by_proof_type;
@@ -48,10 +46,19 @@ var Message = React.createClass({
   },
 
   render: function() {
-    var from = messageParsing.getMessageHeader(this.props.message, 'From');
-    var to = messageParsing.getMessageHeader(this.props.message, 'To');
+    let from = messageParsing.getMessageHeader(this.props.message, 'From');
+    let to = messageParsing.getMessageHeader(this.props.message, 'To');
 
-    var body;
+    let date = new Date(messageParsing.getMessageHeader(this.props.message, 'Date'));
+    let now = new Date(Date.now());
+    let timestamp;
+    if (now.getYear() == date.getYear()) {
+      timestamp = DateFormat(date, "dddd, mmm d 'at' h:MM tt");
+    } else {
+      timestamp = DateFormat(date, "m/dd/yy 'at' h:MM tt");
+    }
+
+    let body;
     if (!this.props.error && this.props.plaintext) {
       body = (
         <div className="messageBody">
@@ -86,8 +93,13 @@ var Message = React.createClass({
     return (
       <div className="message">
         <div className="messageHeader">
-          <strong>{from}</strong>
-          <p>To: {to}</p>
+          <div className="sender">
+            <strong>{from}</strong>
+            <p>To: {to}</p>
+          </div>
+          <div className="message-timestamp">
+            <p>{timestamp}</p>
+          </div>
         </div>
         {body}
         <button type="button" className="btn btn-primary reply" data-toggle="modal" data-target="#composeMessage" onClick={this.reply}>

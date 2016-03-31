@@ -21,6 +21,7 @@
     "compression": "^1.6.0",
     "connect-mongodb-session": "^1.0.5",
     "cookie": "^0.2.2",
+    "dateformat": "^1.0.12",
     "ejs": "^2.3.4",
     "express": "^4.13.3",
     "express-session": "^1.11.3",

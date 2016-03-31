@@ -17,30 +17,8 @@ ul {
   margin: 2em;
 }
 
-.message {
-  border-bottom: 1px solid #EFEFEF;
-  padding: 1.5em 3em;
-  white-space: pre-wrap;
-}
-
-.messageHeader {
-  color: #707070;
-}
-
 .reply {
   margin-top: 1em;
-}
-
-.snippet {
-  background-color: #EFEFEF;
-  border: 1px solid #E5E5E5;
-  cursor: pointer;
-  padding: 0.5em;
-}
-
-.signature-header {
-  color: #707070;
-  margin: 1em;
 }
 
 .subjectLine {

@@ -1,0 +1,18 @@
+.snippet {
+  padding: 0.5em;
+
+  background-color: #F9F9F9;
+  border: 1px solid #E5E5E5;
+  cursor: pointer;
+}
+
+.snippet-timestamp {
+  text-align: right;
+}
+
+/* For small screens */
+@media all and (max-width: 991px) {
+  .snippet-from {
+    font-size: 16px;
+  }
+}

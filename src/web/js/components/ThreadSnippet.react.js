@@ -1,12 +1,10 @@
 'use strict';
 
-/*eslint-disable no-unused-vars*/
-var Thread = require('./Thread.react');
-/*eslint-enable no-unused-vars*/
-
 var React = require('react');
+var DateFormat = require('dateformat');
 var InboxActions = require('../actions/InboxActions.js');
 var messageParsing = require('../messageParsing');
+var Thread = require('./Thread.react');
 
 /**
  * A thread snippet is a preview of the email, which is displayed in the inbox
@@ -49,6 +47,19 @@ var ThreadSnippet = React.createClass({
         document.getElementById('myEmail').innerHTML
       );
 
+      let date = new Date(messageParsing.getMessageHeader(
+          this.props.thread.messages[this.props.thread.messages.length - 1],
+          'Date'));
+      let now = new Date(Date.now());
+      let timestamp;
+      if (date.getDay() == now.getDay()) {
+        timestamp = DateFormat(date, 'h:MM tt');
+      } else if (date.getYear() == now.getYear()) {
+        timestamp = DateFormat(date, 'mmm d');
+      } else {
+        timestamp = DateFormat(date, 'm/d/yy');
+      }
+
       let snippetClass = 'row snippet';
       if (this.isUnread()) {
         snippetClass += ' unreadSnippet';
@@ -56,15 +67,9 @@ var ThreadSnippet = React.createClass({
 
       return (
         <div className={snippetClass} onClick={this.openThread}>
-          <span className="col-md-1">
-            <input type="checkbox" value={this.state.checked} onchange={this.handleChange}></input>
-          </span>
-          <span className="col-md-3">
-            {threadFrom}
-          </span>
-          <span className="col-md-8">
-            {threadSubject}
-          </span>
+          <div className="snippet-from col-md-4 col-xs-8">{threadFrom}</div>
+          <div className="snippet-timestamp col-md-2 col-xs-4 col-md-push-6">{timestamp}</div>
+          <div className="snippet-subject col-md-6 col-xs-12 col-md-pull-2">{threadSubject}</div>
         </div>
       );
     } else {
