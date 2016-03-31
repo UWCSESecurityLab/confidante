@@ -49,8 +49,10 @@ var ComposeArea = React.createClass({
     };
   },
 
-  updateTo: function(to) {
-    this.setState({ to: to });
+  // Update the to field, optionally pass a callback to be called when the state
+  // is changed.
+  updateTo: function(to, onUpdate) {
+    this.setState({ to: to }, onUpdate);
   },
   updateKBTo: function(kbto) {
     this.setState({ kbto: kbto });
