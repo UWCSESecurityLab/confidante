@@ -67,9 +67,9 @@ var ThreadSnippet = React.createClass({
 
       return (
         <div className={snippetClass} onClick={this.openThread}>
-          <div className="col-md-4 col-xs-8">{threadFrom}</div>
-          <div className="col-md-2 col-xs-4 col-md-push-6 snippet-timestamp">{timestamp}</div>
-          <div className="col-md-6 col-xs-12 col-md-pull-2">{threadSubject}</div>
+          <div className="snippet-from col-md-4 col-xs-8">{threadFrom}</div>
+          <div className="snippet-timestamp col-md-2 col-xs-4 col-md-push-6">{timestamp}</div>
+          <div className="snippet-subject col-md-6 col-xs-12 col-md-pull-2">{threadSubject}</div>
         </div>
       );
     } else {

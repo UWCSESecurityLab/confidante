@@ -21,18 +21,6 @@ ul {
   margin-top: 1em;
 }
 
-.snippet {
-  padding: 0.5em;
-
-  background-color: #EFEFEF;
-  border: 1px solid #E5E5E5;
-  cursor: pointer;
-}
-
-.snippet-timestamp {
-  text-align: right;
-}
-
 .subjectLine {
   padding-left: 1.5em;
 }
