@@ -143,6 +143,11 @@ var ComposeArea = React.createClass({
     });
     keyManagers.push(ourPublicKeyManager);
 
+    let linkids = MessageStore.getAll().linkids;
+    let parentLinkID = null;
+    if (this.state.inReplyTo) {
+      parentLinkID = linkids[this.state.inReplyTo.id];
+    }
     Promise.all(keyManagers)
       .then(this.encryptEmail)
       .then(function(encryptedEmail) {
@@ -150,7 +155,8 @@ var ComposeArea = React.createClass({
           to: this.state.to,
           subject: this.state.subject,
           email: encryptedEmail,
-          parentMessage: this.state.inReplyTo
+          parentMessage: this.state.inReplyTo,
+          linkid: parentLinkID
         };
 
         xhr.post({

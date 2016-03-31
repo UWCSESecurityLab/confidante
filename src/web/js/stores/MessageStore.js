@@ -10,6 +10,7 @@ var _plaintexts = {};
 var _threads = {};
 var _errors = {};
 var _signers = {};
+var _linkids = {};
 var _netError = '';
 
 // A promise containing our local private key.
@@ -29,6 +30,44 @@ function _signerFromLiterals(literals) {
     return km;
   }
   return null;
+}
+
+/**
+ * Parse out the linkids for all messages in the thread.
+ * @param thread The thread to parse linkids out of.
+ */
+function _getLinkIDsForThread(thread) {
+  thread.messages.forEach(function(message) {
+    if (_linkids[message.id] === undefined) {
+      _getLinkIDForMessage(message);
+    }
+  });
+}
+
+/**
+ * Parse out the linkid from the first line of a message.
+ * @param firstLine The first (plaintext) line of a message, containing a link
+ * that includes the linkid in a fragment.
+ */
+function _getLinkIDFromFirstLine(firstLine) {
+  let linkIDRegex = /#linkid:(.+)/;
+  let match = linkIDRegex.exec(firstLine);
+  if (match && match.length === 2) {
+    return match[1];
+  } else {
+    return null;
+  }
+}
+
+/**
+ * Parse out the link id for a message and store it in _linkids.
+ * @param message The message to parse it out from.
+ */
+function _getLinkIDForMessage(message) {
+  let body = messageParsing.getMessageBody(message);  
+  let firstLine = body.split('\n')[0];
+  let linkid = _getLinkIDFromFirstLine(firstLine);  
+  _linkids[message.id] = linkid;
 }
 
 function _decryptThread(thread) {
@@ -83,6 +122,7 @@ function loadMail() {
       _threads = JSON.parse(body);
       _threads.forEach(function(thread) {
         _decryptThread(thread);
+        _getLinkIDsForThread(thread);
       });
       MessageStore.emitChange();
     }
@@ -112,7 +152,8 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
       errors: _errors,
       threads: _threads,
       plaintexts: _plaintexts,
-      signers: _signers
+      signers: _signers,
+      linkids: _linkids,
     };
   },
 
