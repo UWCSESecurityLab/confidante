@@ -44,18 +44,6 @@ ul {
   padding: 0.5em;
 }
 
-.unreadSnippet {
-  background-color: #FDFDFD;
-  font-weight: bold;
-}
-
 #composeButton {
   float: right;
-}
-
-.react-typeahead-container {
-  background: white;
-}
-.form-control[disabled] {
-  background: initial;
 }

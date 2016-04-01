@@ -10,6 +10,11 @@
   text-align: right;
 }
 
+.unreadSnippet {
+  background-color: #FDFDFD;
+  font-weight: bold;
+}
+
 /* For small screens */
 @media all and (max-width: 991px) {
   .snippet-checkbox {
