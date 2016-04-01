@@ -7,7 +7,8 @@ var RefreshButton = React.createClass({
   render: function() {
     return (
       <button type="button"
-              className="btn btn-primary"
+              id="refresh-button"
+              className="btn btn-primary inbox-button"
               onClick={InboxActions.refresh}>
         <span className="glyphicon glyphicon-refresh" aria-hidden="true"></span>
       </button>

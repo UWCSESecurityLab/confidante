@@ -17,6 +17,10 @@ ul {
   margin: 2em;
 }
 
+.inbox-button {
+  margin-right: 0.5em;
+}
+
 .subjectLine {
   padding-left: 1.5em;
 }
@@ -44,6 +48,6 @@ ul {
   padding: 0.5em;
 }
 
-#composeButton {
+#invite-button {
   float: right;
 }

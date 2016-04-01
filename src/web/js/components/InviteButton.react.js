@@ -13,7 +13,12 @@ var InviteButton = React.createClass({
 
   render: function() {
     return (
-      <button type="button" className="btn btn-primary" id="inviteButton" data-toggle="modal" data-target="#composeMessage" onClick={this.setInvite}>
+      <button type="button"
+              id="invite-button"
+              className="btn btn-primary inbox-button"
+              data-toggle="modal"
+              data-target="#composeMessage"
+              onClick={this.setInvite}>
         Invite
       </button>
     );

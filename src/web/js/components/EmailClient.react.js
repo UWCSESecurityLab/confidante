@@ -53,8 +53,8 @@ var EmailClient = React.createClass({
     return (
       <div>
         <ComposeButton />
-        <InviteButton />
         <RefreshButton />
+        <InviteButton />
         { this.state.error
           ? <div className="alert alert-warning" role="alert">
               {this.state.error} <a href={this.state.errorLink}>{this.state.errorLinkText}</a>
