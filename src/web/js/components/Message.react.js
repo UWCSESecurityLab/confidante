@@ -27,7 +27,8 @@ function getGithubFromUser(user) {
 var Message = React.createClass({
   getInitialState: function() {
     return {
-      body: 'Decrypting...'
+      body: 'Decrypting...',
+      showOriginal: false,
     };
   },
 
@@ -45,6 +46,16 @@ var Message = React.createClass({
     });
   },
 
+  showOriginalChanged: function(e) {
+    this.setState({
+      showOriginal: !this.state.showOriginal
+    });
+    // console.log(e);
+    // this.setState({
+    //   showOriginal: e.currentTarget.value === 'showOriginal'
+    // });
+  },
+
   render: function() {
     let from = messageParsing.getMessageHeader(this.props.message, 'From');
     let to = messageParsing.getMessageHeader(this.props.message, 'To');
@@ -59,10 +70,16 @@ var Message = React.createClass({
     }
 
     let body;
-    if (!this.props.error && this.props.plaintext) {
+    if (!this.props.error && this.props.plaintext && !this.state.showOriginal) {
       body = (
         <div className="messageBody">
           {this.props.plaintext}
+        </div>
+      );
+    } else if (!this.props.error && this.props.plaintext && this.state.showOriginal) {
+      body = (
+        <div className="alert alert-danger">
+          {messageParsing.getMessageBody(this.props.message)}
         </div>
       );
     } else if (!this.props.error && this.props.plaintext === undefined) {
@@ -101,6 +118,9 @@ var Message = React.createClass({
             <p>{timestamp}</p>
           </div>
         </div>
+        <button type="button" className="btn btn-primary reply" onClick={this.showOriginalChanged}>
+          {this.state.showOriginal ? 'Show Decrypted' : 'Show Encrypted'}
+        </button>
         {body}
         <button type="button" className="btn btn-primary reply" data-toggle="modal" data-target="#composeMessage" onClick={this.reply}>
           Reply
@@ -108,6 +128,8 @@ var Message = React.createClass({
         <button type="button" className="btn btn-primary reply" data-toggle="modal" data-target="#composeMessage" onClick={this.replyAll}>
           Reply All
         </button>
+        <div className="btn-group" data-toggle="buttons">
+        </div>
 
         { signer
           ? <div>
@@ -121,3 +143,8 @@ var Message = React.createClass({
 });
 
 module.exports = Message;
+          // <label className="btn btn-primary active">
+          //   <input type="checkbox" name="showOriginalToggle" id="showOriginal" 
+          //          onClick={this.showOriginalChanged} /> 
+          //   Show Decrypted Message
+          // </label>
