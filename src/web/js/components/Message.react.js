@@ -72,7 +72,7 @@ var Message = React.createClass({
       );
     } else if (!this.props.error && this.props.plaintext && this.state.showOriginal) {
       body = (
-        <div className="alert alert-danger">
+        <div className="alert alert-warning">
           {messageParsing.getMessageBody(this.props.message)}
         </div>
       );
@@ -107,7 +107,7 @@ var Message = React.createClass({
           <div className="sender">
             <strong>{from}</strong>
             <div>To: {to}</div>
-            <a className="show-original" href="#" onClick={this.showOriginalChanged}>
+            <a className="show-original" onClick={this.showOriginalChanged}>
               {this.state.showOriginal ? 'Show Decrypted' : 'Show Encrypted'}
             </a>
           </div>
