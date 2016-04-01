@@ -28,7 +28,7 @@ var Message = React.createClass({
   getInitialState: function() {
     return {
       body: 'Decrypting...',
-      showOriginal: false,
+      showOriginal: false
     };
   },
 
@@ -46,14 +46,8 @@ var Message = React.createClass({
     });
   },
 
-  showOriginalChanged: function(e) {
-    this.setState({
-      showOriginal: !this.state.showOriginal
-    });
-    // console.log(e);
-    // this.setState({
-    //   showOriginal: e.currentTarget.value === 'showOriginal'
-    // });
+  showOriginalChanged: function() {
+    this.setState({ showOriginal: !this.state.showOriginal });
   },
 
   render: function() {
@@ -112,15 +106,17 @@ var Message = React.createClass({
         <div className="messageHeader">
           <div className="sender">
             <strong>{from}</strong>
-            <p>To: {to}</p>
+            <div>To: {to}</div>
+            <a className="show-original" href="#" onClick={this.showOriginalChanged}>
+              {this.state.showOriginal ? 'Show Decrypted' : 'Show Encrypted'}
+            </a>
           </div>
           <div className="message-timestamp">
             <p>{timestamp}</p>
           </div>
+
         </div>
-        <button type="button" className="btn btn-primary reply" onClick={this.showOriginalChanged}>
-          {this.state.showOriginal ? 'Show Decrypted' : 'Show Encrypted'}
-        </button>
+
         {body}
         <button type="button" className="btn btn-primary reply" data-toggle="modal" data-target="#composeMessage" onClick={this.reply}>
           Reply
@@ -143,8 +139,3 @@ var Message = React.createClass({
 });
 
 module.exports = Message;
-          // <label className="btn btn-primary active">
-          //   <input type="checkbox" name="showOriginalToggle" id="showOriginal" 
-          //          onClick={this.showOriginalChanged} /> 
-          //   Show Decrypted Message
-          // </label>
