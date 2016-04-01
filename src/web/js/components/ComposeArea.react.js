@@ -31,6 +31,22 @@ var ourPublicKeyManager =
   }
 })();
 
+function getKBIDFromSigner(signer) {
+  if (signer && signer.userids) {
+    let userids = signer.userids;
+    for (let i=0; i<userids.length; i++) {
+      let userid = userids[i];
+      let kbidRegex = /keybase.io\/(.+)/;
+      let match = kbidRegex.exec(userid.components.username);
+      if (match && match.length === 2) {
+        return match[1];
+      }
+    }
+  } else {
+    return null;
+  }
+}
+
 /**
  * The ComposeArea is the UI for writing a new email, whether a reply
  * or a new thread.
@@ -77,6 +93,13 @@ var ComposeArea = React.createClass({
     let defaultSubject = this.state.subject;
     let me = document.getElementById('myEmail').innerHTML;
 
+    let kbto = [];
+    let signerKBID;
+    if (inReplyTo && Object.keys(inReplyTo).length > 0) {
+      signerKBID = getKBIDFromSigner(MessageStore.getAll().signers[inReplyTo.id]);
+      // console.log(`signer's KBID is ${signerKBID}`);
+    }
+
     if (Object.keys(inReplyTo).length !== 0) {
       if (replyAll) {
         let messageParticipants = messageParsing.getParticipantsInMessage(inReplyTo);
@@ -87,6 +110,10 @@ var ComposeArea = React.createClass({
       } else {
         let to = messageParsing.getMessageHeader(inReplyTo, 'To');
         let from = messageParsing.getMessageHeader(inReplyTo, 'From');
+        if (signerKBID) {
+          kbto = [signerKBID];
+        }
+                
         defaultTo = (from !== me) ? from : to;
       }
 
@@ -101,7 +128,8 @@ var ComposeArea = React.createClass({
       to: defaultTo,
       inReplyTo: inReplyTo,
       invite: invite,
-      subject: defaultSubject
+      subject: defaultSubject,
+      kbto: kbto,
     });
   },
   _onReset: function() {
