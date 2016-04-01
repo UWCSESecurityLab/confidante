@@ -31,6 +31,22 @@ var ourPublicKeyManager =
   }
 })();
 
+function getKBIDFromSigner(signer) {
+  if (signer && signer.userids) {
+    let userids = signer.userids;
+    for (let i=0; i<userids.length; i++) {
+      let userid = userids[i];
+      let kbidRegex = /keybase.io\/(.+)/;
+      let match = kbidRegex.exec(userid.components.username);
+      if (match && match.length === 2) {
+        return match[1];
+      }
+    }
+  } else {
+    return null;
+  }
+}
+
 /**
  * The ComposeArea is the UI for writing a new email, whether a reply
  * or a new thread.
@@ -49,8 +65,10 @@ var ComposeArea = React.createClass({
     };
   },
 
-  updateTo: function(to) {
-    this.setState({ to: to });
+  // Update the to field, optionally pass a callback to be called when the state
+  // is changed.
+  updateTo: function(to, onUpdate) {
+    this.setState({ to: to }, onUpdate);
   },
   updateKBTo: function(kbto) {
     this.setState({ kbto: kbto });
@@ -75,6 +93,13 @@ var ComposeArea = React.createClass({
     let defaultSubject = this.state.subject;
     let me = document.getElementById('myEmail').innerHTML;
 
+    let kbto = [];
+    let signerKBID;
+    if (inReplyTo && Object.keys(inReplyTo).length > 0) {
+      signerKBID = getKBIDFromSigner(MessageStore.getAll().signers[inReplyTo.id]);
+      // console.log(`signer's KBID is ${signerKBID}`);
+    }
+
     if (Object.keys(inReplyTo).length !== 0) {
       if (replyAll) {
         let messageParticipants = messageParsing.getParticipantsInMessage(inReplyTo);
@@ -85,6 +110,10 @@ var ComposeArea = React.createClass({
       } else {
         let to = messageParsing.getMessageHeader(inReplyTo, 'To');
         let from = messageParsing.getMessageHeader(inReplyTo, 'From');
+        if (signerKBID) {
+          kbto = [signerKBID];
+        }
+                
         defaultTo = (from !== me) ? from : to;
       }
 
@@ -99,7 +128,8 @@ var ComposeArea = React.createClass({
       to: defaultTo,
       inReplyTo: inReplyTo,
       invite: invite,
-      subject: defaultSubject
+      subject: defaultSubject,
+      kbto: kbto,
     });
   },
   _onReset: function() {
@@ -128,11 +158,12 @@ var ComposeArea = React.createClass({
    * force ContactsAutocomplete to resolve partial emails before sending.
    * It passes either the sendInvite or send function to ContactsAutocomplete
    * through the action, so that it can be called after the emails have between
-   * resolved.
+   * resolved. It also passes setBadEmailAddress in case the partial email
+   * is invalid.
    */
   presend: function() {
-    console.log('Presend called');
-    InboxActions.forceTokenize(this.state.invite ? this.sendInvite : this.send);
+    InboxActions.forceTokenize(this.state.invite ? this.sendInvite : this.send,
+                               this.setBadEmailAddress);
   },
 
   send: function() {
@@ -143,6 +174,11 @@ var ComposeArea = React.createClass({
     });
     keyManagers.push(ourPublicKeyManager);
 
+    let linkids = MessageStore.getAll().linkids;
+    let parentLinkID = null;
+    if (this.state.inReplyTo) {
+      parentLinkID = linkids[this.state.inReplyTo.id];
+    }
     Promise.all(keyManagers)
       .then(this.encryptEmail)
       .then(function(encryptedEmail) {
@@ -150,7 +186,8 @@ var ComposeArea = React.createClass({
           to: this.state.to,
           subject: this.state.subject,
           email: encryptedEmail,
-          parentMessage: this.state.inReplyTo
+          parentMessage: this.state.inReplyTo,
+          linkid: parentLinkID
         };
 
         xhr.post({
@@ -254,6 +291,11 @@ var ComposeArea = React.createClass({
     }.bind(this)).catch(err => {
       this.setState({ feedback: err.toString(), sendingSpinner: false });
     });
+  },
+
+  setBadEmailAddress: function(invalidEmail) {
+    let msg = invalidEmail + ' is not a valid email address. Please correct it and try again.';
+    this.setState({ feedback: msg });
   },
 
   render: function() {

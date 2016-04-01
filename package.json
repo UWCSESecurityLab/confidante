@@ -1,6 +1,6 @@
 {
   "name": "keymail",
-  "version": "0.2.3",
+  "version": "0.3.2",
   "license": "UNLICENSED",
   "description": "Usable encrypted email",
   "main": "app.js",
@@ -31,6 +31,7 @@
     "jquery": "^2.1.4",
     "kbpgp": "^2.0.48",
     "mongoose": "^4.1.9",
+    "node-uuid": "^1.4.7",
     "object-assign": "^4.0.1",
     "pgp-utils": "0.0.28",
     "purepack": "^1.0.4",

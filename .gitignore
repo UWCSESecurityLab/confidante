@@ -4,3 +4,5 @@ src/web/*/3rdparty
 
 .DS_Store
 *.swp
+
+trash/

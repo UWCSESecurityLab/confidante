@@ -27,7 +27,8 @@ function getGithubFromUser(user) {
 var Message = React.createClass({
   getInitialState: function() {
     return {
-      body: 'Decrypting...'
+      body: 'Decrypting...',
+      showOriginal: false
     };
   },
 
@@ -45,6 +46,10 @@ var Message = React.createClass({
     });
   },
 
+  showOriginalChanged: function() {
+    this.setState({ showOriginal: !this.state.showOriginal });
+  },
+
   render: function() {
     let from = messageParsing.getMessageHeader(this.props.message, 'From');
     let to = messageParsing.getMessageHeader(this.props.message, 'To');
@@ -59,10 +64,16 @@ var Message = React.createClass({
     }
 
     let body;
-    if (!this.props.error && this.props.plaintext) {
+    if (!this.props.error && this.props.plaintext && !this.state.showOriginal) {
       body = (
         <div className="messageBody">
           {this.props.plaintext}
+        </div>
+      );
+    } else if (!this.props.error && this.props.plaintext && this.state.showOriginal) {
+      body = (
+        <div className="alert alert-warning">
+          {messageParsing.getMessageBody(this.props.message)}
         </div>
       );
     } else if (!this.props.error && this.props.plaintext === undefined) {
@@ -95,12 +106,17 @@ var Message = React.createClass({
         <div className="messageHeader">
           <div className="sender">
             <strong>{from}</strong>
-            <p>To: {to}</p>
+            <div>To: {to}</div>
+            <a className="show-original" onClick={this.showOriginalChanged}>
+              {this.state.showOriginal ? 'Show Decrypted' : 'Show Encrypted'}
+            </a>
           </div>
           <div className="message-timestamp">
             <p>{timestamp}</p>
           </div>
+
         </div>
+
         {body}
 
         { signer
@@ -115,9 +131,10 @@ var Message = React.createClass({
         </button>
         <button type="button" className="btn btn-primary reply" data-toggle="modal" data-target="#composeMessage" onClick={this.replyAll}>
           <span className="glyphicon glyphicon-share-alt" aria-hidden="true"></span>
-          <span className="reply-all-arrow glyphicon glyphicon-share-alt" aria-hidden="true"></span> 
+          <span className="reply-all-arrow glyphicon glyphicon-share-alt" aria-hidden="true"></span>
           Reply All
         </button>
+
       </div>
     );
   }

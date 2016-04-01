@@ -26,13 +26,24 @@ var ContactsAutocomplete = React.createClass({
     this.setState({ selected: this.parseContacts(props.to)});
   },
 
-  // When the send button is clicked, we need to force-tokenize the last contact.
-  forceAddContact: function(callback) {
-    let contacts = this.parseContacts(this.state.to);
-    if (contacts.length > 0) {
-      this.addContactAndUpdate(contacts[0]);
+  /**
+   * When the send button is clicked, we need to force-tokenize the last contact.
+   * @param onSuccess calls send() or sendInvite() in ComposeArea.
+   * @param onError calls setBadEmailAddress() in ComposeArea
+   */
+  forceAddContact: function(onSuccess, onError) {
+    let to = this.state.to.trim();
+    if (to.length == 0) {
+      onSuccess();
+      return;
     }
-    callback();  // This calls send() or sendInvite() in ComposeArea.
+
+    let contacts = this.parseContacts(to);
+    if (contacts.length > 0) {
+      this.addContactAndUpdate(contacts[0], onSuccess);
+    } else {
+      onError(this.state.to);
+    }
   },
 
   // Get the latest values from the AutocompleteStore and store it in state.
@@ -74,14 +85,26 @@ var ContactsAutocomplete = React.createClass({
 
   // Add the contact to the selected contacts (component state), update the
   // parent, and clear the input element.
-  addContactAndUpdate: function(contact) {
+  // Optionally, pass a callback to be run after the state has been updated.
+  addContactAndUpdate: function(contact, callback) {
     if (this.state.selected.some(recipient => recipient.email == contact.email)) {
       return;
     }
     let updated = this.state.selected.slice(); // Copy selected before modifying
     updated.push(contact);
-    this.setState({ selected: updated, to: '' });
-    this.props.updateParent(updated.map(this.formatContact).join(', '));
+
+    let updateSelf = new Promise(function(resolve) {
+      this.setState({ selected: updated, to: '' }, resolve);
+    }.bind(this));
+    let updateParent = new Promise(function(resolve) {
+      this.props.updateParent(updated.map(this.formatContact).join(', '), resolve);
+    }.bind(this));
+
+    Promise.all([updateSelf, updateParent]).then(function() {
+      if (callback) {
+        callback();
+      }
+    });
   },
 
   // Remove the given contact from the selected contacts (if it exists)

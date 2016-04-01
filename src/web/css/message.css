@@ -12,6 +12,12 @@
   display: inline-flex;
   width: 100%;
   justify-content: space-between;
+  margin-bottom: 1em;
+}
+
+.show-original {
+  color: #707070;
+  font-size: 12px;
 }
 
 .signature-header {
