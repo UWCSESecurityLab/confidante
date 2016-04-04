@@ -25,8 +25,26 @@
   margin: 1em;
 }
 
+.reply {
+  margin: 1em 0.5em 0 0;
+}
+
+.reply-arrow {
+  margin-right: 0.5em;
+}
+
+.reply-all-arrow {
+  position: relative;
+  left: -8px;
+  opacity: 0.6;
+  margin-right: 0.2em;
+}
+
 /* For small screens */
-@media all and (max-width: 640px) {
+@media all and (max-width: 768px) {
+  .message {
+    padding: 1.5em 2em;
+  }
   .messageHeader {
     flex-direction: column;  /* Show timestamp vertically under sender */
   }

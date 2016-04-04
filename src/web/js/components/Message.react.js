@@ -118,21 +118,23 @@ var Message = React.createClass({
         </div>
 
         {body}
-        <button type="button" className="btn btn-primary reply" data-toggle="modal" data-target="#composeMessage" onClick={this.reply}>
-          Reply
-        </button>
-        <button type="button" className="btn btn-primary reply" data-toggle="modal" data-target="#composeMessage" onClick={this.replyAll}>
-          Reply All
-        </button>
-        <div className="btn-group" data-toggle="buttons">
-        </div>
 
         { signer
           ? <div>
-              <p className="signature-header">Message was signed by:</p>
-              {signer}
+              <p className="signature-header">Message was signed by:</p> {signer}
             </div>
           : null }
+
+        <button type="button" className="btn btn-primary reply" data-toggle="modal" data-target="#composeMessage" onClick={this.reply}>
+          <span className="reply-arrow glyphicon glyphicon-share-alt" aria-hidden="true"></span>
+          Reply
+        </button>
+        <button type="button" className="btn btn-primary reply" data-toggle="modal" data-target="#composeMessage" onClick={this.replyAll}>
+          <span className="glyphicon glyphicon-share-alt" aria-hidden="true"></span>
+          <span className="reply-all-arrow glyphicon glyphicon-share-alt" aria-hidden="true"></span>
+          Reply All
+        </button>
+
       </div>
     );
   }

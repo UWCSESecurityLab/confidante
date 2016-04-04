@@ -1,7 +1,7 @@
 .snippet {
   padding: 0.5em;
 
-  background-color: #F9F9F9;
+  background-color: #F1F1F1;
   border: 1px solid #E5E5E5;
   cursor: pointer;
 }
@@ -10,8 +10,16 @@
   text-align: right;
 }
 
+.unreadSnippet {
+  background-color: #FDFDFD;
+  font-weight: bold;
+}
+
 /* For small screens */
 @media all and (max-width: 991px) {
+  .snippet-checkbox {
+    display: none;
+  }
   .snippet-from {
     font-size: 16px;
   }

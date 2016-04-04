@@ -17,12 +17,18 @@ ul {
   margin: 2em;
 }
 
-.reply {
-  margin-top: 1em;
+.inbox-button {
+  margin-right: 0.5em;
 }
 
 .subjectLine {
   padding-left: 1.5em;
+}
+
+@media all and (max-width: 768px) {
+  .subjectLine {
+    padding-left: 1em;
+  }
 }
 
 .thread {
@@ -42,18 +48,6 @@ ul {
   padding: 0.5em;
 }
 
-.unreadSnippet {
-  background-color: #FDFDFD;
-  font-weight: bold;
-}
-
-#composeButton {
+#invite-button {
   float: right;
-}
-
-.react-typeahead-container {
-  background: white;
-}
-.form-control[disabled] {
-  background: initial;
 }
