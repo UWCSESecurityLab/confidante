@@ -13,9 +13,11 @@ var KeybaseCompletion = React.createClass({
 
     return (
       <div className={className} onClick={this.props.onClick}>
-        <div className="pic-section">
-          <img className="profile-pic" src={ user.picture }></img>
-        </div>
+        { user.picture
+          ? <div className="pic-section">
+              <img className="profile-pic" src={ user.picture }></img>
+            </div>
+          : null }
         <div className="text-section">
           <div className="name-line">
             <h4 className="line-item">{ user.full_name ? user.full_name : user.username}</h4>
