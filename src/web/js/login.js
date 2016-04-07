@@ -1,9 +1,11 @@
 'use strict';
 
-var submit = document.getElementById('submit');
+var KeybaseAPI = require('./keybaseAPI');
+
+let submit = document.getElementById('submit');
 submit.onclick = login;
 
-var spinner = document.getElementById('spinner');
+let spinner = document.getElementById('spinner');
 spinner.style.visibility = 'hidden';
 
 // Submit on enter key
@@ -17,11 +19,10 @@ function login() {
   removeError();
   spinner.style.visibility = 'visible';
 
-  var emailOrUsername = document.getElementById('username').value;
-  var password = document.getElementById('password').value;
-  var keybase = new KeybaseAPI(window.location.origin);
+  let emailOrUsername = document.getElementById('username').value;
+  let password = document.getElementById('password').value;
 
-  keybase.login(emailOrUsername, password).then(function(response) {
+  KeybaseAPI.login(emailOrUsername, password).then(function(response) {
     localStorage.setItem('keybase', JSON.stringify(response.me));
     localStorage.setItem('keybasePassphrase', password);
     window.location.href = '/auth/google';
@@ -33,12 +34,12 @@ function login() {
 }
 
 function addError(message) {
-  var error = document.getElementById('error');
+  let error = document.getElementById('error');
   error.innerHTML = message;
   error.style.visibility = 'visible';
 }
 
 function removeError() {
-  var error = document.getElementById('error');
+  let error = document.getElementById('error');
   error.style.visibility = 'hidden';
 }
