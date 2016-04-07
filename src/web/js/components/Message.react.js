@@ -90,11 +90,12 @@ var Message = React.createClass({
     let signer;
     if (this.props.signer && this.props.signer.user && this.props.signer.user.length === 1) {
       let user = this.props.signer.user[0];
+
       // Convert the user object into the format used for our Keybase component.
       let formattedUser = {
         'full_name': user.profile.full_name,
         'username': user.basics.username,
-        'picture': user.pictures.primary.url,
+        'picture': user.pictures ? user.pictures.primary.url : null,
         'twitter': getTwitterFromUser(user),
         'github': getGithubFromUser(user)
       };
