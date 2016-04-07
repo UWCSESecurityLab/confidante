@@ -3,7 +3,6 @@
 var React = require('react');
 var AutocompleteStore = require('../stores/AutocompleteStore');
 var InboxActions = require('../actions/InboxActions');
-var KeybaseAPI = require('../keybaseAPI');
 var KeybaseCard = require('./KeybaseCard.react');
 var Typeahead = require('@tappleby/react-typeahead-component');
 

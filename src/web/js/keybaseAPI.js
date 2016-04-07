@@ -8,20 +8,18 @@ var scrypt = scrypt_module_factory(67108864);
 var Sets = require('../../set.js');
 var xhr = require('xhr');
 
+const ORIGIN = window.location.origin;
+const KB_STAGING = 'https://stage0.keybase.io';
+const KB_PROD = 'https://keybase.io';
+
+const kbUrl =  document.getElementById('staging') ? KB_STAGING : KB_PROD;
+
 /**
  * Client for accessing the Keybase API from the browser.
  * CORS enabled calls are implemented as static methods.
  * Non-CORS enabled calls require the class to be instantiated.
  */
 class KeybaseAPI {
-  /**
-   * Creates a new KeybaseAPI instance. We need to do this to set the URL of occurred
-   * local server, which could be localhost or some other domain.
-   */
-  constructor(serverBaseURI) {
-    this.serverBaseURI = serverBaseURI;
-  }
-
   /**
    * Perform the password hash step of the Keybase login flow by scrypting
    * the passphrase from the user and the salt from the server with the appropriate
@@ -61,21 +59,21 @@ class KeybaseAPI {
   static userLookupByFingerprint(keyFingerprint) {
     return new Promise(function(resolve, reject) {
       xhr.get({
-        url: 'https://keybase.io/_/api/1.0/user/lookup.json?key_fingerprint=' + keyFingerprint
+        url: kbUrl + '/_/api/1.0/user/lookup.json?key_fingerprint=' + keyFingerprint
       }, function(error, response, body) {
         handleKeybaseResponse(error, response, body, resolve, reject);
       });
-    });
+    }.bind(this));
   }
 
   static userLookupByUsername(username) {
     return new Promise(function(resolve, reject) {
       xhr.get({
-        url: 'https://keybase.io/_/api/1.0/user/lookup.json?username=' + username
+        url: kbUrl + '/_/api/1.0/user/lookup.json?username=' + username
       }, function(error, response, body) {
         handleKeybaseResponse(error, response, body, resolve, reject);
       });
-    });
+    }.bind(this));
   }
 
   /**
@@ -83,7 +81,7 @@ class KeybaseAPI {
    * with which the API was initialized.
    * @return a Promise containing the body of the response to a login attempt.
    */
-  login(emailOrUsername, passphrase) {
+  static login(emailOrUsername, passphrase) {
     return new Promise(function(resolve, reject) {
       this._getSalt(emailOrUsername)
         .then(function(saltDetails) {
@@ -100,11 +98,11 @@ class KeybaseAPI {
    * Get the salt for the username with which the API was configured.
    * @return a Promise containing the response to the getSalt/ api.
    */
-  _getSalt(emailOrUsername) {
+  static _getSalt(emailOrUsername) {
     console.log('Get salt...');
     return new Promise(function(resolve, reject) {
       xhr.get({
-        url: this.serverBaseURI + '/keybase/getsalt.json?email_or_username=' + emailOrUsername
+        url: ORIGIN + '/keybase/getsalt.json?email_or_username=' + emailOrUsername
       }, function(error, response, body) {
         handleKeybaseResponse(error, response, body, resolve, reject);
       });
@@ -115,7 +113,7 @@ class KeybaseAPI {
    * Perform the /login.json step of the Keybase login flow.
    * @return a Promise containing the body of the response to a login attempt.
    */
-  _login(emailOrUsername, passphrase, saltDetails) {
+  static _login(emailOrUsername, passphrase, saltDetails) {
     console.log('Login...');
     return new Promise(function(resolve, reject) {
       let salt = saltDetails.salt;
@@ -124,7 +122,7 @@ class KeybaseAPI {
       let hmac_pwh = crypto.createHmac('SHA512', hash).update(login_session).digest('hex');
 
       xhr.post({
-        url: this.serverBaseURI + '/keybase/login.json?' +
+        url: ORIGIN + '/keybase/login.json?' +
              'email_or_username=' + emailOrUsername + '&' +
              'hmac_pwh=' + hmac_pwh + '&' +
              'login_session=' + encodeURIComponent(saltDetails.login_session)
@@ -134,13 +132,13 @@ class KeybaseAPI {
     }.bind(this));
   }
 
-  signup(name, email, username, passphrase, invitation_id) {
+  static signup(name, email, username, passphrase, invitation_id) {
     return new Promise(function(resolve, reject) {
       let salt = crypto.randomBytes(16);
       let pwh = KeybaseAPI.computePasswordHash(passphrase, salt);
 
       xhr.post({
-        url: this.serverBaseURI + '/keybase/signup.json?' +
+        url: ORIGIN + '/keybase/signup.json?' +
              'name=' + name + '&' +
              'email=' + email + '&' +
              'username=' + username + '&' +
@@ -159,10 +157,10 @@ class KeybaseAPI {
    * @param publicKey Armored public key
    * @param privateKey Base64 encoded MsgPacked P3SKB private key
    */
-  addKey(publicKey, privateKey) {
+  static addKey(publicKey, privateKey) {
     return new Promise(function(resolve, reject) {
       xhr.post({
-        url: this.serverBaseURI + '/keybase/key/add.json?' +
+        url: ORIGIN + '/keybase/key/add.json?' +
              'public_key=' + encodeURIComponent(publicKey) + '&' +
              'private_key=' + encodeURIComponent(privateKey) + '&' +
              'is_primary=true'
@@ -181,7 +179,7 @@ class KeybaseAPI {
   static fetchKey(pgpKeyIds, ops) {
     return new Promise(function(resolve, reject) {
       xhr.get({
-        url: window.location.origin + '/keybase/key/fetch.json?' +
+        url: ORIGIN + '/keybase/key/fetch.json?' +
              'pgp_key_ids=' + pgpKeyIds.join(',') + '&' +
              'ops=' + ops
       }, function(error, response, body) {
@@ -192,23 +190,24 @@ class KeybaseAPI {
 
   /**
    * publicKeyForUser retrieves the given user's public key from Keybase.
-   *
+   * @param username
    * @return key.asc for the given user (an ASCII armored public key).
    */
-  static publicKeyForUser(user) {
+  static publicKeyForUser(username) {
     return new Promise(function(resolve, reject) {
       xhr.get({
-        url: 'https://keybase.io/' + user + '/key.asc'
+        url: kbUrl + '/' + username + '/key.asc'
       }, function(error, response, body) {
         if (error) {
-          reject('Internal error attempting to fetch key for user ' + user);
+          reject('Internal error attempting to fetch key for user ' + username);
         } else if (response.statusCode == 200) {
           resolve(body);
         } else {
-          reject('Error code ' + response.statusCode + ' from keybase for key.asc for user ' + user);
+          reject('Error code ' + response.statusCode +
+                 ' from keybase for key.asc for user ' + username);
         }
       });
-    });
+    }.bind(this));
   }
 
   /**
@@ -299,14 +298,14 @@ class KeybaseAPI {
   static autocomplete(q) {
     return new Promise(function(resolve, reject) {
       xhr.get({
-        url: 'https://keybase.io/_/api/1.0/user/autocomplete.json?q=' + q
+        url: kbUrl + '/_/api/1.0/user/autocomplete.json?q=' + q
       }, function (error, response, body) {
         handleKeybaseResponse(error, response, body, resolve, reject);
       });
-    });
+    }.bind(this));
   }
 
-  getKeyBundleFromLoginBody(loginBody) {
+  static getKeyBundleFromLoginBody(loginBody) {
     var buf = new Buffer(loginBody.me.private_keys.primary.bundle, 'base64');
     var p3skbObj = purepack.unpack(buf);
     return p3skbObj;
