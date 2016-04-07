@@ -58,7 +58,7 @@ class KeybaseAPI {
     }
   }
 
-  static userLookup(keyFingerprint) {
+  static userLookupByFingerprint(keyFingerprint) {
     return new Promise(function(resolve, reject) {
       xhr.get({
         url: 'https://keybase.io/_/api/1.0/user/lookup.json?key_fingerprint=' + keyFingerprint
@@ -68,10 +68,19 @@ class KeybaseAPI {
     });
   }
 
+  static userLookupByUsername(username) {
+    return new Promise(function(resolve, reject) {
+      xhr.get({
+        url: 'https://keybase.io/_/api/1.0/user/lookup.json?username=' + username
+      }, function(error, response, body) {
+        handleKeybaseResponse(error, response, body, resolve, reject);
+      });
+    });
+  }
+
   /**
    * Perform the 2-step Keybase login flow using the username and password
-   * with which the API was initialized. This API resolves whether the login
-   * succeeded or not.
+   * with which the API was initialized.
    * @return a Promise containing the body of the response to a login attempt.
    */
   login(emailOrUsername, passphrase) {
@@ -80,11 +89,7 @@ class KeybaseAPI {
         .then(function(saltDetails) {
           return this._login(emailOrUsername, passphrase, saltDetails);
         }.bind(this)).then(function(loginBody) {
-          if (loginBody.status.code != 0) {
-            reject(loginBody);
-          } else {
-            resolve(loginBody);
-          }
+          resolve(loginBody);
         }).catch(function(err) {
           reject(err);
         });
@@ -124,13 +129,7 @@ class KeybaseAPI {
              'hmac_pwh=' + hmac_pwh + '&' +
              'login_session=' + encodeURIComponent(saltDetails.login_session)
       }, function (error, response, body) {
-        if (error) {
-          reject(body);
-        } else if (response.statusCode == 200) {
-          resolve(JSON.parse(body));
-        } else {
-          reject(body);
-        }
+        handleKeybaseResponse(error, response, body, resolve, reject);
       });
     }.bind(this));
   }

@@ -64,9 +64,9 @@ function _getLinkIDFromFirstLine(firstLine) {
  * @param message The message to parse it out from.
  */
 function _getLinkIDForMessage(message) {
-  let body = messageParsing.getMessageBody(message);  
+  let body = messageParsing.getMessageBody(message);
   let firstLine = body.split('\n')[0];
-  let linkid = _getLinkIDFromFirstLine(firstLine);  
+  let linkid = _getLinkIDFromFirstLine(firstLine);
   _linkids[message.id] = linkid;
 }
 
@@ -88,7 +88,7 @@ function _decryptMessage(message) {
 
       if (_signers[message.id]) {
         let fingerprint = _signers[message.id].pgp.get_fingerprint().toString('hex');
-        KeybaseAPI.userLookup(fingerprint).then(function(response) {
+        KeybaseAPI.userLookupByFingerprint(fingerprint).then(function(response) {
           if (response.status.name === 'OK') {
             _signers[message.id].user = response.them;
             MessageStore.emitChange();
