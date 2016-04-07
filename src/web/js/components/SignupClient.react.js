@@ -58,9 +58,11 @@ var SignupClient = React.createClass({
         this.setState({ status: 'Adding keys to Keybase...'});
         return KeybaseAPI.addKey(keys.publicKey, keys.p3skbPrivateKey);
       }.bind(this)).then(function() {
-        return KeybaseAPI.userLookupByUsername(this.state.username);
-      }.bind(this)).then(function(userBody) {
-        localStorage.setItem('keybase', userBody.them);
+        // Login again because we want to re-retrieve the update user object
+        // with private keys
+        return KeybaseAPI.login(this.state.username, this.state.password);
+      }.bind(this)).then(function(loginBody) {
+        localStorage.setItem('keybase', JSON.stringify(loginBody.me));
         localStorage.setItem('keybasePassphrase', this.state.password);
         this.setState({ state: 'completed' });
       }.bind(this)).catch(function(error) {

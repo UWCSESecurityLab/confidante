@@ -88,7 +88,7 @@ function _decryptMessage(message) {
 
       if (_signers[message.id]) {
         let fingerprint = _signers[message.id].pgp.get_fingerprint().toString('hex');
-        KeybaseAPI.userLookupByFingerprint(fingerprint).then(function(response) {
+        KeybaseAPI.userLookup(fingerprint).then(function(response) {
           if (response.status.name === 'OK') {
             _signers[message.id].user = response.them;
             MessageStore.emitChange();
