@@ -93,8 +93,8 @@ var Message = React.createClass({
 
       // Convert the user object into the format used for our Keybase component.
       let formattedUser = {
-        'full_name': user.profile.full_name,
-        'username': user.basics.username,
+        'full_name': user.profile ? user.profile.full_name : null,
+        'username': user.basics ? user.basics.username : null,
         'picture': user.pictures ? user.pictures.primary.url : null,
         'twitter': getTwitterFromUser(user),
         'github': getGithubFromUser(user)
@@ -124,7 +124,10 @@ var Message = React.createClass({
           ? <div>
               <p className="signature-header">Message was signed by:</p> {signer}
             </div>
-          : null }
+          : <div>
+              <p className="signature-header">This message was not cryptographically signed.</p> {signer}
+            </div>
+        }
 
         <button type="button" className="btn btn-primary reply" data-toggle="modal" data-target="#composeMessage" onClick={this.reply}>
           <span className="reply-arrow glyphicon glyphicon-share-alt" aria-hidden="true"></span>
