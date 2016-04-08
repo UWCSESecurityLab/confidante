@@ -42,8 +42,7 @@ var SignupClient = React.createClass({
     }
 
     this.setState({ state: 'spinner', status: 'Signing up...' });
-    let keybaseAPI = new KeybaseAPI(window.location.origin);
-    keybaseAPI.signup(
+    KeybaseAPI.signup(
         this.state.name,
         this.state.email,
         this.state.username,
@@ -51,14 +50,20 @@ var SignupClient = React.createClass({
         this.state.invite
       ).then(function() {
         this.setState({ status: 'Logging in...' });
-        return keybaseAPI.login(this.state.username, this.state.password);
+        return KeybaseAPI.login(this.state.username, this.state.password);
       }.bind(this)).then(function() {
         this.setState({ status: 'Generating Keys...'});
         return pgp.generateKeysForUpload(this.state.username + '@keybase.io', this.state.password);
       }.bind(this)).then(function(keys) {
         this.setState({ status: 'Adding keys to Keybase...'});
-        return keybaseAPI.addKey(keys.publicKey, keys.p3skbPrivateKey);
+        return KeybaseAPI.addKey(keys.publicKey, keys.p3skbPrivateKey);
       }.bind(this)).then(function() {
+        // Login again because we want to re-retrieve the update user object
+        // with private keys
+        return KeybaseAPI.login(this.state.username, this.state.password);
+      }.bind(this)).then(function(loginBody) {
+        localStorage.setItem('keybase', JSON.stringify(loginBody.me));
+        localStorage.setItem('keybasePassphrase', this.state.password);
         this.setState({ state: 'completed' });
       }.bind(this)).catch(function(error) {
         this.setState({ state: 'form', error: error, password: '', confirm: '' });

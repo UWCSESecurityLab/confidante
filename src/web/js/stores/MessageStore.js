@@ -64,9 +64,9 @@ function _getLinkIDFromFirstLine(firstLine) {
  * @param message The message to parse it out from.
  */
 function _getLinkIDForMessage(message) {
-  let body = messageParsing.getMessageBody(message);  
+  let body = messageParsing.getMessageBody(message);
   let firstLine = body.split('\n')[0];
-  let linkid = _getLinkIDFromFirstLine(firstLine);  
+  let linkid = _getLinkIDFromFirstLine(firstLine);
   _linkids[message.id] = linkid;
 }
 
