@@ -124,7 +124,10 @@ var Message = React.createClass({
           ? <div>
               <p className="signature-header">Message was signed by:</p> {signer}
             </div>
-          : null }
+          : <div>
+              <p className="signature-header">This message was not cryptographically signed.</p> {signer}
+            </div>
+        }
 
         <button type="button" className="btn btn-primary reply" data-toggle="modal" data-target="#composeMessage" onClick={this.reply}>
           <span className="reply-arrow glyphicon glyphicon-share-alt" aria-hidden="true"></span>
