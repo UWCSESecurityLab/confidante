@@ -109,9 +109,9 @@ app.get('/signup', function(req, res) {
   res.render('signup', { loggedIn: false, staging: flags.KEYBASE_STAGING });
 });
 
-app.get('/inbox', auth.dataEndpoint, function(req, res) {
+app.get('/getMail', auth.dataEndpoint, function(req, res) {
   var gmailClient = new GmailClient(req.session.googleToken);
-  gmailClient.getEncryptedInbox().then(function(threads) {
+  gmailClient.getEncryptedMail(req.query.mailbox).then(function(threads) {
     res.json(threads);
   });
 });
@@ -126,7 +126,6 @@ app.post('/sendMessage', auth.dataEndpoint, function(req, res) {
   let linkid = req.body.linkid || uuid.v4();
 
   // Prepend plaintext thread pointer.
-  let threadId = req.body.parentMessage.threadId;
   let host = flags.PRODUCTION ? 
              'https://keymail.cs.washington.edu' :
              'http://localhost:3000';

@@ -36,13 +36,13 @@ class GmailClient {
   }
 
   /**
-   * Returns an array of PGP encrypted threads from the user's inbox.
+   * Returns an array of PGP encrypted threads from the specified mailbox.
    */
-  getEncryptedInbox() {
+  getEncryptedMail(mailbox) {
     return new Promise(function(resolve, reject) {
       google.gmail('v1').users.threads.list({
         auth: this.oauth2Client,
-        labelIds: 'INBOX',
+        labelIds: mailbox,
         q: 'BEGIN PGP',
         userId: 'me'
       }, function(err, response) {

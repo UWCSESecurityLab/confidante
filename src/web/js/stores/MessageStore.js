@@ -12,6 +12,7 @@ var _errors = {};
 var _signers = {};
 var _linkids = {};
 var _netError = '';
+var _mailbox = 'INBOX';
 
 // A promise containing our local private key.
 var _privateManager = KeybaseAPI.getPrivateManager();
@@ -107,9 +108,9 @@ function _decryptMessage(message) {
     });
 }
 
-function loadMail() {
+function getMail(mailbox) {
   xhr.get({
-    url: window.location.origin + '/inbox'
+    url: window.location.origin + '/getMail?mailbox=' + mailbox
   }, function(error, response, body) {
     if (error) {
       _netError = 'NETWORK';
@@ -129,8 +130,8 @@ function loadMail() {
   }.bind(this));
 }
 
-loadMail();
-setInterval(loadMail, 60000);
+getMail(_mailbox);
+setInterval(getMail, 60000, _mailbox);
 
 var MessageStore = Object.assign({}, EventEmitter.prototype, {
   emitChange: function() {
@@ -153,7 +154,7 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
       threads: _threads,
       plaintexts: _plaintexts,
       signers: _signers,
-      linkids: _linkids,
+      linkids: _linkids
     };
   },
 
@@ -175,7 +176,7 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
       } else {
         _netError = '';
       }
-      loadMail();
+      getMail(_mailbox);
     });
   },
 
@@ -184,7 +185,9 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
       MessageStore.markAsRead(action.message);
       MessageStore.emitChange();
     } else if (action.type === 'REFRESH') {
-      loadMail();
+      getMail(_mailbox);
+    } else if (action.type === 'CHANGE_MAILBOX') {
+
     }
   })
 });

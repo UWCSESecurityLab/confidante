@@ -22,7 +22,8 @@ var EmailClient = React.createClass({
     return {
       error: '',
       errorLinkText: '',
-      errorLink: ''
+      errorLink: '',
+      mailbox: 'Inbox'
     }
   },
 
@@ -61,7 +62,7 @@ var EmailClient = React.createClass({
             </div>
           : null
         }
-        <h1>Inbox</h1>
+        <h1>{this.state.mailbox}</h1>
         <ComposeArea />
         <Inbox linkidToOpen={this.props.linkidToOpen}/>
       </div>
