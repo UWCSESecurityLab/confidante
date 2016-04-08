@@ -93,8 +93,8 @@ var Message = React.createClass({
 
       // Convert the user object into the format used for our Keybase component.
       let formattedUser = {
-        'full_name': user.profile.full_name,
-        'username': user.basics.username,
+        'full_name': user.profile ? user.profile.full_name : null,
+        'username': user.basics ? user.basics.username : null,
         'picture': user.pictures ? user.pictures.primary.url : null,
         'twitter': getTwitterFromUser(user),
         'github': getGithubFromUser(user)
