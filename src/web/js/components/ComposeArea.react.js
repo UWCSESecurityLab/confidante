@@ -32,18 +32,8 @@ var ourPublicKeyManager =
 })();
 
 function getKBIDFromSigner(signer) {
-  if (signer && signer.userids) {
-    let userids = signer.userids;
-    for (let i=0; i<userids.length; i++) {
-      let userid = userids[i];
-      let kbidRegex = /keybase.io\/(.+)/;
-      let match = kbidRegex.exec(userid.components.username);
-      if (match && match.length === 2) {
-        return match[1];
-      }
-    }
-  } else {
-    return null;
+  if (signer && signer.user && signer.user[0] && signer.user[0].basics) {
+    return signer.user[0].basics.username;
   }
 }
 
