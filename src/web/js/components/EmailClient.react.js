@@ -6,6 +6,7 @@ var MessageStore = require('../stores/MessageStore.js');
 /*eslint-disable no-unused-vars*/
 var ComposeButton = require('./ComposeButton.react');
 var ComposeArea = require('./ComposeArea.react');
+var Header = require('./Header.react');
 var Inbox = require('./Inbox.react');
 var InviteButton = require('./InviteButton.react');
 var RefreshButton = require('./RefreshButton.react');
@@ -53,18 +54,22 @@ var EmailClient = React.createClass({
   render: function() {
     return (
       <div>
-        <ComposeButton />
-        <RefreshButton />
-        <InviteButton />
-        { this.state.error
-          ? <div className="alert alert-warning" role="alert">
-              {this.state.error} <a href={this.state.errorLink}>{this.state.errorLinkText}</a>
-            </div>
-          : null
-        }
-        <h1>{this.state.mailbox}</h1>
-        <ComposeArea />
-        <Inbox linkidToOpen={this.props.linkidToOpen}/>
+        <Header email={this.props.serverVars.email}
+                staging={this.props.serverVars.staging}/>
+        <div className="container">
+          <ComposeButton />
+          <RefreshButton />
+          <InviteButton />
+          { this.state.error
+            ? <div className="alert alert-warning" role="alert">
+                {this.state.error} <a href={this.state.errorLink}>{this.state.errorLinkText}</a>
+              </div>
+            : null
+          }
+          <h1>{this.state.mailbox}</h1>
+          <ComposeArea />
+          <Inbox linkidToOpen={this.props.linkidToOpen}/>
+        </div>
       </div>
     );
   }

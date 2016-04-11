@@ -11,12 +11,19 @@
   <link rel="stylesheet" type="text/css" href="snippet.css">
   <link rel="stylesheet" type="text/css" href="spinner.css">
   <title>Inbox - Keymail</title>
+  <script type="application/json" id="server-vars">
+    <%- JSON.stringify({ email: email, staging: staging }) %>
+  </script>
 </head>
 <body>
-  <%- include('header', { email: email, loggedIn: loggedIn }); %>
-  <div id="app" class="container">
-    <span class="spinner" id="spinner" aria-hidden="true"></span>
-    Loading...
+  <div id="app">
+    <%- include('header', { email: email, loggedIn: loggedIn, staging: staging }); %>
+    <div class="container">
+      <div>
+        <span class="spinner" id="spinner" aria-hidden="true"></span>
+        Loading...
+      </div>
+    </div>
   </div>
   <script src="scrypt.js"></script>
   <script src="inbox-bundle.js"></script>
