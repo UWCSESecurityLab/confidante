@@ -15,6 +15,10 @@
   100%  { transform: rotate(360deg); }
 }
 
+.spinning {
+  animation: rotate 0.8s infinite linear;
+}
+
 .large-spinner {
   display: inline-block;
   vertical-align: middle;

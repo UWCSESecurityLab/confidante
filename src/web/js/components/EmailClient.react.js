@@ -24,12 +24,14 @@ var EmailClient = React.createClass({
       error: '',
       errorLinkText: '',
       errorLink: '',
-      mailbox: 'Inbox'
+      mailbox: 'Inbox',
+      refreshing: false
     }
   },
 
   componentDidMount: function() {
     MessageStore.addChangeListener(this.onMessageStoreChange);
+    MessageStore.addRefreshListener(this.onRefreshing);
   },
 
   checkError: function() {
@@ -53,7 +55,14 @@ var EmailClient = React.createClass({
 
   onMessageStoreChange: function() {
     this.checkError();
-    this.setState({ mailbox: MessageStore.getCurrentMailboxLabel() })
+    this.setState({
+      refreshing: false,
+      mailbox: MessageStore.getCurrentMailboxLabel()
+    });
+  },
+
+  onRefreshing: function() {
+    this.setState({ refreshing: true });
   },
 
   render: function() {
@@ -64,7 +73,11 @@ var EmailClient = React.createClass({
                 mailbox={this.state.mailbox}/>
         <div className="container">
           <ComposeButton />
-          <RefreshButton />
+          <RefreshButton spinning={this.state.refreshing}/>
+          { this.state.refreshing
+            ? <span id="loading-text">Loading...</span>
+            : null
+          }
           <InviteButton />
           { this.state.error
             ? <div className="alert alert-warning" role="alert">

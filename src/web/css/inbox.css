@@ -12,6 +12,14 @@ ul {
   display: none;
 }
 
+.navbar-nav li {
+  font-size: 16px;
+}
+
+.navbar-nav li.active {
+  font-weight: bold;
+}
+
 /* Margin in compose window */
 .form-horizontal {
   margin: 2em;
@@ -54,4 +62,11 @@ ul {
 
 #invite-button {
   float: right;
+}
+
+@media all and (max-width: 375px) {
+  /* Hide "Loading..." text on very small screens where it won't fit */
+  #loading-text {
+    display: none;
+  }
 }

@@ -108,40 +108,46 @@ function _decryptMessage(message) {
     });
 }
 
-function getMail(mailbox) {
-  xhr.get({
-    url: window.location.origin + '/getMail?mailbox=' + mailbox
-  }, function(error, response, body) {
-    if (error) {
-      _netError = 'NETWORK';
-      MessageStore.emitChange();
-    } else if (response.statusCode == 401) {
-      _netError = 'AUTHENTICATION';
-      MessageStore.emitChange();
-    } else {
-      _netError = '';
-      _threads = JSON.parse(body);
-      _threads.forEach(function(thread) {
-        _decryptThread(thread);
-        _getLinkIDsForThread(thread);
-      });
-      MessageStore.emitChange();
-    }
-  }.bind(this));
-}
-
-getMail(_mailbox);
-setInterval(getMail, 60000, _mailbox);
-
 var MessageStore = Object.assign({}, EventEmitter.prototype, {
   emitChange: function() {
     this.emit('CHANGE');
   },
+  emitRefreshing: function() {
+    this.emit('REFRESH');
+  },
+
   addChangeListener: function(callback) {
     this.on('CHANGE', callback);
   },
   removeChangeListener: function(callback) {
     this.removeListener('CHANGE', callback);
+  },
+  addRefreshListener: function(callback) {
+    this.on('REFRESH', callback);
+  },
+
+  fetchMail(mailbox) {
+    MessageStore.emitRefreshing();
+
+    xhr.get({
+      url: window.location.origin + '/getMail?mailbox=' + mailbox
+    }, function(error, response, body) {
+      if (error) {
+        _netError = 'NETWORK';
+        MessageStore.emitChange();
+      } else if (response.statusCode == 401) {
+        _netError = 'AUTHENTICATION';
+        MessageStore.emitChange();
+      } else {
+        _netError = '';
+        _threads = JSON.parse(body);
+        _threads.forEach(function(thread) {
+          _decryptThread(thread);
+          _getLinkIDsForThread(thread);
+        });
+        MessageStore.emitChange();
+      }
+    }.bind(this));
   },
 
   getPrivateManager: function() {
@@ -180,7 +186,7 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
       } else {
         _netError = '';
       }
-      getMail(_mailbox);
+      MessageStore.fetchMail(_mailbox);
     });
   },
 
@@ -188,12 +194,15 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
     if (action.type === 'MARK_AS_READ') {
       MessageStore.markAsRead(action.message);
     } else if (action.type === 'REFRESH') {
-      getMail(_mailbox);
+      MessageStore.fetchMail(_mailbox);
     } else if (action.type === 'CHANGE_MAILBOX') {
       _mailbox = action.mailbox;
-      getMail(_mailbox);
+      MessageStore.fetchMail(_mailbox);
     }
   })
 });
+
+MessageStore.fetchMail(_mailbox);
+setInterval(MessageStore.fetchMail, 60000, _mailbox);
 
 module.exports = MessageStore;
