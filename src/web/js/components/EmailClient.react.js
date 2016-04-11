@@ -28,6 +28,10 @@ var EmailClient = React.createClass({
     }
   },
 
+  componentDidMount: function() {
+    MessageStore.addChangeListener(this.onMessageStoreChange);
+  },
+
   checkError: function() {
     let error = MessageStore.getNetError();
     if (error === 'AUTHENTICATION') {
@@ -47,15 +51,17 @@ var EmailClient = React.createClass({
     }
   },
 
-  componentDidMount: function() {
-    MessageStore.addChangeListener(this.checkError);
+  onMessageStoreChange: function() {
+    this.checkError();
+    this.setState({ mailbox: MessageStore.getCurrentMailboxLabel() })
   },
 
   render: function() {
     return (
       <div>
         <Header email={this.props.serverVars.email}
-                staging={this.props.serverVars.staging}/>
+                staging={this.props.serverVars.staging}
+                mailbox={this.state.mailbox}/>
         <div className="container">
           <ComposeButton />
           <RefreshButton />
@@ -66,7 +72,6 @@ var EmailClient = React.createClass({
               </div>
             : null
           }
-          <h1>{this.state.mailbox}</h1>
           <ComposeArea />
           <Inbox linkidToOpen={this.props.linkidToOpen}/>
         </div>

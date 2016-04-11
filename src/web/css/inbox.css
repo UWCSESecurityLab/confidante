@@ -17,6 +17,10 @@ ul {
   margin: 2em;
 }
 
+.inbox {
+  margin-top: 1em;
+}
+
 .inbox-button {
   margin-right: 0.5em;
 }

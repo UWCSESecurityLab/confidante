@@ -1,14 +1,9 @@
 'use strict';
 
 var React = require('react');
+var InboxActions = require('../actions/InboxActions');
 
 var Header = React.createClass({
-  getInitialState: function() {
-    return {
-      currentPage: ''
-    }
-  },
-
   render: function() {
     return (
       <nav className="navbar navbar-default">
@@ -27,9 +22,18 @@ var Header = React.createClass({
           </div>
           <div className="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul className="nav navbar-nav">
-              <li><a href="#">Inbox</a></li>
-              <li><a href="#">Sent Mail</a></li>
-              <li><a href="#">All Mail</a></li>
+              <li className={this.props.mailbox == 'INBOX' ? 'active' : null}
+                  onClick={InboxActions.changeMailbox.bind(this, 'INBOX')}>
+                <a href="#">Inbox</a>
+              </li>
+              <li className={this.props.mailbox == 'SENT' ? 'active' : null}
+                  onClick={InboxActions.changeMailbox.bind(this, 'SENT')}>
+                <a href="#">Sent Mail</a>
+              </li>
+              <li className={this.props.mailbox == '' ? 'active' : null}
+                  onClick={InboxActions.changeMailbox.bind(this, '')}>
+                <a href="#">All Mail</a>
+              </li>
               <li><a href="/help" target="_blank">Help</a></li>
             </ul>
             <ul className="nav navbar-nav navbar-right">

@@ -158,6 +158,10 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
     };
   },
 
+  getCurrentMailboxLabel: function() {
+    return _mailbox;
+  },
+
   getNetError: function() {
     return _netError;
   },
@@ -183,11 +187,11 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
   dispatchToken: InboxDispatcher.register(function(action) {
     if (action.type === 'MARK_AS_READ') {
       MessageStore.markAsRead(action.message);
-      MessageStore.emitChange();
     } else if (action.type === 'REFRESH') {
       getMail(_mailbox);
     } else if (action.type === 'CHANGE_MAILBOX') {
-
+      _mailbox = action.mailbox;
+      getMail(_mailbox);
     }
   })
 });

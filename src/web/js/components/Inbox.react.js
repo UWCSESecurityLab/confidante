@@ -29,7 +29,7 @@ var Inbox = React.createClass({
   render: function() {
     let linkids = MessageStore.getAll().linkids;
     var snippets = this.state.threads.map(function(thread) {
-      let threadLinkid = null; 
+      let threadLinkid = null;
       thread.messages.forEach(function(message) {
         if (linkids[message.id]) {
           threadLinkid = linkids[message.id];
@@ -39,19 +39,19 @@ var Inbox = React.createClass({
                 <ThreadSnippet thread={thread}
                                errors={this.state.errors}
                                signers={this.state.signers}
-                               plaintexts={this.state.plaintexts} 
+                               plaintexts={this.state.plaintexts}
                                startOpen={this.props.linkidToOpen === threadLinkid}/>
               </li>);
     }.bind(this));
     if (snippets.length == 0) {
       return (
-        <div>
+        <div className="inbox">
           <div className="row snippet">No encrypted emails!</div>
         </div>
       );
     }
     return (
-      <div>
+      <div className="inbox">
         <ul>
           {snippets}
         </ul>
