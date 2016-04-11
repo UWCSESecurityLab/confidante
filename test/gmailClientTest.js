@@ -109,7 +109,7 @@ describe('GmailClient', function() {
     });
   });
 
-  describe('#getEncryptedInbox()', function() {
+  describe('#getEncryptedMail()', function() {
     it('should fetch a list of threads from a Gmail Inbox, and return only the PGP encrypted ones', function() {
       threadGetStub.withArgs({
          auth: sinon.match.any,
@@ -127,7 +127,7 @@ describe('GmailClient', function() {
       threadListStub.callsArgWith(1, null, threadList);
 
       var gmail = new GmailClient(mockToken);
-      var inboxPromise = gmail.getEncryptedInbox();
+      var inboxPromise = gmail.getEncryptedMail('INBOX');
       return Promise.all([
         inboxPromise.should.eventually.contain(pgpThread),
         inboxPromise.should.eventually.not.contain(nonPgpThread)
