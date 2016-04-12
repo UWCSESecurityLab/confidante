@@ -35,6 +35,22 @@ class GmailClient {
     }.bind(this));
   }
 
+  getName() {
+    return new Promise(function(resolve, reject) {
+      google.plus('v1').people.get({
+        auth: this.oauth2Client,
+        fields: ['displayName'],
+        userId: 'me'
+      }, function(err, response) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(response.displayName);
+        }
+      });
+    }.bind(this));
+  }
+
   /**
    * Returns an array of PGP encrypted threads from the user's inbox.
    */
