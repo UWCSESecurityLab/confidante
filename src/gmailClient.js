@@ -38,11 +38,13 @@ class GmailClient {
   /**
    * Returns an array of PGP encrypted threads from the specified mailbox.
    */
-  getEncryptedMail(mailbox) {
+  getEncryptedMail(mailbox, pageToken) {
     return new Promise(function(resolve, reject) {
       google.gmail('v1').users.threads.list({
         auth: this.oauth2Client,
         labelIds: mailbox,
+        maxResults: 25,
+        pageToken: pageToken,
         q: 'BEGIN PGP',
         userId: 'me'
       }, function(err, response) {
@@ -66,7 +68,10 @@ class GmailClient {
             return b.messages[b.messages.length - 1].internalDate -
                    a.messages[a.messages.length - 1].internalDate;
           });
-          resolve(filtered);
+          resolve({
+            threads: filtered,
+            nextPageToken: response.nextPageToken
+          });
         }.bind(this)).catch(function(error){
           reject(error);
         });

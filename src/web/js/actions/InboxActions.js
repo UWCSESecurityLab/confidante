@@ -70,6 +70,23 @@ module.exports = {
     });
   },
 
+  /**
+   * Get the next page of email threads in the current mailbox.
+   */
+  fetchNextPage: function() {
+    InboxDispatcher.dispatch({
+      type: 'NEXT_PAGE'
+    });
+  },
+
+  /**
+   * Get the previous page of email threads in the current mailbox.
+   */
+  fetchPrevPage: function() {
+    InboxDispatcher.dispatch({
+      type: 'PREV_PAGE'
+    });
+  },
 
   ////////////////////////////////////
   //// Autocomplete Store Actions ////

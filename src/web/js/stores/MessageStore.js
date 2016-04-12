@@ -6,13 +6,19 @@ var KeybaseAPI = require('../keybaseAPI');
 var messageParsing = require('../messageParsing');
 var xhr = require('xhr');
 
-var _plaintexts = {};
 var _threads = {};
-var _errors = {};
-var _signers = {};
-var _linkids = {};
-var _netError = '';
 var _mailbox = 'INBOX';
+
+var _pageIndex = 0;
+var _pageTokens = [];
+
+var _plaintexts = {};
+var _signers = {};
+
+var _linkids = {};
+
+var _errors = {};
+var _netError = '';
 
 // A promise containing our local private key.
 var _privateManager = KeybaseAPI.getPrivateManager();
@@ -126,30 +132,6 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
     this.on('REFRESH', callback);
   },
 
-  fetchMail(mailbox) {
-    MessageStore.emitRefreshing();
-
-    xhr.get({
-      url: window.location.origin + '/getMail?mailbox=' + mailbox
-    }, function(error, response, body) {
-      if (error) {
-        _netError = 'NETWORK';
-        MessageStore.emitChange();
-      } else if (response.statusCode == 401) {
-        _netError = 'AUTHENTICATION';
-        MessageStore.emitChange();
-      } else {
-        _netError = '';
-        _threads = JSON.parse(body);
-        _threads.forEach(function(thread) {
-          _decryptThread(thread);
-          _getLinkIDsForThread(thread);
-        });
-        MessageStore.emitChange();
-      }
-    }.bind(this));
-  },
-
   getPrivateManager: function() {
     return _privateManager;
   },
@@ -170,6 +152,63 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
 
   getNetError: function() {
     return _netError;
+  },
+
+  /**
+   * Fetch PGP email threads from Gmail.
+   * @param mailbox The mailbox label to get emails from
+   * @param pageToken Which page of emails to get. Pass empty string for the first.
+   * @param callback Takes one parameter, the next page token
+   */
+  fetchMail(mailbox, pageToken, callback) {
+    MessageStore.emitRefreshing();
+    xhr.get({
+      url: window.location.origin +
+          '/getMail?mailbox=' + mailbox + '&pageToken=' + pageToken
+    }, function(error, response, body) {
+      if (error) {
+        _netError = 'NETWORK';
+        MessageStore.emitChange();
+      } else if (response.statusCode == 401) {
+        _netError = 'AUTHENTICATION';
+        MessageStore.emitChange();
+      } else {
+        _netError = '';
+        let data = JSON.parse(body);
+        _threads = data.threads;
+        _threads.forEach(function(thread) {
+          _decryptThread(thread);
+          _getLinkIDsForThread(thread);
+        });
+        callback(data.nextPageToken);
+        MessageStore.emitChange();
+      }
+    }.bind(this));
+  },
+
+  fetchFirstPage: function() {
+    MessageStore.fetchMail(_mailbox, '', (nextPageToken) => {
+      _pageTokens = ['', nextPageToken];
+      _pageIndex = 0;
+    });
+  },
+
+  fetchNextPage: function() {
+    if (_pageIndex < _pageTokens.length - 1) {
+      _pageIndex++;
+      MessageStore.fetchMail(_mailbox, _pageTokens[_pageIndex], _pageTokens.push);
+    }
+  },
+
+  fetchPrevPage: function() {
+    if (_pageIndex > 0) {
+      _pageIndex--;
+      MessageStore.fetchMail(_mailbox, _pageTokens[_pageIndex]);
+    }
+  },
+
+  refreshCurrentPage: function() {
+    MessageStore.fetchMail(_mailbox, _pageTokens[_pageIndex]);
   },
 
   markAsRead: function(threadId) {
@@ -194,15 +233,19 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
     if (action.type === 'MARK_AS_READ') {
       MessageStore.markAsRead(action.message);
     } else if (action.type === 'REFRESH') {
-      MessageStore.fetchMail(_mailbox);
+      MessageStore.refreshCurrentPage();
     } else if (action.type === 'CHANGE_MAILBOX') {
       _mailbox = action.mailbox;
-      MessageStore.fetchMail(_mailbox);
+      MessageStore.fetchFirstPage();
+    } else if (action.type === 'NEXT_PAGE') {
+      MessageStore.fetchNextPage();
+    } else if (action.type === 'PREV_PAGE') {
+      MessageStore.fetchPrevPage();
     }
   })
 });
 
-MessageStore.fetchMail(_mailbox);
-setInterval(MessageStore.fetchMail, 60000, _mailbox);
+MessageStore.fetchFirstPage();
+setInterval(MessageStore.refreshCurrentPage, 60000);
 
 module.exports = MessageStore;

@@ -111,9 +111,10 @@ app.get('/signup', function(req, res) {
 
 app.get('/getMail', auth.dataEndpoint, function(req, res) {
   var gmailClient = new GmailClient(req.session.googleToken);
-  gmailClient.getEncryptedMail(req.query.mailbox).then(function(threads) {
-    res.json(threads);
-  });
+  gmailClient.getEncryptedMail(req.query.mailbox, req.query.pageToken)
+    .then(function(threads) {
+      res.json(threads);
+    });
 });
 
 app.post('/sendMessage', auth.dataEndpoint, function(req, res) {
@@ -126,7 +127,7 @@ app.post('/sendMessage', auth.dataEndpoint, function(req, res) {
   let linkid = req.body.linkid || uuid.v4();
 
   // Prepend plaintext thread pointer.
-  let host = flags.PRODUCTION ? 
+  let host = flags.PRODUCTION ?
              'https://keymail.cs.washington.edu' :
              'http://localhost:3000';
   let link = `${host}/mail#linkid:${linkid}`;
