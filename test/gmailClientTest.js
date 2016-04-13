@@ -129,8 +129,8 @@ describe('GmailClient', function() {
       var gmail = new GmailClient(mockToken);
       var inboxPromise = gmail.getEncryptedMail('INBOX');
       return Promise.all([
-        inboxPromise.should.eventually.contain(pgpThread),
-        inboxPromise.should.eventually.not.contain(nonPgpThread)
+        inboxPromise.should.eventually.have.deep.property('threads[0]', pgpThread),
+        inboxPromise.should.eventually.not.have.deep.property('threads[0]', nonPgpThread)
       ]);
     });
   });
