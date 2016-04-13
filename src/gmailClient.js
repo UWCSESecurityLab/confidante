@@ -39,15 +39,19 @@ class GmailClient {
    * Returns an array of PGP encrypted threads from the specified mailbox.
    */
   getEncryptedMail(mailbox, pageToken) {
+    let params = {
+      auth: this.oauth2Client,
+      maxResults: 25,
+      pageToken: pageToken,
+      q: 'BEGIN PGP',
+      userId: 'me'
+    }
+    if (mailbox != '') {
+      params.labelIds = mailbox;
+    }
+
     return new Promise(function(resolve, reject) {
-      google.gmail('v1').users.threads.list({
-        auth: this.oauth2Client,
-        labelIds: mailbox,
-        maxResults: 25,
-        pageToken: pageToken,
-        q: 'BEGIN PGP',
-        userId: 'me'
-      }, function(err, response) {
+      google.gmail('v1').users.threads.list(params, function(err, response) {
         if (err) {
           reject(err);
           return;
@@ -72,7 +76,7 @@ class GmailClient {
             threads: filtered,
             nextPageToken: response.nextPageToken
           });
-        }.bind(this)).catch(function(error){
+        }.bind(this)).catch(function(error) {
           reject(error);
         });
       }.bind(this));
@@ -104,7 +108,8 @@ class GmailClient {
     return threads.filter(function(thread) {
       for (var i = 0; i < thread.messages.length; i++) {
         var message = thread.messages[i];
-        if (message.payload.mimeType == 'multipart/alternative') {
+        if (message.payload.mimeType == 'multipart/alternative' ||
+            message.payload.mimeType == 'multipart/mixed') {
           // For multipart messages, we need to find the plaintext part to
           // search for PGP armor.
           var messagePart = message.payload.parts.find(function(messagePart) {

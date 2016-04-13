@@ -114,6 +114,9 @@ app.get('/getMail', auth.dataEndpoint, function(req, res) {
   gmailClient.getEncryptedMail(req.query.mailbox, req.query.pageToken)
     .then(function(threads) {
       res.json(threads);
+    }).catch(function(err) {
+      console.error(err);
+      res.status(500).send(err);
     });
 });
 

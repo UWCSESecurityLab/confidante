@@ -4,6 +4,7 @@ var EventEmitter = require('events').EventEmitter;
 var InboxDispatcher = require('../dispatcher/InboxDispatcher');
 var KeybaseAPI = require('../keybaseAPI');
 var messageParsing = require('../messageParsing');
+var queryString = require('query-string');
 var xhr = require('xhr');
 
 var _threads = {};
@@ -101,8 +102,8 @@ function _decryptMessage(message) {
             MessageStore.emitChange();
           }
         }).catch(function(error) {
-          console.log('Error looking up user by fingerprint');
-          console.log(error);
+          console.error('Error looking up user by fingerprint');
+          console.error(error);
         });
       }
 
@@ -150,6 +151,14 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
     return _mailbox;
   },
 
+  getDisablePrev: function() {
+    return _pageIndex == 0;
+  },
+
+  getDisableNext: function() {
+    return _pageIndex + 1 >= _pageTokens.length;
+  },
+
   getNetError: function() {
     return _netError;
   },
@@ -162,15 +171,23 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
    */
   fetchMail(mailbox, pageToken, callback) {
     MessageStore.emitRefreshing();
+
+    let query = queryString.stringify({
+      mailbox: mailbox,
+      pageToken: pageToken
+    });
+
     xhr.get({
-      url: window.location.origin +
-          '/getMail?mailbox=' + mailbox + '&pageToken=' + pageToken
+      url: window.location.origin + '/getMail?' + query
     }, function(error, response, body) {
       if (error) {
         _netError = 'NETWORK';
         MessageStore.emitChange();
       } else if (response.statusCode == 401) {
         _netError = 'AUTHENTICATION';
+        MessageStore.emitChange();
+      } else if (response.statusCode == 500) {
+        _netError = 'INTERNAL ERROR';
         MessageStore.emitChange();
       } else {
         _netError = '';
@@ -180,35 +197,49 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
           _decryptThread(thread);
           _getLinkIDsForThread(thread);
         });
-        callback(data.nextPageToken);
-        MessageStore.emitChange();
+        if (callback && data.nextPageToken != '') {
+          callback(data.nextPageToken);
+        }
       }
     }.bind(this));
   },
 
   fetchFirstPage: function() {
     MessageStore.fetchMail(_mailbox, '', (nextPageToken) => {
-      _pageTokens = ['', nextPageToken];
+      _pageTokens = [undefined];
+      if (nextPageToken) {
+        _pageTokens.push(nextPageToken);
+      }
       _pageIndex = 0;
+      MessageStore.emitChange();
     });
   },
 
   fetchNextPage: function() {
     if (_pageIndex < _pageTokens.length - 1) {
       _pageIndex++;
-      MessageStore.fetchMail(_mailbox, _pageTokens[_pageIndex], _pageTokens.push);
+      MessageStore.fetchMail(_mailbox, _pageTokens[_pageIndex], (nextPageToken) => {
+        _pageTokens.push(nextPageToken);
+        MessageStore.emitChange();
+      });
     }
   },
 
   fetchPrevPage: function() {
     if (_pageIndex > 0) {
+       // Slice off the last token before moving the index back.
+      _pageTokens.slice(0, _pageIndex + 1);
       _pageIndex--;
-      MessageStore.fetchMail(_mailbox, _pageTokens[_pageIndex]);
+      MessageStore.fetchMail(_mailbox, _pageTokens[_pageIndex], () => {
+        MessageStore.emitChange();
+      });
     }
   },
 
   refreshCurrentPage: function() {
-    MessageStore.fetchMail(_mailbox, _pageTokens[_pageIndex]);
+    MessageStore.fetchMail(_mailbox, _pageTokens[_pageIndex], () => {
+      MessageStore.emitChange();
+    });
   },
 
   markAsRead: function(threadId) {
@@ -217,7 +248,7 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
     }, function(err, response) {
       if (err) {
         _netError = 'NETWORK';
-        console.err(err);
+        console.error(err);
         MessageStore.emitChange();
       } else if (response.statusCode != 200) {
         _netError = 'AUTHENTICATION';
@@ -225,7 +256,7 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
       } else {
         _netError = '';
       }
-      MessageStore.fetchMail(_mailbox);
+      MessageStore.refreshCurrentPage();
     });
   },
 

@@ -10,6 +10,7 @@ var Header = require('./Header.react');
 var Inbox = require('./Inbox.react');
 var InviteButton = require('./InviteButton.react');
 var RefreshButton = require('./RefreshButton.react');
+var ThreadScrollers = require('./ThreadScrollers.react');
 /*eslint-enable no-unused-vars*/
 
 /**
@@ -21,6 +22,8 @@ var RefreshButton = require('./RefreshButton.react');
 var EmailClient = React.createClass({
   getInitialState: function() {
     return {
+      disablePrev: true,
+      disableNext: true,
       error: '',
       errorLinkText: '',
       errorLink: '',
@@ -48,6 +51,12 @@ var EmailClient = React.createClass({
         errorLinkText: 'Try refreshing the page.',
         errorLink: '/mail'
       });
+    } else if (error === 'INTERNAL ERROR') {
+      this.setState({
+        error: 'Something went wrong in the Keymail server.',
+        errorLinkText: 'Try refreshing the page.',
+        errorLink: '/mail'
+      });
     } else {
       this.setState(this.getInitialState());
     }
@@ -57,7 +66,9 @@ var EmailClient = React.createClass({
     this.checkError();
     this.setState({
       refreshing: false,
-      mailbox: MessageStore.getCurrentMailboxLabel()
+      mailbox: MessageStore.getCurrentMailboxLabel(),
+      disablePrev: MessageStore.getDisablePrev(),
+      disableNext: MessageStore.getDisableNext()
     });
   },
 
@@ -87,6 +98,7 @@ var EmailClient = React.createClass({
           }
           <ComposeArea />
           <Inbox linkidToOpen={this.props.linkidToOpen}/>
+          <ThreadScrollers disablePrev={this.state.disablePrev} disableNext={this.state.disableNext}/>
         </div>
       </div>
     );
