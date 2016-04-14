@@ -73,7 +73,7 @@ class GmailClient {
           return;
         }
         if (response.threads === undefined) {
-          resolve([]);
+          resolve({ threads: [] });
           return;
         }
         var threadRequestPromises = [];
