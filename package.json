@@ -35,6 +35,7 @@
     "object-assign": "^4.0.1",
     "pgp-utils": "0.0.28",
     "purepack": "^1.0.4",
+    "query-string": "^4.1.0",
     "react": "^0.14.0",
     "react-dom": "^0.14.0",
     "request": "^2.65.0",

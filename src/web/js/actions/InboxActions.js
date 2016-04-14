@@ -3,6 +3,9 @@
 var InboxDispatcher = require('../dispatcher/InboxDispatcher');
 
 module.exports = {
+  ///////////////////////////////
+  //// Compose Store Actions ////
+  ///////////////////////////////
   /**
    * Sets the 'To:' field in ComposeArea to the specified value.
    * @param message.message The JSON Gmail message containing metadata info
@@ -33,6 +36,9 @@ module.exports = {
     InboxDispatcher.dispatch({ type: 'RESET_FIELDS' });
   },
 
+  ///////////////////////////////
+  //// Message Store Actions ////
+  ///////////////////////////////
   /**
    * Mark a thread as read.
    * @param threadId The id of the Gmail thread.
@@ -53,6 +59,38 @@ module.exports = {
     });
   },
 
+  /**
+   * Change the Gmail mailbox that is being fetched from
+   * @param mailbox The name of the mailbox.
+   */
+  changeMailbox: function(mailbox) {
+    InboxDispatcher.dispatch({
+      type: 'CHANGE_MAILBOX',
+      mailbox: mailbox
+    });
+  },
+
+  /**
+   * Get the next page of email threads in the current mailbox.
+   */
+  fetchNextPage: function() {
+    InboxDispatcher.dispatch({
+      type: 'NEXT_PAGE'
+    });
+  },
+
+  /**
+   * Get the previous page of email threads in the current mailbox.
+   */
+  fetchPrevPage: function() {
+    InboxDispatcher.dispatch({
+      type: 'PREV_PAGE'
+    });
+  },
+
+  ////////////////////////////////////
+  //// Autocomplete Store Actions ////
+  ////////////////////////////////////
   /**
    * Search for Google contacts matching the query.
    * @param query A string containing the search query.

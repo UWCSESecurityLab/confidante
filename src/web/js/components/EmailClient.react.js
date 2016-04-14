@@ -6,9 +6,11 @@ var MessageStore = require('../stores/MessageStore.js');
 /*eslint-disable no-unused-vars*/
 var ComposeButton = require('./ComposeButton.react');
 var ComposeArea = require('./ComposeArea.react');
+var Header = require('./Header.react');
 var Inbox = require('./Inbox.react');
 var InviteButton = require('./InviteButton.react');
 var RefreshButton = require('./RefreshButton.react');
+var ThreadScrollers = require('./ThreadScrollers.react');
 /*eslint-enable no-unused-vars*/
 
 /**
@@ -20,10 +22,19 @@ var RefreshButton = require('./RefreshButton.react');
 var EmailClient = React.createClass({
   getInitialState: function() {
     return {
+      disablePrev: true,
+      disableNext: true,
       error: '',
       errorLinkText: '',
-      errorLink: ''
+      errorLink: '',
+      mailbox: 'Inbox',
+      refreshing: false
     }
+  },
+
+  componentDidMount: function() {
+    MessageStore.addChangeListener(this.onMessageStoreChange);
+    MessageStore.addRefreshListener(this.onRefreshing);
   },
 
   checkError: function() {
@@ -40,30 +51,55 @@ var EmailClient = React.createClass({
         errorLinkText: 'Try refreshing the page.',
         errorLink: '/mail'
       });
+    } else if (error === 'INTERNAL ERROR') {
+      this.setState({
+        error: 'Something went wrong in the Keymail server.',
+        errorLinkText: 'Try refreshing the page.',
+        errorLink: '/mail'
+      });
     } else {
       this.setState(this.getInitialState());
     }
   },
 
-  componentDidMount: function() {
-    MessageStore.addChangeListener(this.checkError);
+  onMessageStoreChange: function() {
+    this.checkError();
+    this.setState({
+      refreshing: false,
+      mailbox: MessageStore.getCurrentMailboxLabel(),
+      disablePrev: MessageStore.getDisablePrev(),
+      disableNext: MessageStore.getDisableNext()
+    });
+  },
+
+  onRefreshing: function() {
+    this.setState({ refreshing: true });
   },
 
   render: function() {
     return (
       <div>
-        <ComposeButton />
-        <RefreshButton />
-        <InviteButton />
-        { this.state.error
-          ? <div className="alert alert-warning" role="alert">
-              {this.state.error} <a href={this.state.errorLink}>{this.state.errorLinkText}</a>
-            </div>
-          : null
-        }
-        <h1>Inbox</h1>
-        <ComposeArea />
-        <Inbox linkidToOpen={this.props.linkidToOpen}/>
+        <Header email={this.props.serverVars.email}
+                staging={this.props.serverVars.staging}
+                mailbox={this.state.mailbox}/>
+        <div className="container">
+          <ComposeButton />
+          <RefreshButton spinning={this.state.refreshing}/>
+          { this.state.refreshing
+            ? <span id="loading-text">Loading...</span>
+            : null
+          }
+          <InviteButton />
+          { this.state.error
+            ? <div className="alert alert-warning" role="alert">
+                {this.state.error} <a href={this.state.errorLink}>{this.state.errorLinkText}</a>
+              </div>
+            : null
+          }
+          <ComposeArea />
+          <Inbox linkidToOpen={this.props.linkidToOpen}/>
+          <ThreadScrollers disablePrev={this.state.disablePrev} disableNext={this.state.disableNext}/>
+        </div>
       </div>
     );
   }

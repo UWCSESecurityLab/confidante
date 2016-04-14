@@ -4,13 +4,21 @@ var EventEmitter = require('events').EventEmitter;
 var InboxDispatcher = require('../dispatcher/InboxDispatcher');
 var KeybaseAPI = require('../keybaseAPI');
 var messageParsing = require('../messageParsing');
+var queryString = require('query-string');
 var xhr = require('xhr');
 
-var _plaintexts = {};
 var _threads = {};
-var _errors = {};
+var _mailbox = 'INBOX';
+
+var _pageIndex = 0;
+var _pageTokens = [];
+
+var _plaintexts = {};
 var _signers = {};
+
 var _linkids = {};
+
+var _errors = {};
 var _netError = '';
 
 // A promise containing our local private key.
@@ -94,8 +102,8 @@ function _decryptMessage(message) {
             MessageStore.emitChange();
           }
         }).catch(function(error) {
-          console.log('Error looking up user by fingerprint');
-          console.log(error);
+          console.error('Error looking up user by fingerprint');
+          console.error(error);
         });
       }
 
@@ -107,40 +115,22 @@ function _decryptMessage(message) {
     });
 }
 
-function loadMail() {
-  xhr.get({
-    url: window.location.origin + '/inbox'
-  }, function(error, response, body) {
-    if (error) {
-      _netError = 'NETWORK';
-      MessageStore.emitChange();
-    } else if (response.statusCode == 401) {
-      _netError = 'AUTHENTICATION';
-      MessageStore.emitChange();
-    } else {
-      _netError = '';
-      _threads = JSON.parse(body);
-      _threads.forEach(function(thread) {
-        _decryptThread(thread);
-        _getLinkIDsForThread(thread);
-      });
-      MessageStore.emitChange();
-    }
-  }.bind(this));
-}
-
-loadMail();
-setInterval(loadMail, 60000);
-
 var MessageStore = Object.assign({}, EventEmitter.prototype, {
   emitChange: function() {
     this.emit('CHANGE');
   },
+  emitRefreshing: function() {
+    this.emit('REFRESH');
+  },
+
   addChangeListener: function(callback) {
     this.on('CHANGE', callback);
   },
   removeChangeListener: function(callback) {
     this.removeListener('CHANGE', callback);
+  },
+  addRefreshListener: function(callback) {
+    this.on('REFRESH', callback);
   },
 
   getPrivateManager: function() {
@@ -153,12 +143,103 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
       threads: _threads,
       plaintexts: _plaintexts,
       signers: _signers,
-      linkids: _linkids,
+      linkids: _linkids
     };
+  },
+
+  getCurrentMailboxLabel: function() {
+    return _mailbox;
+  },
+
+  getDisablePrev: function() {
+    return _pageIndex == 0;
+  },
+
+  getDisableNext: function() {
+    return _pageIndex + 1 >= _pageTokens.length;
   },
 
   getNetError: function() {
     return _netError;
+  },
+
+  /**
+   * Fetch PGP email threads from Gmail.
+   * @param mailbox The mailbox label to get emails from
+   * @param pageToken Which page of emails to get. Pass empty string for the first.
+   * @param callback Takes one parameter, the next page token
+   */
+  fetchMail(mailbox, pageToken, callback) {
+    MessageStore.emitRefreshing();
+
+    let query = queryString.stringify({
+      mailbox: mailbox,
+      pageToken: pageToken
+    });
+
+    xhr.get({
+      url: window.location.origin + '/getMail?' + query
+    }, function(error, response, body) {
+      if (error) {
+        _netError = 'NETWORK';
+        MessageStore.emitChange();
+      } else if (response.statusCode == 401) {
+        _netError = 'AUTHENTICATION';
+        MessageStore.emitChange();
+      } else if (response.statusCode == 500) {
+        _netError = 'INTERNAL ERROR';
+        MessageStore.emitChange();
+      } else {
+        _netError = '';
+        let data = JSON.parse(body);
+        _threads = data.threads;
+        _threads.forEach(function(thread) {
+          _decryptThread(thread);
+          _getLinkIDsForThread(thread);
+        });
+        if (callback && data.nextPageToken != '') {
+          callback(data.nextPageToken);
+        }
+      }
+    }.bind(this));
+  },
+
+  fetchFirstPage: function() {
+    MessageStore.fetchMail(_mailbox, '', (nextPageToken) => {
+      _pageTokens = [undefined];
+      if (nextPageToken) {
+        _pageTokens.push(nextPageToken);
+      }
+      _pageIndex = 0;
+      MessageStore.emitChange();
+    });
+  },
+
+  fetchNextPage: function() {
+    if (_pageIndex < _pageTokens.length - 1) {
+      _pageIndex++;
+      MessageStore.fetchMail(_mailbox, _pageTokens[_pageIndex], (nextPageToken) => {
+        _pageTokens.push(nextPageToken);
+        MessageStore.emitChange();
+      });
+    }
+  },
+
+  fetchPrevPage: function() {
+    if (_pageIndex > 0) {
+       // Slice off the last token before moving the index back.
+      _pageTokens.slice(0, _pageIndex + 1);
+      _pageIndex--;
+      MessageStore.fetchMail(_mailbox, _pageTokens[_pageIndex], () => {
+        MessageStore.emitChange();
+      });
+    }
+  },
+
+  refreshCurrentPage: function() {
+    MessageStore.fetchMail(_mailbox, _pageTokens[_pageIndex], () => {
+      MessageStore.emitChange();
+    });
   },
 
   markAsRead: function(threadId) {
@@ -167,7 +248,7 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
     }, function(err, response) {
       if (err) {
         _netError = 'NETWORK';
-        console.err(err);
+        console.error(err);
         MessageStore.emitChange();
       } else if (response.statusCode != 200) {
         _netError = 'AUTHENTICATION';
@@ -175,18 +256,27 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
       } else {
         _netError = '';
       }
-      loadMail();
+      MessageStore.refreshCurrentPage();
     });
   },
 
   dispatchToken: InboxDispatcher.register(function(action) {
     if (action.type === 'MARK_AS_READ') {
       MessageStore.markAsRead(action.message);
-      MessageStore.emitChange();
     } else if (action.type === 'REFRESH') {
-      loadMail();
+      MessageStore.refreshCurrentPage();
+    } else if (action.type === 'CHANGE_MAILBOX') {
+      _mailbox = action.mailbox;
+      MessageStore.fetchFirstPage();
+    } else if (action.type === 'NEXT_PAGE') {
+      MessageStore.fetchNextPage();
+    } else if (action.type === 'PREV_PAGE') {
+      MessageStore.fetchPrevPage();
     }
   })
 });
+
+MessageStore.fetchFirstPage();
+setInterval(MessageStore.refreshCurrentPage, 60000);
 
 module.exports = MessageStore;

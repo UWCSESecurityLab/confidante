@@ -52,22 +52,34 @@ class GmailClient {
   }
 
   /**
-   * Returns an array of PGP encrypted threads from the user's inbox.
+   * Returns PGP encrypted threads from the specified mailbox.
+   * @param mailbox {string} The mailbox to retrieve encrypted mail from.
+   * @param pageToken {number|string} The page of emails to start at.
+   * @return {object} response
+   * @return {Array} response.threads An array of encrypted threads
+   * @return {number} response.nextPageToken The page token for the next page
+   * of emails, if there are more available. Otherwise not present.
    */
-  getEncryptedInbox() {
+  getEncryptedMail(mailbox, pageToken) {
+    let params = {
+      auth: this.oauth2Client,
+      maxResults: 25,
+      pageToken: pageToken,
+      q: 'BEGIN PGP',
+      userId: 'me'
+    }
+    if (mailbox != '') {
+      params.labelIds = mailbox;
+    }
+
     return new Promise(function(resolve, reject) {
-      google.gmail('v1').users.threads.list({
-        auth: this.oauth2Client,
-        labelIds: 'INBOX',
-        q: 'BEGIN PGP',
-        userId: 'me'
-      }, function(err, response) {
+      google.gmail('v1').users.threads.list(params, function(err, response) {
         if (err) {
           reject(err);
           return;
         }
         if (response.threads === undefined) {
-          resolve([]);
+          resolve({ threads: [] });
           return;
         }
         var threadRequestPromises = [];
@@ -82,8 +94,11 @@ class GmailClient {
             return b.messages[b.messages.length - 1].internalDate -
                    a.messages[a.messages.length - 1].internalDate;
           });
-          resolve(filtered);
-        }.bind(this)).catch(function(error){
+          resolve({
+            threads: filtered,
+            nextPageToken: response.nextPageToken
+          });
+        }.bind(this)).catch(function(error) {
           reject(error);
         });
       }.bind(this));
@@ -115,7 +130,8 @@ class GmailClient {
     return threads.filter(function(thread) {
       for (var i = 0; i < thread.messages.length; i++) {
         var message = thread.messages[i];
-        if (message.payload.mimeType == 'multipart/alternative') {
+        if (message.payload.mimeType == 'multipart/alternative' ||
+            message.payload.mimeType == 'multipart/mixed') {
           // For multipart messages, we need to find the plaintext part to
           // search for PGP armor.
           var messagePart = message.payload.parts.find(function(messagePart) {

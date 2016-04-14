@@ -1,11 +1,12 @@
 'use strict';
 
-/*eslint-disable no-unused-vars*/
 var React = require('react');
-var EmailClient = require('./components/EmailClient.react');
-/*eslint-enable no-unused-vars*/
-
 var ReactDOM = require('react-dom');
+var EmailClient = require('./components/EmailClient.react');
 
-var linkidToOpen = window.location.hash.replace('#linkid:', '');
-ReactDOM.render(<EmailClient linkidToOpen={linkidToOpen}/>, document.getElementById('app'));
+let linkidToOpen = window.location.hash.replace('#linkid:', '');
+let serverVars = JSON.parse(document.getElementById('server-vars').innerHTML);
+
+ReactDOM.render(<EmailClient linkidToOpen={linkidToOpen}
+                             serverVars={serverVars}/>,
+                document.getElementById('app'));
