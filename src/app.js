@@ -137,10 +137,17 @@ app.post('/sendMessage', auth.dataEndpoint, function(req, res) {
   let header = `View this message in your encrypted inbox: ${link}\n\n`;
   let email = header + req.body.email;
 
+  let from;
+  if (!req.session.name || req.session.name === '') {
+    from = req.session.email;
+  } else {
+    from = req.session.name + ' <' + req.session.email + '>';
+  }
+
   gmailClient.sendMessage({
     headers: {
       to: [req.body.to],
-      from: req.session.name + ' <' + req.session.email + '>',
+      from: from,
       subject: req.body.subject,
       date: new Date().toString(),
       inReplyTo: parentId,
