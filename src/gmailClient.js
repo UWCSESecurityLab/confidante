@@ -52,7 +52,13 @@ class GmailClient {
   }
 
   /**
-   * Returns an array of PGP encrypted threads from the specified mailbox.
+   * Returns PGP encrypted threads from the specified mailbox.
+   * @param mailbox {string} The mailbox to retrieve encrypted mail from.
+   * @param pageToken {number|string} The page of emails to start at.
+   * @return {object} response
+   * @return {Array} response.threads An array of encrypted threads
+   * @return {number} response.nextPageToken The page token for the next page
+   * of emails, if there are more available. Otherwise not present.
    */
   getEncryptedMail(mailbox, pageToken) {
     let params = {
