@@ -140,7 +140,7 @@ app.post('/sendMessage', auth.dataEndpoint, function(req, res) {
   gmailClient.sendMessage({
     headers: {
       to: [req.body.to],
-      from: req.session.email,
+      from: req.session.name + ' <' + req.session.email + '>',
       subject: req.body.subject,
       date: new Date().toString(),
       inReplyTo: parentId,
@@ -345,13 +345,20 @@ app.get('/auth/google/return', function(req, res) {
     var gmailClient = new GmailClient(token);
     return gmailClient.getEmailAddress();
   });
-  Promise.all([tokenPromise, emailPromise]).then(function(values) {
+  var namePromise = tokenPromise.then(function(token) {
+    var gmailClient = new GmailClient(token);
+    return gmailClient.getName();
+  });
+
+  Promise.all([tokenPromise, emailPromise, namePromise]).then(function(values) {
     var token = values[0];
     var email = values[1];
+    var name = values[2];
 
     // Store full token object in the session for GmailClient.
     req.session.googleToken = token;
     req.session.email = email;
+    req.session.name = name;
 
     // If a refresh token was returned, we need to store it in the database.
     if (token.refresh_token) {

@@ -33,6 +33,7 @@ exports.redirectToGoogleOAuthUrl = function(req, res) {
     access_type: 'offline',
     scope: [
       'email',
+      'profile',
       'https://www.googleapis.com/auth/contacts.readonly',
       'https://www.googleapis.com/auth/gmail.modify'
     ],
