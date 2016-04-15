@@ -65,7 +65,7 @@ class GmailClient {
       auth: this.oauth2Client,
       maxResults: 25,
       pageToken: pageToken,
-      q: 'BEGIN PGP',
+      q: 'BEGIN PGP MESSAGE',
       userId: 'me'
     }
     if (mailbox != '') {
@@ -130,8 +130,7 @@ class GmailClient {
     return threads.filter(function(thread) {
       for (var i = 0; i < thread.messages.length; i++) {
         var message = thread.messages[i];
-        if (message.payload.mimeType == 'multipart/alternative' ||
-            message.payload.mimeType == 'multipart/mixed') {
+        if (message.payload.mimeType.startsWith('multipart/')) {
           // For multipart messages, we need to find the plaintext part to
           // search for PGP armor.
           var messagePart = message.payload.parts.find(function(messagePart) {
