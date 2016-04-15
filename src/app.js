@@ -1,5 +1,6 @@
 'use strict';
 var express = require('express');
+var fs = require('fs');
 var compression = require('compression');
 var session = require('express-session');
 var bodyParser = require('body-parser');
@@ -157,6 +158,7 @@ app.post('/sendMessage', auth.dataEndpoint, function(req, res) {
   }, req.body.parentMessage.threadId).then(function() {
     res.status(200).send('OK');
   }).catch(function(error) {
+    console.error(error);
     res.status(500).send(error);
   });
 });
@@ -169,7 +171,7 @@ app.post('/markAsRead', auth.dataEndpoint, function(req, res) {
   gmailClient.markAsRead(req.query.threadId).then(function() {
     res.status(200).send('OK');
   }).catch(function(err) {
-    console.log(err);
+    console.error(err);
     res.status(500).send(err);
   });
 });
@@ -214,7 +216,7 @@ app.get('/invite/getKey', auth.dataEndpoint, function(req, res) {
       res.json({ inviteId: record._id, publicKey: record.pgp.public_key });
     })
     .catch(err => {
-      console.log(err);
+      console.error(err);
       res.status(500).send(err);
     });
 });
@@ -280,7 +282,7 @@ app.post('/invite/sendInvite', auth.dataEndpoint, function(req, res) {
       delete req.session.tempPassphrase;
       res.status(200).send('OK');
     }).catch(function(err) {
-      console.log(err);
+      console.error(err);
       res.status(500).send(err);
     });
 });
@@ -306,6 +308,7 @@ app.get('/invite/viewInvite', function(req, res) {
       });
     }
   }).catch(function(err) {
+    console.error(err);
     res.status(500).send(err);
   });
 });
@@ -331,7 +334,7 @@ app.get('/auth/google', function(req, res) {
   auth.attemptGoogleReauthentication(req.session).then(function() {
     res.redirect('/mail');
   }).catch(function(err) {
-    console.log(err);
+    console.error(err);
     GoogleOAuth.redirectToGoogleOAuthUrl(req, res);
   });
 });
@@ -390,6 +393,7 @@ app.get('/contacts.json', auth.dataEndpoint, function(req, res) {
   gmailClient.searchContacts(req.query.q).then(function(body) {
     res.json(body);
   }).catch(function(err) {
+    console.error(err);
     res.send(err);
   });
 });
@@ -418,6 +422,7 @@ app.get('/keybase/getsalt.json', function(req, res) {
     qs: req.query
   }, function(error, response, body) {
     if (error) {
+      console.error(error);
       res.status(500).send('Failed to contact keybase /getsalt.json endpoint.');
       return;
     }
@@ -474,7 +479,9 @@ app.post('/keybase/login.json', function(req, res) {
       // Echo the response with the same status code on success.
       res.status(response.statusCode).send(body);
     }).catch(function(mongoError) {
+      console.error(mongoError);
       req.session.destroy(function(sessionError) {
+        console.error(sessionError);
         if (sessionError) {
           res.status(500).send(sessionError + mongoError);
         } else {
@@ -496,6 +503,7 @@ app.post('/keybase/signup.json', function(req, res) {
     qs: req.query
   }, function(error, response, body) {
     if (error) {
+      console.error(error);
       res.send(error);
     } else {
       res.send(body);
@@ -520,6 +528,7 @@ app.post('/keybase/key/add.json', function(req, res) {
     }
   }, function(error, response, body) {
     if (error) {
+      console.error(error);
       res.send(error);
     } else {
       res.send(body);
@@ -538,6 +547,7 @@ app.get('/keybase/key/fetch.json', auth.dataEndpoint, function(req, res) {
     }
   }, function(error, response, body) {
     if (error) {
+      console.error(error);
       res.send(error);
     } else {
       res.send(body);
@@ -556,13 +566,25 @@ app.get('/logout', function(req, res) {
       if (!error) {
         console.log(body);
       } else {
-        console.log('Failed to kill sessions: ' + error);
+        console.error('Failed to kill sessions: ' + error);
       }
     });
   }
 
   req.session.destroy(function() {
     res.redirect('/');
+  });
+});
+
+app.get('/log/console', auth.webEndpoint, auth.isEric, function(req, res) {
+  fs.readFile('console.log', (err, data) => {
+    res.send(data.toString().split('\n').join('<br/>'));
+  });
+});
+
+app.get('/log/error', auth.webEndpoint, auth.isEric, function(req, res) {
+  fs.readFile('error.log', (err, data) => {
+    res.send(data.toString().split('\n').join('<br/>'));
   });
 });
 

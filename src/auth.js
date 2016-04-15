@@ -11,7 +11,8 @@ module.exports = {
   isAuthenticatedWithKeybase: isAuthenticatedWithKeybase,
   webEndpoint: webEndpoint,
   dataEndpoint: dataEndpoint,
-  attemptGoogleReauthentication: attemptGoogleReauthentication
+  attemptGoogleReauthentication: attemptGoogleReauthentication,
+  isEric: isEric
 }
 
 /**
@@ -134,4 +135,12 @@ function attemptGoogleReauthentication(session) {
       reject(err);
     });
   });
+}
+
+function isEric(req, res, next) {
+  if (req.session.keybaseId === '53d79d3655360f0b004d7cb62a4c8619') {
+    next();
+  } else {
+    res.status(403);
+  }
 }
