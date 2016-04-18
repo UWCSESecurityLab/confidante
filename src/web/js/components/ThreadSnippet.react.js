@@ -42,6 +42,9 @@ var ThreadSnippet = React.createClass({
   render: function() {
     if (!this.state.fullThread) {
       let threadSubject = messageParsing.getThreadHeader(this.props.thread, 'Subject');
+      if (threadSubject === '') {
+        threadSubject = '(no subject)';
+      }
       let threadFrom = messageParsing.getPeopleInThread(
         this.props.thread,
         document.getElementById('myEmail').innerHTML

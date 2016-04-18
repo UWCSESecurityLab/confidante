@@ -31,6 +31,9 @@ var Thread = React.createClass({
               </li>);
     }.bind(this));
     var subject = messageParsing.getThreadHeader(this.props.thread, 'Subject');
+    if (subject === '') {
+      subject = '(no subject)';
+    }
     return (
       <div className="row thread">
         <div className="threadHeader">
