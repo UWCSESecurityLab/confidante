@@ -128,6 +128,11 @@ var ComposeArea = React.createClass({
   },
   encryptEmail: function(keyManagers) {
     return new Promise(function(fulfill, reject) {
+      // This happens if the sender didn't fill in any Keybase IDs.
+      if (keyManagers.length <= 1) {
+        reject('Please give the Keybase ID of the user you wish to encrypt to.');
+        return;
+      }
       var params = {
         msg: this.state.email,
         encrypt_for: keyManagers,
