@@ -48,7 +48,7 @@ var SignupClient = React.createClass({
         this.state.email,
         this.state.username,
         this.state.password,
-        this.state.invite
+        flags.KEYBASE_STAGING ? 'stage0' : this.state.invite
       ).then(function() {
         this.setState({ status: 'Logging in...' });
         return KeybaseAPI.login(this.state.username, this.state.password);
@@ -90,7 +90,9 @@ var SignupClient = React.createClass({
             <FormInput key="username" name="Username" value={this.state.username} onUpdate={this.updateUsername} />
             <FormInput key="pw" name="Password" type="password" minLength="12" value={this.state.password} onUpdate={this.updatePassword} />
             <FormInput key="confirm" name="Confirm Password" type="password" minLength="12" value={this.state.confirm} onUpdate={this.updateConfirm} />
-            <FormInput key="invite" name="Keybase Invite" value={this.state.invite} onUpdate={this.updateInvite} />
+            { flags.KEYBASE_STAGING ? null
+              : <FormInput key="invite" name="Keybase Invite" value={this.state.invite} onUpdate={this.updateInvite} />
+            }
             <div className="col-sm-10 col-sm-offset-2">
               <button className="btn btn-primary">Submit</button>
             </div>
