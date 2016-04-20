@@ -2,6 +2,7 @@
 
 var React = require('react');
 var KeybaseAPI = require('../keybaseAPI.js');
+var flags = require('../../../flags');
 var pgp = require('../../../pgp.js');
 
 /**
@@ -47,7 +48,7 @@ var SignupClient = React.createClass({
         this.state.email,
         this.state.username,
         this.state.password,
-        this.state.invite
+        flags.KEYBASE_STAGING ? 'stage0' : this.state.invite
       ).then(function() {
         this.setState({ status: 'Logging in...' });
         return KeybaseAPI.login(this.state.username, this.state.password);
@@ -89,7 +90,9 @@ var SignupClient = React.createClass({
             <FormInput key="username" name="Username" value={this.state.username} onUpdate={this.updateUsername} />
             <FormInput key="pw" name="Password" type="password" minLength="12" value={this.state.password} onUpdate={this.updatePassword} />
             <FormInput key="confirm" name="Confirm Password" type="password" minLength="12" value={this.state.confirm} onUpdate={this.updateConfirm} />
-            <FormInput key="invite" name="Keybase Invite" value={this.state.invite} onUpdate={this.updateInvite} />
+            { flags.KEYBASE_STAGING ? null
+              : <FormInput key="invite" name="Keybase Invite" value={this.state.invite} onUpdate={this.updateInvite} />
+            }
             <div className="col-sm-10 col-sm-offset-2">
               <button className="btn btn-primary">Submit</button>
             </div>
@@ -110,12 +113,13 @@ var SignupClient = React.createClass({
         </div>
       );
     } else if (this.state.state == 'completed') {
-      let profileLink = 'https://keybase.io/' + this.state.username;
+      let keybaseUrl = flags.KEYBASE_STAGING ? 'https://stage0.keybase.io' : 'https://keybase.io';
+      let profileLink = keybaseUrl + '/' + this.state.username;
       return (
         <div className="box col-md-8 col-md-offset-2">
           <h3>Your Keybase account is all set up!</h3>
           <p>
-            We've created an account for you on <a href="https://keybase.io" target="_blank">Keybase</a>,
+            We've created an account for you on <a href={keybaseUrl} target="_blank">Keybase</a>,
             and generated a new PGP key pair for encrypting your emails. You
             can visit and verify your Keybase profile at <a href={profileLink} target="_blank">{profileLink}</a>.</p>
           <p>
