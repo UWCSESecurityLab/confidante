@@ -139,7 +139,7 @@ var ContactsAutocomplete = React.createClass({
     let addresses = AddressParser.parse(string);
     return addresses.filter(function(address) {
       // First, filter out invalid email addresses.
-      return address.user() !== null && address.host() !== null;
+      return address.user() && address.host();
     }).map(function(address) {
       // Then format it in the simple format we like.
       return { email: address.address, name: address.name() }
