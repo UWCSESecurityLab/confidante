@@ -1,6 +1,7 @@
 'use strict';
 
 var React = require('react');
+var KeybaseAPI = require('../keybaseAPI');
 
 var KeybaseCompletion = React.createClass({
   render: function() {
@@ -22,7 +23,7 @@ var KeybaseCompletion = React.createClass({
           <div className="name-line">
             <h4 className="line-item">{ user.full_name ? user.full_name : user.username}</h4>
             <a className="btn btn-warning keybase-btn" role="button" target="_blank"
-               href={ 'https://keybase.io/' + user.username }>
+               href={ KeybaseAPI.url() + user.username }>
               Keybase Profile
             </a>
           </div>

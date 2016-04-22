@@ -21,6 +21,21 @@ const kbUrl =  document.getElementById('staging') ? KB_STAGING : KB_PROD;
  */
 class KeybaseAPI {
   /**
+   * Get the Keybase base URL, which depends on if Keymail is in staging mode.
+   * @return {string} The Keybase base URL (protocol and host)
+   */
+  static url() {
+    return kbUrl;
+  }
+
+  /**
+   * @return {boolean} true if running in Keybase staging mode.
+   */
+  static isStaging() {
+    return kbUrl === KB_STAGING;
+  }
+
+  /**
    * Perform the password hash step of the Keybase login flow by scrypting
    * the passphrase from the user and the salt from the server with the appropriate
    * parameters and returning buf.slice(192) from that result.
