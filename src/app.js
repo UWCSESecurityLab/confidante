@@ -559,7 +559,7 @@ app.get('/logout', function(req, res) {
   if (auth.isAuthenticatedWithKeybase(req.session)) {
     request({
       method: 'POST',
-      url: 'https://keybase.io/_/api/1.0/session/killall.json',
+      url: KEYBASE_URL + '/_/api/1.0/session/killall.json',
       headers: { 'X-CSRF-Token': req.session.keybaseCSRF },
       jar: getKeybaseCookieJar(req.session)
     }, function(error, response, body) {
