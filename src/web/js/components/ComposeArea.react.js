@@ -103,7 +103,7 @@ var ComposeArea = React.createClass({
         if (signerKBID) {
           kbto = [signerKBID];
         }
-                
+
         defaultTo = (from !== me) ? from : to;
       }
 
@@ -199,6 +199,7 @@ var ComposeArea = React.createClass({
             InboxActions.resetComposeFields();
             InboxActions.clearAutocompletions();
             InboxActions.refresh();
+            this.props.onSent();
           } else if (response.statusCode == 401) {
             this.setState({ feedback: 'Your login expired! Sign in again and try sending the email again.' });
           } else {

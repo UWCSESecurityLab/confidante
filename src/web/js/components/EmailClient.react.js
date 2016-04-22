@@ -13,6 +13,8 @@ var RefreshButton = require('./RefreshButton.react');
 var ThreadScrollers = require('./ThreadScrollers.react');
 /*eslint-enable no-unused-vars*/
 
+import Toast, {notify} from 'react-notify-toast';
+
 /**
  * The EmailClient is the whole kit and kaboodle of the email client,
  * including the inbox and compose area.
@@ -76,6 +78,10 @@ var EmailClient = React.createClass({
     this.setState({ refreshing: true });
   },
 
+  onSent: function() {
+    notify.show('Your message has been encrypted and sent', 'success');
+  },
+
   render: function() {
     return (
       <div>
@@ -96,9 +102,10 @@ var EmailClient = React.createClass({
               </div>
             : null
           }
-          <ComposeArea />
+          <ComposeArea onSent={this.onSent}/>
           <Inbox linkidToOpen={this.props.linkidToOpen}/>
           <ThreadScrollers disablePrev={this.state.disablePrev} disableNext={this.state.disableNext}/>
+          <Toast/>
         </div>
       </div>
     );
