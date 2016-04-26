@@ -23,8 +23,6 @@ var GmailClient = require('./gmailClient.js');
 var messageParsing = require('./web/js/messageParsing');
 var uuid = require('node-uuid');
 
-var TOOLNAME = 'TOOLNAME';
-
 // Mongo session store setup.
 var store = new MongoSessionStore({
   uri: 'mongodb://localhost:27017/test',
@@ -69,6 +67,15 @@ if (flags.KEYBASE_STAGING) {
   KEYBASE_URL = 'https://keybase.io';
 }
 
+let HOSTNAME;
+if (!flags.PRODUCTION) {
+  HOSTNAME = 'http://localhost:3000';
+} else if (flags.toolname == 'Keymail') {
+  HOSTNAME = 'https://keymail.cs.washington.edu';
+} else if (flags.toolname == 'Mailsafe') {
+  HOSTNAME = 'https://www.mailsafe.io'
+}
+
 app.get('/', function(req, res) {
   res.render('index', {
     email: req.session.email,
@@ -79,7 +86,7 @@ app.get('/', function(req, res) {
 
 app.get('/help', function(req, res) {
   res.render('help', {
-    toolname: TOOLNAME,
+    toolname: flags.TOOLNAME,
     email: req.session.email,
     loggedIn: auth.isAuthenticated(req.session),
     staging: flags.KEYBASE_STAGING
@@ -131,10 +138,7 @@ app.post('/sendMessage', auth.dataEndpoint, function(req, res) {
   let linkid = req.body.linkid || uuid.v4();
 
   // Prepend plaintext thread pointer.
-  let host = flags.PRODUCTION ?
-             'https://keymail.cs.washington.edu' :
-             'http://localhost:3000';
-  let link = `${host}/mail#linkid:${linkid}`;
+  let link = `${HOSTNAME}/mail#linkid:${linkid}`;
   let header = `View this message in your encrypted inbox: ${link}\n\n`;
   let email = header + req.body.email;
 
@@ -250,14 +254,11 @@ app.post('/invite/sendInvite', auth.dataEndpoint, function(req, res) {
 
   // Add an invite link to the message and send it over gmail.
   let sendMessage = function(invite) {
-    let host = flags.PRODUCTION ?
-               'https://keymail.cs.washington.edu' :
-               'http://localhost:3000';
-    let inviteUrl = host + '/invite?' +
+    let inviteUrl = HOSTNAME + '/invite?' +
         'id=' + req.body.inviteId + '&' +
         'pw=' + req.session.tempPassphrase;
     let inviteEmail = '<p>' + req.session.email +
-        ' wants to send you an encrypted email through Keymail! ' +
+        ' wants to send you an encrypted email through ' + flags.TOOLNAME +'! ' +
         'View the email at this link:</p>' +
         '<p><a href="' + inviteUrl + '">' + inviteUrl + '<a></p>\n\n' +
         '<pre>' + req.body.message + '</pre>';
@@ -589,7 +590,7 @@ app.get('/log/error', auth.webEndpoint, auth.isEric, function(req, res) {
 });
 
 app.listen(3000);
-console.log('Keymail server listening on port 3000');
+console.log(flags.TOOLNAME + ' server listening on port 3000');
 
 module.exports = app; // For testing
 
