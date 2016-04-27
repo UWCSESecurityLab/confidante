@@ -70,12 +70,11 @@ if (flags.KEYBASE_STAGING) {
 let HOSTNAME;
 if (!flags.PRODUCTION) {
   HOSTNAME = 'http://localhost:3000';
-} else if (flags.toolname == 'Keymail') {
+} else if (flags.TOOLNAME === 'Keymail') {
   HOSTNAME = 'https://keymail.cs.washington.edu';
-} else if (flags.toolname == 'Mailsafe') {
+} else if (flags.TOOLNAME === 'Mailsafe') {
   HOSTNAME = 'https://www.mailsafe.io'
 }
-
 app.get('/', function(req, res) {
   res.render('index', {
     email: req.session.email,
