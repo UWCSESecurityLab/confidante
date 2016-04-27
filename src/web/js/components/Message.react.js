@@ -54,6 +54,8 @@ var Message = React.createClass({
     let from = messageParsing.getMessageHeader(this.props.message, 'From');
     let to = messageParsing.getMessageHeader(this.props.message, 'To');
 
+    let multipleRecipients = to.split(',').length > 1;
+
     let date = new Date(messageParsing.getMessageHeader(this.props.message, 'Date'));
     let now = new Date(Date.now());
     let timestamp;
@@ -133,12 +135,13 @@ var Message = React.createClass({
           <span className="reply-arrow glyphicon glyphicon-share-alt" aria-hidden="true"></span>
           Reply
         </button>
-        <button type="button" className="btn btn-primary reply" data-toggle="modal" data-target="#composeMessage" onClick={this.replyAll}>
-          <span className="glyphicon glyphicon-share-alt" aria-hidden="true"></span>
-          <span className="reply-all-arrow glyphicon glyphicon-share-alt" aria-hidden="true"></span>
-          Reply All
-        </button>
-
+        { multipleRecipients ?
+          <button type="button" className="btn btn-primary reply" data-toggle="modal" data-target="#composeMessage" onClick={this.replyAll}>
+            <span className="glyphicon glyphicon-share-alt" aria-hidden="true"></span>
+            <span className="reply-all-arrow glyphicon glyphicon-share-alt" aria-hidden="true"></span>
+            Reply All
+          </button>
+          : null }
       </div>
     );
   }
