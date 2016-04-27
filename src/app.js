@@ -340,7 +340,7 @@ app.get('/invite', function(req, res) {
  */
 app.get('/auth/google', function(req, res) {
   if (!req.session.keybaseId) {
-    res.statusCode(403).send('No Keybase ID associated with this session');
+    res.statusCode(403).send('No Keybase Username associated with this session');
     return;
   }
   auth.attemptGoogleReauthentication(req.session).then(function() {
