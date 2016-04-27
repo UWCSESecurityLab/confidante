@@ -23,7 +23,7 @@ var KeybaseCompletion = React.createClass({
           <div className="name-line">
             <h4 className="line-item">{ user.full_name ? user.full_name : user.username}</h4>
             <a className="btn btn-warning keybase-btn" role="button" target="_blank"
-               href={ KeybaseAPI.url() + user.username }>
+               href={ KeybaseAPI.url() + '/' + user.username }>
               Keybase Profile
             </a>
           </div>
