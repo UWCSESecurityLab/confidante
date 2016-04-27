@@ -105,6 +105,7 @@ var KeybaseAutocomplete = React.createClass({
       <ul className="autocomplete-input">
         {selected}
         <Typeahead inputValue={this.state.kbto}
+                   placeholder="Search for people on Keybase"
                    onBlur={this.handleFocusLost}
                    onChange={this.handleValueChanged}
                    onOptionChange={this.handleResultScroll}
