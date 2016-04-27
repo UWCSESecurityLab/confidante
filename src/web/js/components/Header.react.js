@@ -16,8 +16,8 @@ var Header = React.createClass({
               <span className="icon-bar"></span>
             </button>
             <a className="navbar-brand" href="/mail">
-              Keymail
-              { this.props.staging ? <sub id="staging">Staging</sub> : null }
+              {this.props.toolname}
+              { this.props.staging ? <sub id="staging"> Staging</sub> : null }
             </a>
           </div>
           <div className="collapse navbar-collapse" id="bs-example-navbar-collapse-1">

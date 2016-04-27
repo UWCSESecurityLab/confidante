@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Keymail</title>
+	<title><%= toolname %></title>
 	<%- include('includeBootstrap'); %>
 </head>
 <body>
 	<%- include('header', { email: email, loggedIn: loggedIn }); %>
 	<div class="container">
 		<div class="jumbotron">
-			<h1>Keymail</h1>
+			<h1><%= toolname %></h1>
 			<p>
 				Securely send encrypted emails straight from the browser.
 				All you need to get started is a <a href="https://keybase.io/">Keybase</a> account
@@ -30,19 +30,19 @@
       <div class="col-md-6">
         <h2>How does it work?</h2>
         <p>
-          Keymail is a browser based end-to-end encrypted email client. It uses
+          <%= toolname %> is a browser based end-to-end encrypted email client. It uses
           your Gmail account to send and receive messages, and uses Keybase to
           store your private keys and look up public keys.
         </p>
         <p>
-          When you log into your Keymail inbox, your browser gets your private key
+          When you log into your <%= toolname %> inbox, your browser gets your private key
           from Keybase, and your encrypted emails from Gmail. Then, it
           automatically decrypts all of the messages.
         </p>
         <p>
           When you send an email, you find the recipients on Keybase using their
           name, username, or any of their linked accounts (Twitter, Github, etc).
-          Then, Keymail looks up their public keys, encrypts the message
+          Then, <%= toolname %> looks up their public keys, encrypts the message
           in the browser, and sends it through Gmail.
         </p>
       </div>
@@ -53,10 +53,10 @@
         </p>
         <ul>
           <li>
-            Keymail doesn't store any of your personal information or login
+            <%= toolname %> doesn't store any of your personal information or login
             credentials on our servers.
           </li>
-          <li>Keymail uses OAuth to access your messages from Gmail.</li>
+          <li><%= toolname %> uses OAuth to access your messages from Gmail.</li>
           <li>
             Your Keybase password is hashed in the browser, before sending it
             over the network.

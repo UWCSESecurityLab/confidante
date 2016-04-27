@@ -49,13 +49,13 @@ var EmailClient = React.createClass({
       });
     } else if (error === 'NETWORK') {
       this.setState({
-        error: 'Couldn\'t connect to Keymail.',
+        error: 'Couldn\'t connect to ' + serverVars.toolname + '.',
         errorLinkText: 'Try refreshing the page.',
         errorLink: '/mail'
       });
     } else if (error === 'INTERNAL ERROR') {
       this.setState({
-        error: 'Something went wrong in the Keymail server.',
+        error: 'Something went wrong in the ' + serverVars.toolname + ' server.',
         errorLinkText: 'Try refreshing the page.',
         errorLink: '/mail'
       });
@@ -85,7 +85,8 @@ var EmailClient = React.createClass({
   render: function() {
     return (
       <div>
-        <Header email={this.props.serverVars.email}
+        <Header toolname={this.props.serverVars.toolname}
+                email={this.props.serverVars.email}
                 staging={this.props.serverVars.staging}
                 mailbox={this.state.mailbox}/>
         <div className="container">
@@ -102,7 +103,7 @@ var EmailClient = React.createClass({
               </div>
             : null
           }
-          <ComposeArea onSent={this.onSent}/>
+          <ComposeArea onSent={this.onSent} toolname={this.props.serverVars.toolname}/>
           <Inbox linkidToOpen={this.props.linkidToOpen}/>
           <ThreadScrollers disablePrev={this.state.disablePrev} disableNext={this.state.disableNext}/>
           <Toast/>
