@@ -79,6 +79,7 @@ if (!flags.PRODUCTION) {
 app.get('/', function(req, res) {
   res.render('index', {
     email: req.session.email,
+    toolname: flags.TOOLNAME,
     loggedIn: auth.isAuthenticated(req.session),
     staging: flags.KEYBASE_STAGING
   });
@@ -98,6 +99,7 @@ app.get('/login', function(req, res) {
     res.redirect('/mail');
   } else {
     res.render('login', {
+      toolname: flags.TOOLNAME,
       email: req.session.email,
       loggedIn: false,
       staging: flags.KEYBASE_STAGING
@@ -107,6 +109,7 @@ app.get('/login', function(req, res) {
 
 app.get('/mail', auth.webEndpoint, function(req, res) {
   res.render('mail', {
+    toolname: flags.TOOLNAME,
     email: req.session.email,
     loggedIn: true,
     staging: flags.KEYBASE_STAGING
@@ -114,7 +117,11 @@ app.get('/mail', auth.webEndpoint, function(req, res) {
 });
 
 app.get('/signup', function(req, res) {
-  res.render('signup', { loggedIn: false, staging: flags.KEYBASE_STAGING });
+  res.render('signup', {
+    toolname: flags.TOOLNAME,
+    loggedIn: false,
+    staging: flags.KEYBASE_STAGING
+  });
 });
 
 app.get('/getMail', auth.dataEndpoint, function(req, res) {
@@ -320,7 +327,11 @@ app.get('/invite', function(req, res) {
     return;
   }
 
-  res.render('invite', { loggedIn: false, staging: flags.KEYBASE_STAGING });
+  res.render('invite', {
+    toolname: flags.TOOLNAME,
+    loggedIn: false,
+    staging: flags.KEYBASE_STAGING
+  });
 });
 
 /**

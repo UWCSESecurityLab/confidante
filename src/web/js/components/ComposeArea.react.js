@@ -119,7 +119,7 @@ var ComposeArea = React.createClass({
       inReplyTo: inReplyTo,
       invite: invite,
       subject: defaultSubject,
-      kbto: kbto,
+      kbto: kbto
     });
   },
   _onReset: function() {
@@ -194,7 +194,7 @@ var ComposeArea = React.createClass({
           withCredentials: true
         }, function(error, response) {
           if (error) {
-            this.setState({ feedback: 'Couldn\'t connect to the Keymail server.' });
+            this.setState({ feedback: 'Couldn\'t connect to the ' + this.props.toolname + ' server.' });
           } else if (response.statusCode == 200) {
             InboxActions.resetComposeFields();
             InboxActions.clearAutocompletions();
@@ -203,7 +203,7 @@ var ComposeArea = React.createClass({
           } else if (response.statusCode == 401) {
             this.setState({ feedback: 'Your login expired! Sign in again and try sending the email again.' });
           } else {
-            this.setState({ feedback: 'Something in Keymail broke. Sorry!' });
+            this.setState({ feedback: 'Something in ' + this.props.toolname + ' broke. Sorry!' });
           }
           this.setState({ sendingSpinner: false });
         }.bind(this));
@@ -222,7 +222,7 @@ var ComposeArea = React.createClass({
         }, function(error, response, body) {
           if (error) {
             console.error(error);
-            reject('Couldn\'t connect to Keymail. Try refreshing the page.');
+            reject('Couldn\'t connect to ' + this.props.toolname + '. Try refreshing the page.');
           } else if (response.statusCode == 401) {
             reject('Your login expired! Sign in and try again.');
           } else {
@@ -269,7 +269,7 @@ var ComposeArea = React.createClass({
         }, function(error, response) {
           if (error) {
             console.error(error);
-            reject('Couldn\'t connect to Keymail. Try refreshing the page.');
+            reject('Couldn\'t connect to ' + this.props.toolname + '. Try refreshing the page.');
           } else if (response.statusCode == 401) {
             reject('Your login expired! Sign in and try again.');
           } else {
@@ -308,7 +308,7 @@ var ComposeArea = React.createClass({
               </button>
               <h4 className="modal-title">
                 { this.state.invite
-                  ? <span>Invite a friend to Keymail</span>
+                  ? <span>Invite a friend to {this.props.toolname}</span>
                   : <span>Compose Email</span>
                 }
               </h4>

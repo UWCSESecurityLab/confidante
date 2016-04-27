@@ -14,12 +14,12 @@
 				<a class="navbar-brand" href="/mail">
 			<% } %>
       <% if (!staging) { %>
-        Keymail
+        <%= toolname %>
       <% } else { %>
         <!-- This sub element is used to tell KeybaseAPI whether it should
              access Keybase stage0 or not. Don't remove unless you propagate it
              some other way! -->
-        Keymail <sub id="staging">Staging</sub>
+        <%= toolname %><sub id="staging"> Staging</sub>
       <% } %>
       </a>
     </div>
