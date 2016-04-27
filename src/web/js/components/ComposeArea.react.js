@@ -322,7 +322,7 @@ var ComposeArea = React.createClass({
                 { this.state.invite
                   ? null
                   : <div className="form-group">
-                      <label htmlFor="kbto">Keybase ID of Recipient:</label>
+                      <label htmlFor="kbto">Keybase Username of Recipient:</label>
                       <KeybaseAutocomplete kbto={this.state.kbto} updateParent={this.updateKBTo}/>
                     </div>
                 }
