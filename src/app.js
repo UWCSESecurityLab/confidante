@@ -70,12 +70,11 @@ if (flags.KEYBASE_STAGING) {
 let HOSTNAME;
 if (!flags.PRODUCTION) {
   HOSTNAME = 'http://localhost:3000';
-} else if (flags.toolname == 'Keymail') {
+} else if (flags.TOOLNAME === 'Keymail') {
   HOSTNAME = 'https://keymail.cs.washington.edu';
-} else if (flags.toolname == 'Mailsafe') {
+} else if (flags.TOOLNAME === 'Mailsafe') {
   HOSTNAME = 'https://www.mailsafe.io'
 }
-
 app.get('/', function(req, res) {
   res.render('index', {
     email: req.session.email,
@@ -340,7 +339,7 @@ app.get('/invite', function(req, res) {
  */
 app.get('/auth/google', function(req, res) {
   if (!req.session.keybaseId) {
-    res.statusCode(403).send('No Keybase ID associated with this session');
+    res.statusCode(403).send('No Keybase Username associated with this session');
     return;
   }
   auth.attemptGoogleReauthentication(req.session).then(function() {
