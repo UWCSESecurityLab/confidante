@@ -97,11 +97,11 @@ function _decryptMessage(message) {
       if (signer) {
         let fingerprint = signer.pgp.get_fingerprint().toString('hex');
         keybaseAPI.userLookup(fingerprint).then(function(response) {
-          console.log('Decryption metrics for message ' + message.id + '\n' +
-                      'Time to decrypt: ' + (keybaseAPI.decryptTime - keybaseAPI.keyFetchTime) + 'ms\n' +
-                      'Time to fetch key: ' + keybaseAPI.keyFetchTime + 'ms\n' +
-                      'Time to fetch profile: ' + keybaseAPI.profileFetchTime + 'ms\n' +
-                      'Total time: ' + (keybaseAPI.decryptTime + keybaseAPI.profileFetchTime) + 'ms');
+          console.log(message.id + '\n' +
+                      (keybaseAPI.decryptTime - keybaseAPI.keyFetchTime) + '\n' +
+                      keybaseAPI.keyFetchTime + '\n' +
+                      keybaseAPI.profileFetchTime + '\n' +
+                      (keybaseAPI.decryptTime + keybaseAPI.profileFetchTime));
 
           if (response.status.name === 'OK') {
             _signers[message.id] = signer;
