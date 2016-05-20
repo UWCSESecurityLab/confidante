@@ -88,14 +88,21 @@ function _decryptThread(thread) {
 
 function _decryptMessage(message) {
   var body = messageParsing.getMessageBody(message);
+  let keybaseAPI = new KeybaseAPI(message.id);
   _privateManager
-    .then(KeybaseAPI.decrypt(body))
+    .then(keybaseAPI.decrypt(body))
     .then(function(literals) {
       _plaintexts[message.id] = literals[0].toString();
       let signer = _signerFromLiterals(literals);
       if (signer) {
         let fingerprint = signer.pgp.get_fingerprint().toString('hex');
-        KeybaseAPI.userLookup(fingerprint).then(function(response) {
+        keybaseAPI.userLookup(fingerprint).then(function(response) {
+          console.log('Decryption metrics for message ' + message.id + '\n' +
+                      'Time to decrypt: ' + (keybaseAPI.decryptTime - keybaseAPI.keyFetchTime) + 'ms\n' +
+                      'Time to fetch key: ' + keybaseAPI.keyFetchTime + 'ms\n' +
+                      'Time to fetch profile: ' + keybaseAPI.profileFetchTime + 'ms\n' +
+                      'Total time: ' + (keybaseAPI.decryptTime + keybaseAPI.profileFetchTime) + 'ms');
+
           if (response.status.name === 'OK') {
             _signers[message.id] = signer;
             _signers[message.id].user = response.them;
