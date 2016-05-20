@@ -5,9 +5,9 @@ var flags = require('./flags.js');
 var GoogleAuthLibrary = require('google-auth-library');
 
 let GOOGLE_OAUTH_REDIRECT_URI;
-if (flags.PRODUCTION && flags.TOOLNAME == 'Keymail') {
+if (flags.PRODUCTION && (flags.TOOLNAME === 'Keymail' || flags.TOOLNAME === 'Confidante')) {
   GOOGLE_OAUTH_REDIRECT_URI = credentials.web.redirect_uris[0];
-} else if (flags.PRODUCTION && flags.TOOLNAME == 'Mailsafe') {
+} else if (flags.PRODUCTION && flags.TOOLNAME === 'Mailsafe') {
   GOOGLE_OAUTH_REDIRECT_URI = credentials.web.redirect_uris[2];
 } else {
   GOOGLE_OAUTH_REDIRECT_URI = credentials.web.redirect_uris[1];

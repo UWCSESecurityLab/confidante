@@ -70,7 +70,7 @@ if (flags.KEYBASE_STAGING) {
 let HOSTNAME;
 if (!flags.PRODUCTION) {
   HOSTNAME = 'http://localhost:3000';
-} else if (flags.TOOLNAME === 'Keymail') {
+} else if (flags.TOOLNAME === 'Keymail' || flags.TOOLNAME === 'Confidante') {
   HOSTNAME = 'https://keymail.cs.washington.edu';
 } else if (flags.TOOLNAME === 'Mailsafe') {
   HOSTNAME = 'https://www.mailsafe.io'
