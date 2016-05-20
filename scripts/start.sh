@@ -5,4 +5,4 @@ do
   echo "Waiting for mongo to start..."
   sleep 3
 done
-node src/app.js --prod --toolname=Confidante --keybase-staging 2>> error.log 1>> console.log
+node src/app.js --prod --toolname=Confidante 2>> error.log 1>> console.log
