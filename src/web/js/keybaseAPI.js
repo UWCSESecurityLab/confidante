@@ -83,8 +83,7 @@ class KeybaseAPI {
       let xhrStart = performance.now();
       xhr.get({
         url: kbUrl + '/_/api/1.0/user/lookup.json?' +
-            'key_fingerprint=' + keyFingerprint + '&' +
-            'nonce=' + Math.random()
+            'key_fingerprint=' + keyFingerprint
       }, function(error, response, body) {
         let xhrEnd = performance.now();
         this.profileFetchTime = xhrEnd - xhrStart;
@@ -199,8 +198,7 @@ class KeybaseAPI {
       xhr.get({
         url: ORIGIN + '/keybase/key/fetch.json?' +
              'pgp_key_ids=' + pgpKeyIds.join(',') + '&' +
-             'ops=' + ops + '&' +
-             'nonce=' + Math.random()
+             'ops=' + ops
       }, function(error, response, body) {
         let xhrEnd = performance.now();
         this.keyFetchTime = xhrEnd - xhrStart;
