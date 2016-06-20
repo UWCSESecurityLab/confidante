@@ -20,13 +20,6 @@ const kbUrl =  document.getElementById('staging') ? KB_STAGING : KB_PROD;
  * Non-CORS enabled calls require the class to be instantiated.
  */
 class KeybaseAPI {
-  constructor(id) {
-    this.messageId = id;
-    this.decryptTime = 0;
-    this.keyFetchTime = 0;
-    this.profileFetchTime = 0;
-  }
-
   /**
    * Get the Keybase base URL, which depends on if Keymail is in staging mode.
    * @return {string} The Keybase base URL (protocol and host)
@@ -78,17 +71,13 @@ class KeybaseAPI {
     }
   }
 
-  userLookup(keyFingerprint) {
+  static userLookup(keyFingerprint) {
     return new Promise(function(resolve, reject) {
-      let xhrStart = performance.now();
       xhr.get({
-        url: kbUrl + '/_/api/1.0/user/lookup.json?' +
-            'key_fingerprint=' + keyFingerprint
+        url: kbUrl + '/_/api/1.0/user/lookup.json?key_fingerprint=' + keyFingerprint
       }, function(error, response, body) {
-        let xhrEnd = performance.now();
-        this.profileFetchTime = xhrEnd - xhrStart;
         handleKeybaseResponse(error, response, body, resolve, reject);
-      }.bind(this));
+      });
     }.bind(this));
   }
 
@@ -192,18 +181,15 @@ class KeybaseAPI {
    * @param ops the operations the key will be used for, see Keybase docs
    * @return a Promise containing object of status, array of keys
    */
-  fetchKey(pgpKeyIds, ops) {
+  static fetchKey(pgpKeyIds, ops) {
     return new Promise(function(resolve, reject) {
-      let xhrStart = performance.now();
       xhr.get({
         url: ORIGIN + '/keybase/key/fetch.json?' +
              'pgp_key_ids=' + pgpKeyIds.join(',') + '&' +
              'ops=' + ops
       }, function(error, response, body) {
-        let xhrEnd = performance.now();
-        this.keyFetchTime = xhrEnd - xhrStart;
         handleKeybaseResponse(error, response, body, resolve, reject);
-      }.bind(this));
+      });
     }.bind(this));
   }
 
@@ -294,25 +280,22 @@ class KeybaseAPI {
    * @return A function which returns a promise which contains the
    * decryption of the ciphertext under the given private key.
    */
-  decrypt(ciphertext) {
+  static decrypt(ciphertext) {
     return function(privateManager) {
       return new Promise(function(resolve, reject) {
-        let kf = new KeyFetcher(privateManager, this);
-        let unboxStart = performance.now();
+        let kf = new KeyFetcher(privateManager);
         kbpgp.unbox(
           {
             keyfetch: kf,
             armored: ciphertext
           },
           function(err, literals) {
-            let unboxEnd = performance.now();
-            this.decryptTime = unboxEnd - unboxStart;
             if (err !== null) {
               reject(err);
             } else {
               resolve(literals);
             }
-          }.bind(this));
+          });
       }.bind(this));
     }.bind(this);
   }
@@ -335,10 +318,9 @@ class KeybaseAPI {
 }
 
 class KeyFetcher extends kbpgp.KeyFetcher {
-  constructor(privateManager, keybaseAPI) {
+  constructor(privateManager) {
     super();
     this.privateManager = privateManager;
-    this.keybaseAPI = keybaseAPI;
   }
   /**
    * Implements the KeyFetcher interface.
@@ -364,7 +346,7 @@ class KeyFetcher extends kbpgp.KeyFetcher {
     }
 
     // Otherwise, search the key/fetch endpoint for matching keys.
-    this.keybaseAPI.fetchKey(hexIds, ops).then(function(response) {
+    KeybaseAPI.fetchKey(hexIds, ops).then(function(response) {
       for (var i = 0; i < response.keys.length; i++) {
         let keyIds = this.makeKeyIdSet(response.keys[i]);
         let idx = this.findMatchingIdIndex(hexIds, keyIds);

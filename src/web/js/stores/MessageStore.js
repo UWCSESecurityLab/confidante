@@ -21,11 +21,6 @@ var _linkids = {};
 var _errors = {};
 var _netError = '';
 
-let decryptStart = 0;
-let decryptEnd = 0;
-let decryptCount = 0;
-// let messageIds = [];
-
 // A promise containing our local private key.
 var _privateManager = KeybaseAPI.getPrivateManager();
 
@@ -93,41 +88,18 @@ function _decryptThread(thread) {
 
 function _decryptMessage(message) {
   var body = messageParsing.getMessageBody(message);
-  let keybaseAPI = new KeybaseAPI(message.id);
   _privateManager
-    .then(keybaseAPI.decrypt(body))
+    .then(KeybaseAPI.decrypt(body))
     .then(function(literals) {
       _plaintexts[message.id] = literals[0].toString();
       let signer = _signerFromLiterals(literals);
       if (signer) {
         let fingerprint = signer.pgp.get_fingerprint().toString('hex');
-        keybaseAPI.userLookup(fingerprint).then(function(response) {
-          console.log((keybaseAPI.decryptTime - keybaseAPI.keyFetchTime) + '\n' +
-                      keybaseAPI.keyFetchTime + '\n' +
-                      keybaseAPI.profileFetchTime + '\n' +
-                      (keybaseAPI.decryptTime + keybaseAPI.profileFetchTime));
-
+        KeybaseAPI.userLookup(fingerprint).then(function(response) {
           if (response.status.name === 'OK') {
             _signers[message.id] = signer;
             _signers[message.id].user = response.them;
             MessageStore.emitChange();
-            decryptEnd = performance.now();
-            decryptCount++;
-            if (decryptCount == 30) {
-              console.log("Total time:");
-              console.log(decryptEnd - decryptStart);
-            } else {
-              console.log("Elapsed time (" + decryptCount + "/30):");
-              console.log(decryptEnd - decryptStart);
-            }
-
-            // let ptLengths = messageIds.map(function(id) {
-            //   if (_plaintexts[id])
-            //     return _plaintexts[id].length;
-            //   else
-            //     return 0;
-            // });
-            // console.log(ptLengths);
           }
         }).catch(function(error) {
           console.error('Error looking up user by fingerprint');
@@ -221,21 +193,6 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
         _netError = '';
         let data = JSON.parse(body);
         _threads = data.threads;
-
-        // let messageLengths = [];
-        // messageIds = [];
-        // _threads.forEach(function(thread) {
-        //   let lengths = thread.messages.map(function(message) {
-        //     messageIds.push(message.id);
-        //     return message.payload.body.data.length;
-        //   });
-        //   messageLengths = messageLengths.concat(lengths);
-        // });
-        //
-        // console.log(messageLengths);
-
-
-        decryptStart = performance.now();
         _threads.forEach(function(thread) {
           _decryptThread(thread);
           _getLinkIDsForThread(thread);
