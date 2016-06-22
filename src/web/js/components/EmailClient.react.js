@@ -1,17 +1,14 @@
 'use strict';
 
 var React = require('react');
-var MessageStore = require('../stores/MessageStore.js');
-
-/*eslint-disable no-unused-vars*/
-var ComposeButton = require('./ComposeButton.react');
 var ComposeArea = require('./ComposeArea.react');
+var ComposeButton = require('./ComposeButton.react');
 var Header = require('./Header.react');
 var Inbox = require('./Inbox.react');
 var InviteButton = require('./InviteButton.react');
+var MessageStore = require('../stores/MessageStore.js');
 var RefreshButton = require('./RefreshButton.react');
 var ThreadScrollers = require('./ThreadScrollers.react');
-/*eslint-enable no-unused-vars*/
 
 import Toast, {notify} from 'react-notify-toast';
 

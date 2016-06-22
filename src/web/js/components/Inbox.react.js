@@ -1,11 +1,8 @@
 'use strict';
 
-/*eslint-disable no-unused-vars*/
-var ThreadSnippet = require('./ThreadSnippet.react');
-var MessageStore = require('../stores/MessageStore');
-/*eslint-enable no-unused-vars*/
-
 var React = require('react');
+var MessageStore = require('../stores/MessageStore');
+var ThreadSnippet = require('./ThreadSnippet.react');
 
 /**
  * An Inbox represent's the user's encrypted inbox, consisting of a list
