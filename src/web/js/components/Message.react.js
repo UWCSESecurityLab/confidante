@@ -25,6 +25,13 @@ function getGithubFromUser(user) {
  * It decrypts its contents.
  */
 var Message = React.createClass({
+  propTypes: {
+    error: React.PropTypes.instanceOf(Error),
+    message: React.PropTypes.object,
+    plaintext: React.PropTypes.string,
+    signer: React.PropTypes.object
+  },
+
   getInitialState: function() {
     return {
       body: 'Decrypting...',

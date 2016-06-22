@@ -8,6 +8,10 @@ var InboxActions = require('../actions/InboxActions');
 var Typeahead = require('@tappleby/react-typeahead-component');
 
 var ContactsAutocomplete = React.createClass({
+  propTypes: {
+    updateParent: React.PropTypes.func
+  },
+
   getInitialState: function() {
     return {
       completions: AutocompleteStore.getContacts(), // Autocomplete results

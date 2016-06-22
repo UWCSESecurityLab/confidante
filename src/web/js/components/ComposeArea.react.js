@@ -42,6 +42,11 @@ function getKBIDFromSigner(signer) {
  * or a new thread.
  */
 var ComposeArea = React.createClass({
+  propTypes: {
+    onSent: React.PropTypes.func,
+    toolname: React.PropTypes.string
+  },
+
   getInitialState: function() {
     return {
       to: '',

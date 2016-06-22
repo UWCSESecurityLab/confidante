@@ -4,6 +4,10 @@ var React = require('react');
 var InboxActions = require('../actions/InboxActions');
 
 var ThreadScrollers = React.createClass({
+  propTypes: {
+    disableNext: React.PropTypes.bool,
+    disablePrev: React.PropTypes.bool
+  },
   render: function() {
     return (
       <div className="btn-group" role="group">

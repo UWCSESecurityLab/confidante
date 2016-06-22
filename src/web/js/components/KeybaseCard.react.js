@@ -4,6 +4,12 @@ var React = require('react');
 var KeybaseAPI = require('../keybaseAPI');
 
 var KeybaseCompletion = React.createClass({
+  propTypes: {
+    data: React.PropTypes.object,
+    isSelected: React.PropTypes.bool,
+    onClick: React.PropTypes.func
+  },
+
   render: function() {
     let user = this.props.data;
 

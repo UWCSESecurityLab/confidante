@@ -9,6 +9,14 @@ var messageParsing = require('../messageParsing');
  * the app when you click on a thread snippet.
  */
 var Thread = React.createClass({
+  propTypes: {
+    closeCallback: React.PropTypes.func,
+    errors: React.PropTypes.object,
+    plaintexts: React.PropTypes.object,
+    signers: React.PropTypes.object,
+    thread: React.PropTypes.object
+  },
+
   getInitialState: function() {
     return {
       messages: [],

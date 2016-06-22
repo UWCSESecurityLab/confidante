@@ -9,6 +9,10 @@ var ThreadSnippet = require('./ThreadSnippet.react');
  * of ThreadSnippets.
  */
 var Inbox = React.createClass({
+  propTypes: {
+    linkidToOpen: React.PropTypes.string
+  },
+
   getInitialState: function() {
     return {
       threads: []

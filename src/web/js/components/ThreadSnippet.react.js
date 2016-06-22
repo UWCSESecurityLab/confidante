@@ -11,6 +11,13 @@ var Thread = require('./Thread.react');
  * or other mailboxes. When clicked, it shows the content of the whole thread.
  */
 var ThreadSnippet = React.createClass({
+  propTypes: {
+    thread: React.PropTypes.object,
+    plaintexts: React.PropTypes.object,
+    errors: React.PropTypes.object,
+    signers: React.PropTypes.object,
+    startOpen: React.PropTypes.bool
+  },
   getInitialState: function() {
     return {
       checked: false,

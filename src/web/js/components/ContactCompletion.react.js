@@ -1,8 +1,12 @@
 'use strict';
 var React = require('react');
 
-
 var ContactCompletion = React.createClass({
+  propTypes: {
+    data: React.PropTypes.object,
+    isSelected: React.PropTypes.bool
+  },
+
   render: function() {
     let contact = this.props.data;
 
