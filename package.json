@@ -28,7 +28,7 @@
     "flux": "^2.1.1",
     "google-auth-library": "^0.9.6",
     "googleapis": "^9.0.0",
-    "jquery": "^3.0.0",
+    "jquery": "^2.2.4",
     "kbpgp": "^2.0.48",
     "mongoose": "^4.1.9",
     "node-uuid": "^1.4.7",
