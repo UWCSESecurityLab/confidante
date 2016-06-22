@@ -15,14 +15,18 @@
         "semi": [
             2,
             "always"
-        ]
+        ],
+        "no-console": 0,
     },
     "env": {
         "es6": true,
         "node": true,
         "browser": true
     },
-    "extends": "eslint:recommended",
+    "extends": [
+      "eslint:recommended",
+      "plugin:react/recommended"
+    ],
     "ecmaFeatures": {
         "jsx": true
     },
@@ -31,7 +35,13 @@
         "KeybaseAPI": true,
         "scrypt_module_factory": true
     },
-    "rules": {
-        "no-console": 0
-    }
+    "parserOptions": {
+      "ecmaFeatures": {
+        "jsx": true
+      },
+      "ecmaVersion": 6
+    },
+    "plugins": [
+      "react"
+    ]
 }
