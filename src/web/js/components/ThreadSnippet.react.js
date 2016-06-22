@@ -71,7 +71,7 @@ var ThreadSnippet = React.createClass({
       return (
         <div className={snippetClass} onClick={this.openThread}>
           <div className="col-md-1 snippet-checkbox">
-            <input type="checkbox" value={this.state.checked} onchange={this.handleChange}></input>
+            <input type="checkbox" value={this.state.checked} onChange={this.handleChange}></input>
           </div>
           <div className="snippet-from col-md-4 col-xs-8">{threadFrom}</div>
           <div className="snippet-timestamp col-md-2 col-xs-4 col-md-push-5">{timestamp}</div>

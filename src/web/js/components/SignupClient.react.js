@@ -13,7 +13,7 @@ var SignupClient = React.createClass({
     return {
       state: 'form',
       error: ''
-    }
+    };
   },
   updateName: function(e) {
     this.setState({ name: e.target.value });
@@ -127,9 +127,9 @@ var SignupClient = React.createClass({
           </p>
           <a href="/auth/google" className="btn btn-success">Link with Gmail</a>
         </div>
-      )
+      );
     } else {
-      return <p>SignupClient error: invalid state</p>
+      return <p>SignupClient error: invalid state</p>;
     }
   }
 });
@@ -143,7 +143,7 @@ var FormInput = React.createClass({
         </label>
         <div className="col-sm-10">
           <input className="form-control"
-                 type={this.props.type ? this.props.type : "text"}
+                 type={this.props.type ? this.props.type : 'text'}
                  name={this.props.key}
                  value={this.props.value}
                  minLength={this.props.minLength ? this.props.minLength : null}

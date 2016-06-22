@@ -29,7 +29,7 @@ function login() {
   }).catch(function(error) {
     console.log(error);
     spinner.style.visibility = 'hidden';
-    addError('An error occurred when logging in<br/>' + error.status.name + ": " + error.status.desc);
+    addError('An error occurred when logging in<br/>' + error.status.name + ': ' + error.status.desc);
   });
 }
 

@@ -13,7 +13,7 @@ var RefreshButton = React.createClass({
         <span className={(this.props.spinning ? 'spinning ' : '') + 'glyphicon glyphicon-refresh'}
               aria-hidden="true"></span>
       </button>
-    )
+    );
   }
 });
 

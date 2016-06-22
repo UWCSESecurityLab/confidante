@@ -23,7 +23,7 @@ let buildClient = function() {
     credentials.web.client_secret,
     GOOGLE_OAUTH_REDIRECT_URI
   );
-}
+};
 exports.buildClient = buildClient;
 
 /**
@@ -42,7 +42,7 @@ exports.redirectToGoogleOAuthUrl = function(req, res) {
     redirect_uri: GOOGLE_OAUTH_REDIRECT_URI
   });
   res.redirect(authUrl);
-}
+};
 
 /**
  * Requests an access token and refresh token (if applicable) from Google.
@@ -60,7 +60,7 @@ exports.getInitialTokens = function(authCode) {
       }
     });
   });
-}
+};
 
 /**
  * Get the access token given a refresh token.
@@ -79,4 +79,4 @@ exports.refreshAccessToken = function(refreshToken) {
       }
     });
   });
-}
+};

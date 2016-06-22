@@ -73,7 +73,7 @@ if (!flags.PRODUCTION) {
 } else if (flags.TOOLNAME === 'Keymail' || flags.TOOLNAME === 'Confidante') {
   HOSTNAME = 'https://keymail.cs.washington.edu';
 } else if (flags.TOOLNAME === 'Mailsafe') {
-  HOSTNAME = 'https://www.mailsafe.io'
+  HOSTNAME = 'https://www.mailsafe.io';
 }
 app.get('/', function(req, res) {
   res.render('index', {
@@ -217,7 +217,7 @@ app.get('/invite/getKey', auth.dataEndpoint, function(req, res) {
           resolve({publicKey: keys.publicKey, privateKey: encryptedKey});
         }).catch(err => reject(err));
     });
-  }
+  };
 
   pgp.generateArmoredKeyPair(recipient)
     .then(encryptPrivateKey)
@@ -256,7 +256,7 @@ app.post('/invite/sendInvite', auth.dataEndpoint, function(req, res) {
         }
       });
     });
-  }
+  };
 
   // Add an invite link to the message and send it over gmail.
   let sendMessage = function(invite) {
@@ -280,7 +280,7 @@ app.post('/invite/sendInvite', auth.dataEndpoint, function(req, res) {
       },
       body: inviteEmail
     });
-  }
+  };
 
   db.getInvite(req.body.inviteId)
     .then(addMessageToInvite)

@@ -356,8 +356,8 @@ var ComposeArea = React.createClass({
               }
               <button onClick={this.presend} className="btn btn-primary">
                 { this.state.invite
-                  ? "Encrypt and Invite"
-                  : "Encrypt and Send"
+                  ? 'Encrypt and Invite'
+                  : 'Encrypt and Send'
                 }
               </button>
             </div>

@@ -60,9 +60,9 @@ var Message = React.createClass({
     let now = new Date(Date.now());
     let timestamp;
     if (now.getYear() == date.getYear()) {
-      timestamp = DateFormat(date, "dddd, mmm d 'at' h:MM tt");
+      timestamp = DateFormat(date, 'dddd, mmm d \'at\' h:MM tt');
     } else {
-      timestamp = DateFormat(date, "m/dd/yy 'at' h:MM tt");
+      timestamp = DateFormat(date, 'm/dd/yy \'at\' h:MM tt');
     }
 
     let body;
@@ -86,7 +86,7 @@ var Message = React.createClass({
         </div>
       );
     } else if (this.props.error) {
-      body = <ErrorBody error={this.props.error} message={this.props.message} />
+      body = <ErrorBody error={this.props.error} message={this.props.message} />;
     }
 
     let signer;
