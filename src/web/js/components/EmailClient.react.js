@@ -1,17 +1,14 @@
 'use strict';
 
 var React = require('react');
-var MessageStore = require('../stores/MessageStore.js');
-
-/*eslint-disable no-unused-vars*/
-var ComposeButton = require('./ComposeButton.react');
 var ComposeArea = require('./ComposeArea.react');
+var ComposeButton = require('./ComposeButton.react');
 var Header = require('./Header.react');
 var Inbox = require('./Inbox.react');
 var InviteButton = require('./InviteButton.react');
+var MessageStore = require('../stores/MessageStore.js');
 var RefreshButton = require('./RefreshButton.react');
 var ThreadScrollers = require('./ThreadScrollers.react');
-/*eslint-enable no-unused-vars*/
 
 import Toast, {notify} from 'react-notify-toast';
 
@@ -49,13 +46,13 @@ var EmailClient = React.createClass({
       });
     } else if (error === 'NETWORK') {
       this.setState({
-        error: 'Couldn\'t connect to ' + serverVars.toolname + '.',
+        error: 'Couldn\'t connect to ' + this.props.serverVars.toolname + '.',
         errorLinkText: 'Try refreshing the page.',
         errorLink: '/mail'
       });
     } else if (error === 'INTERNAL ERROR') {
       this.setState({
-        error: 'Something went wrong in the ' + serverVars.toolname + ' server.',
+        error: 'Something went wrong in the ' + this.props.serverVars.toolname + ' server.',
         errorLinkText: 'Try refreshing the page.',
         errorLink: '/mail'
       });

@@ -67,7 +67,7 @@ class GmailClient {
       pageToken: pageToken,
       q: 'BEGIN PGP MESSAGE',
       userId: 'me'
-    }
+    };
     if (mailbox != '') {
       params.labelIds = mailbox;
     }
@@ -269,7 +269,7 @@ class GmailClient {
         } else {
           reject(body);
         }
-      }.bind(this))
+      }.bind(this));
     }.bind(this));
   }
 
@@ -293,7 +293,7 @@ class GmailClient {
       return {
         name: name,
         email: email.address
-      }
+      };
     });
   }
 }

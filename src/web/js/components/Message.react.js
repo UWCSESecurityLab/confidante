@@ -25,6 +25,13 @@ function getGithubFromUser(user) {
  * It decrypts its contents.
  */
 var Message = React.createClass({
+  propTypes: {
+    error: React.PropTypes.instanceOf(Error),
+    message: React.PropTypes.object,
+    plaintext: React.PropTypes.string,
+    signer: React.PropTypes.object
+  },
+
   getInitialState: function() {
     return {
       body: 'Decrypting...',
@@ -60,9 +67,9 @@ var Message = React.createClass({
     let now = new Date(Date.now());
     let timestamp;
     if (now.getYear() == date.getYear()) {
-      timestamp = DateFormat(date, "dddd, mmm d 'at' h:MM tt");
+      timestamp = DateFormat(date, 'dddd, mmm d \'at\' h:MM tt');
     } else {
-      timestamp = DateFormat(date, "m/dd/yy 'at' h:MM tt");
+      timestamp = DateFormat(date, 'm/dd/yy \'at\' h:MM tt');
     }
 
     let body;
@@ -86,7 +93,7 @@ var Message = React.createClass({
         </div>
       );
     } else if (this.props.error) {
-      body = <ErrorBody error={this.props.error} message={this.props.message} />
+      body = <ErrorBody error={this.props.error} message={this.props.message} />;
     }
 
     let signer;

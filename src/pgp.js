@@ -1,6 +1,5 @@
-'use strict'
+'use strict';
 var kbpgp = require('kbpgp');
-var armor = require('pgp-utils').armor;
 
 // Strings used to build PGP Armor
 var ARMOR_LINE = '-----';
@@ -70,7 +69,7 @@ exports.generateArmoredKeyPair = function(emailAddress, passphrase) {
         reject(err);
       });
   });
-}
+};
 
 /**
  * Generates a PGP key pair, and exports them in a format to upload to Keybase.
@@ -97,7 +96,7 @@ exports.generateKeysForUpload = function(emailAddress, passphrase) {
         reject(err);
       });
   });
-}
+};
 
 function generateKeyPair(emailAddress) {
   return new Promise(function(resolve, reject) {
@@ -111,7 +110,7 @@ function generateKeyPair(emailAddress) {
           }
         });
       });
-    }
+    };
 
     let signKeys = function(keyManager) {
       return new Promise(function(resolve, reject) {
@@ -141,7 +140,7 @@ function exportArmoredPublicKey(keyManager) {
       if (err) {
         reject(err);
       } else {
-        resolve(pgp_public)
+        resolve(pgp_public);
       }
     });
   });
@@ -167,7 +166,7 @@ function exportP3skbPrivateKey(keyManager, passphrase) {
   return new Promise(function(resolve, reject) {
     keyManager.export_private({
       passphrase: passphrase,
-      p3skb: true,
+      p3skb: true
     }, function(err, p3skb) {
       if (err) {
         reject(err);

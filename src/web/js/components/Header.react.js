@@ -4,6 +4,12 @@ var React = require('react');
 var InboxActions = require('../actions/InboxActions');
 
 var Header = React.createClass({
+  propTypes: {
+    email: React.PropTypes.string,
+    mailbox: React.PropTypes.string,
+    staging: React.PropTypes.bool,
+    toolname: React.PropTypes.string
+  },
   render: function() {
     return (
       <nav className="navbar navbar-default">

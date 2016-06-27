@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 var Invite = require('./models/invite.js');
 var User = require('./models/user.js');
 
@@ -32,7 +32,7 @@ function getInvite(inviteId) {
  * @param keybase The login object returned from the Keybase API
  * @return an empty promise
  */
- function storeKeybaseCredentials(keybase) {
+function storeKeybaseCredentials(keybase) {
   return new Promise(function(resolve, reject) {
     getUser(keybase.me.id).then(function(user) {
       if (user) {
@@ -120,4 +120,4 @@ module.exports = {
   storeInviteKeys: storeInviteKeys,
   storeGoogleCredentials: storeGoogleCredentials,
   storeKeybaseCredentials: storeKeybaseCredentials
-}
+};

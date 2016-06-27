@@ -42,6 +42,11 @@ function getKBIDFromSigner(signer) {
  * or a new thread.
  */
 var ComposeArea = React.createClass({
+  propTypes: {
+    onSent: React.PropTypes.func,
+    toolname: React.PropTypes.string
+  },
+
   getInitialState: function() {
     return {
       to: '',
@@ -356,8 +361,8 @@ var ComposeArea = React.createClass({
               }
               <button onClick={this.presend} className="btn btn-primary">
                 { this.state.invite
-                  ? "Encrypt and Invite"
-                  : "Encrypt and Send"
+                  ? 'Encrypt and Invite'
+                  : 'Encrypt and Send'
                 }
               </button>
             </div>

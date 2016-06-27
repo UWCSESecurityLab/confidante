@@ -9,11 +9,14 @@ var pgp = require('../../../pgp.js');
  * a Keybase account.
  */
 var SignupClient = React.createClass({
+  propTypes: {
+    toolname: React.PropTypes.string
+  },
   getInitialState: function() {
     return {
       state: 'form',
       error: ''
-    }
+    };
   },
   updateName: function(e) {
     this.setState({ name: e.target.value });
@@ -85,13 +88,13 @@ var SignupClient = React.createClass({
             For more info, visit <a href={KeybaseAPI.url()} target="_blank">keybase.io</a>
           </p>
           <form className="form-horizontal" autoComplete="off" onSubmit={this.signup}>
-            <FormInput key="name" name="Name" value={this.state.name} onUpdate={this.updateName} />
-            <FormInput key="email" name="Email" value={this.state.email} onUpdate={this.updateEmail} />
-            <FormInput key="username" name="Username" value={this.state.username} onUpdate={this.updateUsername} />
-            <FormInput key="pw" name="Password" type="password" minLength="12" value={this.state.password} onUpdate={this.updatePassword} />
-            <FormInput key="confirm" name="Confirm Password" type="password" minLength="12" value={this.state.confirm} onUpdate={this.updateConfirm} />
+            <FormInput name="name" placeholder="Name" value={this.state.name} onUpdate={this.updateName} />
+            <FormInput name="email" placeholder="Email" value={this.state.email} onUpdate={this.updateEmail} />
+            <FormInput name="username" placeholder="Username" value={this.state.username} onUpdate={this.updateUsername} />
+            <FormInput name="pw" placeholder="Password" type="password" minLength="12" value={this.state.password} onUpdate={this.updatePassword} />
+            <FormInput name="confirm" placeholder="Confirm Password" type="password" minLength="12" value={this.state.confirm} onUpdate={this.updateConfirm} />
             { KeybaseAPI.isStaging() ? null
-              : <FormInput key="invite" name="Keybase Invite" value={this.state.invite} onUpdate={this.updateInvite} />
+              : <FormInput name="invite" placeholder="Keybase Invite" value={this.state.invite} onUpdate={this.updateInvite} />
             }
             <div className="col-sm-10 col-sm-offset-2">
               <button className="btn btn-primary">Submit</button>
@@ -127,27 +130,35 @@ var SignupClient = React.createClass({
           </p>
           <a href="/auth/google" className="btn btn-success">Link with Gmail</a>
         </div>
-      )
+      );
     } else {
-      return <p>SignupClient error: invalid state</p>
+      return <p>SignupClient error: invalid state</p>;
     }
   }
 });
 
 var FormInput = React.createClass({
+  propTypes: {
+    minLength: React.PropTypes.string,
+    name: React.PropTypes.string,
+    onUpdate: React.PropTypes.func,
+    placeholder: React.PropTypes.string,
+    type: React.PropTypes.string,
+    value: React.PropTypes.string
+  },
   render: function() {
     return (
       <div className="form-group">
-        <label htmlFor={this.props.key} className="col-sm-2 control-label">
-          {this.props.name}
+        <label htmlFor={this.props.name} className="col-sm-2 control-label">
+          {this.props.placeholder}
         </label>
         <div className="col-sm-10">
           <input className="form-control"
-                 type={this.props.type ? this.props.type : "text"}
-                 name={this.props.key}
+                 type={this.props.type ? this.props.type : 'text'}
+                 name={this.props.name}
                  value={this.props.value}
                  minLength={this.props.minLength ? this.props.minLength : null}
-                 placeholder={this.props.name}
+                 placeholder={this.props.placeholder}
                  onChange={this.props.onUpdate}
                  required>
           </input>

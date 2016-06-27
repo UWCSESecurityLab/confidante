@@ -12,7 +12,7 @@ var InviteClient = React.createClass({
       plaintext: '',
       status: '',
       error: ''
-    }
+    };
   },
   componentDidMount: function() {
     this.setState({ status: 'Fetching message...'});
@@ -29,7 +29,7 @@ var InviteClient = React.createClass({
       p3skb.p3skbToArmoredPrivateKey(invite.key, getQuery('pw'))
         .then(KeybaseAPI.managerFromPublicKey)
         .then(function(manager) {
-          this.setState({ status: 'Decrypting message...' })
+          this.setState({ status: 'Decrypting message...' });
           return KeybaseAPI.decrypt(invite.message)(manager);
         }.bind(this))
         .then(function(literals) {
@@ -46,20 +46,20 @@ var InviteClient = React.createClass({
         <div className="messageBody">
           {this.state.plaintext}
         </div>
-      )
+      );
     } else if (this.state.error && this.state.error != '') {
       body = (
         <div className="alert alert-danger">
           {this.state.error}
         </div>
-      )
+      );
     } else {
       body = (
         <div className="messageBody alert alert-info">
           {this.state.status}
           <span className="spinner"></span>
         </div>
-      )
+      );
     }
 
     return (
@@ -79,7 +79,7 @@ var InviteClient = React.createClass({
           <p>This message expires at {this.state.invite.expires}</p>
         </div>
       </div>
-    )
+    );
   }
 });
 

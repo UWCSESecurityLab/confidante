@@ -3,12 +3,15 @@
 var React = require('react');
 var AddressParser = require('address-rfc2822');
 var AutocompleteStore = require('../stores/AutocompleteStore');
-var ComposeStore = require('../stores/ComposeStore');
 var ContactCompletion = require('./ContactCompletion.react');
 var InboxActions = require('../actions/InboxActions');
 var Typeahead = require('@tappleby/react-typeahead-component');
 
 var ContactsAutocomplete = React.createClass({
+  propTypes: {
+    updateParent: React.PropTypes.func
+  },
+
   getInitialState: function() {
     return {
       completions: AutocompleteStore.getContacts(), // Autocomplete results
@@ -142,7 +145,7 @@ var ContactsAutocomplete = React.createClass({
       return address.user() && address.host();
     }).map(function(address) {
       // Then format it in the simple format we like.
-      return { email: address.address, name: address.name() }
+      return { email: address.address, name: address.name() };
     });
   },
 

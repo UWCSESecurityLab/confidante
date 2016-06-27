@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 var db = require('./db.js');
 var GoogleOAuth = require('./googleOAuth.js');
@@ -13,7 +13,7 @@ module.exports = {
   dataEndpoint: dataEndpoint,
   attemptGoogleReauthentication: attemptGoogleReauthentication,
   isEric: isEric
-}
+};
 
 /**
  * Express middleware to ensure the user is authenticated, for web pages.

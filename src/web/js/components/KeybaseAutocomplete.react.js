@@ -7,6 +7,10 @@ var KeybaseCard = require('./KeybaseCard.react');
 var Typeahead = require('@tappleby/react-typeahead-component');
 
 var KeybaseAutocomplete = React.createClass({
+  propTypes: {
+    updateParent: React.PropTypes.func
+  },
+
   getInitialState: function() {
     return {
       completions: AutocompleteStore.getKeybase(),
