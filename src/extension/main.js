@@ -3,11 +3,17 @@
 let lastSeenHeader;
 let lastSeenTail;
 
-function findArmor(node) {
+let signedMessages = [];
+
+function findSignedMessages(node) {
+  if (node.tagName === 'SCRIPT') {
+    return;
+  }
   if (node.childNodes.length === 0) {
     if (node.nodeValue === null) {
       return;
     }
+
     if (node.nodeValue.includes('-----BEGIN PGP SIGNED MESSAGE-----')) {
       console.log(node);
       lastSeenHeader = node;
@@ -18,12 +24,12 @@ function findArmor(node) {
     }
 
     if (lastSeenHeader && lastSeenTail) {
-      console.log(commonRoot(lastSeenHeader, lastSeenTail));
+      signedMessages.push(commonRoot(lastSeenHeader, lastSeenTail));
       lastSeenHeader = undefined;
       lastSeenTail = undefined;
     }
   } else {
-    node.childNodes.forEach(findArmor);
+    node.childNodes.forEach(findSignedMessages);
   }
 }
 
@@ -47,4 +53,30 @@ function commonRoot(a, b) {
   }
 }
 
-findArmor(document.body);
+function reconstructMessage(node) {
+  if (node.nodeValue !== null) {
+    console.log(node.nodeValue);
+    return node.nodeValue;
+  }
+
+  let style = window.getComputedStyle(node);
+  if (style.visibility === 'hidden' || style.display === 'none') {
+    return '';
+  }
+
+  if (node.tagName == 'BR') {
+    return '\n';
+  }
+  let str = '';
+  for (let child of node.childNodes) {
+    str += reconstructMessage(child);
+  }
+  if (window.getComputedStyle(node).display !== 'inline') {
+    str += '\n\n';
+  }
+  return str;
+}
+
+findSignedMessages(document.body);
+console.log(signedMessages);
+console.log(signedMessages.map(reconstructMessage));
