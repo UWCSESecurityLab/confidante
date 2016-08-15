@@ -1,0 +1,12 @@
+{
+  "manifest_version": 2,
+  "name": "Keymail Signature Verifier",
+  "description": "Verifies PGP signatures on the web and displays the signer's Keybase information inline",
+  "version": "0.1.0",
+  "content_scripts": [
+    {
+      "matches": ["*://*/*"],
+      "js": ["main.js"]
+    }
+  ]
+}
