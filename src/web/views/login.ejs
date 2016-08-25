@@ -5,8 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Login - <%= toolname %></title>
   <%- include('includeBootstrap'); %>
-  <link rel="stylesheet" href="login.css">
-  <link rel="stylesheet" href="spinner.css">
+  <% if (electron) { %>
+    <link rel="stylesheet" href="../css/login.css">
+    <link rel="stylesheet" href="../css/spinner.css">
+  <% } else { %>
+    <link rel="stylesheet" href="login.css">
+    <link rel="stylesheet" href="spinner.css">
+  <% } %>
 </head>
 <body>
   <%- include('header', { email: email, loggedIn: loggedIn }); %>
@@ -15,7 +20,11 @@
       <div class="col-md-6">
         <form>
           <h2>Sign in with your Keybase Account</h2>
-          <img src="keybase_logo.png" id="keybase-logo">
+          <% if (electron) { %>
+            <img src="../img/keybase_logo.png" id="keybase-logo">
+          <% } else { %>
+            <img src="keybase_logo.png" id="keybase-logo">
+          <% } %>
           <div class="form-group">
             <input type="email" class="form-control" id="username" placeholder="Email or Username"/>
           </div>
@@ -36,7 +45,11 @@
         Keybase is a directory of people and their PGP keys. We use Keybase to
         make encrypting and decrypting your mail easier.
       </p>
-      <a class="btn btn-primary" href="/signup">
+      <% if (electron) { %>
+        <a class="btn btn-primary" href="signup.ejs">
+      <% } else { %>
+        <a class="btn btn-primary" href="/signup">
+      <% } %>
         Sign Up
       </a>
       <a class="btn btn-info" href="https://keybase.io" target="_blank">
@@ -44,7 +57,12 @@
       </a>
     </div>
   </div>
-  <script src="scrypt.js"></script>
-  <script src="login-bundle.js"></script>
+  <% if (electron) { %>
+    <script src="../js/scrypt.js"></script>
+    <script src="../../../gen/login-bundle.js"></script>
+  <% } else { %>
+    <script src="scrypt.js"></script>
+    <script src="login-bundle.js"></script>
+  <% } %>
 </body>
 </html>
