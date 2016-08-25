@@ -4,7 +4,15 @@ const {app} = electron;
 // Module to create native browser window.
 const {BrowserWindow} = electron;
 
-const server = require('../app.js');
+const locals = {
+  toolname: 'Mailsafe',
+  staging: true,
+  email: 'EMAIL',
+  loggedIn: false,
+  electron: true,
+};
+const electronEJS = require('electron-ejs')(locals);
+
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -15,7 +23,7 @@ function createWindow() {
   // Create the browser window.
   win = new BrowserWindow({width: 1366, height: 768});
 
-  win.loadURL('http://localhost:3000');
+  win.loadURL('file://' + __dirname + '/../web/views/index.ejs');
 
   // Emitted when the window is closed.
   win.on('closed', () => {

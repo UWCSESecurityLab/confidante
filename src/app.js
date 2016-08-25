@@ -80,7 +80,8 @@ app.get('/', function(req, res) {
     email: req.session.email,
     toolname: flags.TOOLNAME,
     loggedIn: auth.isAuthenticated(req.session),
-    staging: flags.KEYBASE_STAGING
+    staging: flags.KEYBASE_STAGING,
+    electron: false,
   });
 });
 
@@ -89,7 +90,8 @@ app.get('/help', function(req, res) {
     toolname: flags.TOOLNAME,
     email: req.session.email,
     loggedIn: auth.isAuthenticated(req.session),
-    staging: flags.KEYBASE_STAGING
+    staging: flags.KEYBASE_STAGING,
+    electron: false,
   });
 });
 
@@ -101,7 +103,8 @@ app.get('/login', function(req, res) {
       toolname: flags.TOOLNAME,
       email: req.session.email,
       loggedIn: false,
-      staging: flags.KEYBASE_STAGING
+      staging: flags.KEYBASE_STAGING,
+      electron: false,
     });
   }
 });
@@ -111,7 +114,8 @@ app.get('/mail', auth.webEndpoint, function(req, res) {
     toolname: flags.TOOLNAME,
     email: req.session.email,
     loggedIn: true,
-    staging: flags.KEYBASE_STAGING
+    staging: flags.KEYBASE_STAGING,
+    electron: false,
   });
 });
 
@@ -119,7 +123,8 @@ app.get('/signup', function(req, res) {
   res.render('signup', {
     toolname: flags.TOOLNAME,
     loggedIn: false,
-    staging: flags.KEYBASE_STAGING
+    staging: flags.KEYBASE_STAGING,
+    electron: false,
   });
 });
 
@@ -329,7 +334,8 @@ app.get('/invite', function(req, res) {
   res.render('invite', {
     toolname: flags.TOOLNAME,
     loggedIn: false,
-    staging: flags.KEYBASE_STAGING
+    staging: flags.KEYBASE_STAGING,
+    electron: false,
   });
 });
 

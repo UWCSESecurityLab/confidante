@@ -19,10 +19,19 @@
 
 			<p>
 				<% if (loggedIn) { %>
-					<a class="btn btn-primary" href="/mail" role="button">Go to Inbox</a>
+          <% if (electron) { %>
+            <a class="btn btn-primary" href="mail.ejs" role="button">Go to Inbox</a>
+          <% } else { %>
+            <a class="btn btn-primary" href="/mail" role="button">Go to Inbox</a>
+          <% } %>
 				<% } else { %>
-          <a class="btn btn-success" href="/signup" role="button">Create Account</a>
-					<a class="btn btn-primary" href="/login" role="button">Log In</a>
+          <% if (electron) { %>
+            <a class="btn btn-success" href="signup.ejs" role="button">Create Account</a>
+            <a class="btn btn-primary" href="login.ejs" role="button">Log In</a>
+          <% } else { %>
+            <a class="btn btn-success" href="/signup" role="button">Create Account</a>
+            <a class="btn btn-primary" href="/login" role="button">Log In</a>
+          <% } %>
 				<% } %>
 			</p>
 		</div>

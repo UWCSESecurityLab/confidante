@@ -1,3 +1,11 @@
-<link rel="stylesheet" type="text/css" href="3rdparty/bootstrap.min.css">
-<script src="3rdparty/jquery.min.js"></script>
-<script src="3rdparty/bootstrap.min.js"></script>
+
+<% if (electron) { %>
+  <link rel="stylesheet" type="text/css" href="../css/3rdparty/bootstrap.min.css">
+  <script>window.$ = window.jQuery = require('jquery');</script>
+  <script src="../js/3rdparty/bootstrap.min.js"></script>
+<% } else { %>
+  <link rel="stylesheet" type="text/css" href="3rdparty/bootstrap.min.css">
+  <script src="3rdparty/jquery.min.js"></script>
+  <script src="3rdparty/bootstrap.min.js"></script>
+<% } %>
+
