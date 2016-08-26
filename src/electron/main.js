@@ -4,14 +4,15 @@ const {app} = electron;
 // Module to create native browser window.
 const {BrowserWindow} = electron;
 
+require('electron-ejs')(locals);
+
 const locals = {
-  toolname: 'Mailsafe',
-  staging: true,
+  toolname: 'Confidante',
+  staging: false,
   email: 'EMAIL',
   loggedIn: false,
-  electron: true,
+  electron: true
 };
-const electronEJS = require('electron-ejs')(locals);
 
 
 // Keep a global reference of the window object, if you don't, the window will
