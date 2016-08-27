@@ -1,5 +1,4 @@
 'use strict';
-
 var KeybaseAPI = require('./keybaseAPI');
 
 let submit = document.getElementById('submit');
@@ -27,7 +26,7 @@ function login() {
     localStorage.setItem('keybasePassphrase', password);
     window.location.href = '/auth/google';
   }).catch(function(error) {
-    console.log(error);
+    console.error(error);
     spinner.style.visibility = 'hidden';
     addError('An error occurred when logging in<br/>' + error.status.name + ': ' + error.status.desc);
   });

@@ -1,6 +1,7 @@
 'use strict';
 
 var crypto = require('crypto');
+var flags = require('../../flags');
 var kbpgp = require('kbpgp');
 var p3skb = require('../../p3skb');
 var purepack = require('purepack');
@@ -8,11 +9,14 @@ var scrypt = scrypt_module_factory(67108864);
 var Sets = require('../../set.js');
 var xhr = require('xhr');
 
-const ORIGIN = window.location.origin;
-const KB_STAGING = 'https://stage0.keybase.io';
-const KB_PROD = 'https://keybase.io';
+const ORIGIN = window.location.origin + '/keybase';
+const KB_STAGING = 'https://stage0.keybase.io/_/api/1.0';
+const KB_PROD = 'https://keybase.io/_/api/1.0';
 
-const kbUrl =  document.getElementById('staging') ? KB_STAGING : KB_PROD;
+// The host to use when directly making requests to Keybase (staging vs. prod).
+const kbUrl = document.getElementById('staging') ? KB_STAGING : KB_PROD;
+// The host to use when using non-CORS enabled Keybase APIs (native vs. web).
+const nonCors = flags.ELECTRON ? kbUrl : ORIGIN;
 
 /**
  * Client for accessing the Keybase API from the browser.
@@ -107,7 +111,7 @@ class KeybaseAPI {
     console.log('Get salt...');
     return new Promise(function(resolve, reject) {
       xhr.get({
-        url: ORIGIN + '/keybase/getsalt.json?email_or_username=' + emailOrUsername
+        url: nonCors + '/getsalt.json?email_or_username=' + emailOrUsername
       }, function(error, response, body) {
         handleKeybaseResponse(error, response, body, resolve, reject);
       });
@@ -127,7 +131,7 @@ class KeybaseAPI {
       let hmac_pwh = crypto.createHmac('SHA512', hash).update(login_session).digest('hex');
 
       xhr.post({
-        url: ORIGIN + '/keybase/login.json?' +
+        url: nonCors + '/login.json?' +
              'email_or_username=' + emailOrUsername + '&' +
              'hmac_pwh=' + hmac_pwh + '&' +
              'login_session=' + encodeURIComponent(saltDetails.login_session)
@@ -143,7 +147,7 @@ class KeybaseAPI {
       let pwh = KeybaseAPI.computePasswordHash(passphrase, salt);
 
       xhr.post({
-        url: ORIGIN + '/keybase/signup.json?' +
+        url: nonCors + '/signup.json?' +
              'name=' + name + '&' +
              'email=' + email + '&' +
              'username=' + username + '&' +
@@ -165,7 +169,7 @@ class KeybaseAPI {
   static addKey(publicKey, privateKey) {
     return new Promise(function(resolve, reject) {
       xhr.post({
-        url: ORIGIN + '/keybase/key/add.json?' +
+        url: nonCors + '/key/add.json?' +
              'public_key=' + encodeURIComponent(publicKey) + '&' +
              'private_key=' + encodeURIComponent(privateKey) + '&' +
              'is_primary=true'
@@ -184,7 +188,7 @@ class KeybaseAPI {
   static fetchKey(pgpKeyIds, ops) {
     return new Promise(function(resolve, reject) {
       xhr.get({
-        url: ORIGIN + '/keybase/key/fetch.json?' +
+        url: nonCors + '/key/fetch.json?' +
              'pgp_key_ids=' + pgpKeyIds.join(',') + '&' +
              'ops=' + ops
       }, function(error, response, body) {
