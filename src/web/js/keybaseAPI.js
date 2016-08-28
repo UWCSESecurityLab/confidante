@@ -78,7 +78,7 @@ class KeybaseAPI {
   static userLookup(keyFingerprint) {
     return new Promise(function(resolve, reject) {
       xhr.get({
-        url: kbUrl + '/_/api/1.0/user/lookup.json?key_fingerprint=' + keyFingerprint
+        url: kbUrl + '/user/lookup.json?key_fingerprint=' + keyFingerprint
       }, function(error, response, body) {
         handleKeybaseResponse(error, response, body, resolve, reject);
       });
