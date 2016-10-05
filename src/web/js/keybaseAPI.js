@@ -307,7 +307,7 @@ class KeybaseAPI {
   static autocomplete(q) {
     return new Promise(function(resolve, reject) {
       xhr.get({
-        url: kbUrl + '/_/api/1.0/user/autocomplete.json?q=' + q
+        url: kbUrl + '/user/autocomplete.json?q=' + q
       }, function (error, response, body) {
         handleKeybaseResponse(error, response, body, resolve, reject);
       });
