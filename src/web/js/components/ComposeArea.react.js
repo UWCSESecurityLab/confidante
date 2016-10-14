@@ -55,6 +55,7 @@ var ComposeArea = React.createClass({
       email: '',
       feedback: '',
       sendingSpinner: false,
+      sign: 'checked',
       inReplyTo: ComposeStore.getReply(),
       invite: ComposeStore.getInvite()
     };
@@ -73,6 +74,9 @@ var ComposeArea = React.createClass({
   },
   updateEmail: function(e) {
     this.setState({ email: e.target.value });
+  },
+  updateSign: function() {
+    thi.setState({});
   },
 
   componentDidMount: function() {
@@ -349,7 +353,7 @@ var ComposeArea = React.createClass({
                             rows="8"
                             className="form-control">
                   </textarea>
-                  <label><input type="checkbox" name="sign-private-key" value="sign-private-key" checked="checked"/> Sign email with my Private Key</label><br/>
+                  <label><input type="checkbox" name="sign-private-key" value="sign-private-key" checked={this.state.sign}/> Sign email with my Private Key</label><br/>
                   <br/>
                 </div>
               </form>
