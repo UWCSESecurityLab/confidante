@@ -349,6 +349,7 @@ var ComposeArea = React.createClass({
                             rows="8"
                             className="form-control">
                   </textarea>
+                  <label><input type="checkbox" name="sign-private-key" value="sign-private-key" checked="checked"/> Sign email with my Private Key</label><br/>
                   <br/>
                 </div>
               </form>
