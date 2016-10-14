@@ -11,6 +11,19 @@ Encrypted email for everyone!
 - In another terminal window, run `$ node src/app.js` to run the Keymail server.
 - Keymail should be accessible at [http://localhost:3000](http://localhost:3000)
 
+## How to automatically rebuild the app ##
+Instead of running `npm run build` and `node src/app.js` every time you make a
+a change, you can use some utilities that watch the files for changes, and
+automatically recompile the code and restart the server.
+
+First, install the utilities:
+- `$ npm install -g nodemon`
+- `$ npm install -g watchify`
+
+Now, when you're ready to code, run these commands in separate terminal tabs:
+- `$ scripts/watchify.sh`
+- `$ nodemon src/app.js`
+
 ## Helpful Links ##
 - [Design doc](https://docs.google.com/document/d/1RI3u0mPXgB4KFMkguWHM1jwJWKDkNSyGjohBZ2ScaVU/edit)
 - [Slack](https://keymail-uw.slack.com/)
