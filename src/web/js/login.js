@@ -1,5 +1,6 @@
 'use strict';
-var KeybaseAPI = require('./keybaseAPI');
+const GoogleOAuth = require('../../googleOAuth');
+const KeybaseAPI = require('./keybaseAPI');
 
 let submit = document.getElementById('submit');
 submit.onclick = login;
@@ -24,7 +25,22 @@ function login() {
   KeybaseAPI.login(emailOrUsername, password).then(function(response) {
     localStorage.setItem('keybase', JSON.stringify(response.me));
     localStorage.setItem('keybasePassphrase', password);
-    window.location.href = '/auth/google';
+
+    // Check if there's a valid Google OAuth token we can reuse.
+    let googleToken = GoogleOAuth.getAccessToken();
+    if (!googleToken) {
+      // If no token is stored, redirect to the Google OAuth login page.
+      window.location.href = GoogleOAuth.getAuthUrl();
+      return;
+    }
+    // If there is a token, validate it with Google
+    GoogleOAuth.web.validateToken(googleToken).then(function() {
+      window.location.href = '/mail';
+    }).catch(function() {
+      // If it isn't good, have the user login again.
+      window.location.href = GoogleOAuth.getAuthUrl();
+    });
+
   }).catch(function(error) {
     console.error(error);
     spinner.style.visibility = 'hidden';

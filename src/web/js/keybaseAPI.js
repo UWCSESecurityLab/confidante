@@ -20,7 +20,7 @@ const API_STRING = '/_/api/1.0';
 // The host to use when directly making requests to Keybase (staging vs. prod).
 const kbUrl = document.getElementById('staging') ? KB_STAGING : KB_PROD;
 // The host to use when using non-CORS enabled Keybase APIs (native vs. web).
-const nonCors = flags.ELECTRON ? kbUrl + 'API_STRING' : ORIGIN;
+const nonCors = flags.ELECTRON ? kbUrl + API_STRING : ORIGIN;
 
 /**
  * Client for accessing the Keybase API from the browser.

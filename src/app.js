@@ -81,7 +81,7 @@ app.get('/', function(req, res) {
     toolname: flags.TOOLNAME,
     loggedIn: auth.isAuthenticated(req.session),
     staging: flags.KEYBASE_STAGING,
-    electron: false,
+    electron: false
   });
 });
 
@@ -91,7 +91,7 @@ app.get('/help', function(req, res) {
     email: req.session.email,
     loggedIn: auth.isAuthenticated(req.session),
     staging: flags.KEYBASE_STAGING,
-    electron: false,
+    electron: false
   });
 });
 
@@ -104,7 +104,7 @@ app.get('/login', function(req, res) {
       email: req.session.email,
       loggedIn: false,
       staging: flags.KEYBASE_STAGING,
-      electron: false,
+      electron: false
     });
   }
 });
@@ -115,7 +115,7 @@ app.get('/mail', auth.webEndpoint, function(req, res) {
     email: req.session.email,
     loggedIn: true,
     staging: flags.KEYBASE_STAGING,
-    electron: false,
+    electron: false
   });
 });
 
@@ -124,7 +124,7 @@ app.get('/signup', function(req, res) {
     toolname: flags.TOOLNAME,
     loggedIn: false,
     staging: flags.KEYBASE_STAGING,
-    electron: false,
+    electron: false
   });
 });
 
@@ -348,7 +348,7 @@ app.get('/invite', function(req, res) {
     toolname: flags.TOOLNAME,
     loggedIn: false,
     staging: flags.KEYBASE_STAGING,
-    electron: false,
+    electron: false
   });
 });
 
@@ -365,7 +365,7 @@ app.get('/auth/google', function(req, res) {
     res.redirect('/mail');
   }).catch(function(err) {
     console.error(err);
-    GoogleOAuth.redirectToGoogleOAuthUrl(req, res);
+    res.redirect(GoogleOAuth.getAuthUrl());
   });
 });
 
@@ -374,48 +374,7 @@ app.get('/auth/google', function(req, res) {
  * session and user store.
  */
 app.get('/auth/google/return', function(req, res) {
-  var code = req.query.code;
-  if (!code) {
-    res.redirect('/login');
-  }
-
-  // Get tokens, then lookup email address.
-  var tokenPromise = GoogleOAuth.getInitialTokens(code);
-  var emailPromise = tokenPromise.then(function(token) {
-    var gmailClient = new GmailClient(token);
-    return gmailClient.getEmailAddress();
-  });
-  var namePromise = tokenPromise.then(function(token) {
-    var gmailClient = new GmailClient(token);
-    return gmailClient.getName();
-  });
-
-  Promise.all([tokenPromise, emailPromise, namePromise]).then(function(values) {
-    var token = values[0];
-    var email = values[1];
-    var name = values[2];
-
-    // Store full token object in the session for GmailClient.
-    req.session.googleToken = token;
-    req.session.email = email;
-    req.session.name = name;
-
-    // If a refresh token was returned, we need to store it in the database.
-    if (token.refresh_token) {
-      db.storeGoogleCredentials(req.session.keybaseId, email, token.refresh_token)
-        .then(function() {
-          res.redirect('/mail');
-        }).catch(function(error) {
-          console.error(error);
-          res.redirect('/login');
-        });
-    } else {
-      res.redirect('/mail');
-    }
-  }).catch(function(error) {
-    console.error(error);
-    res.redirect('/login');
-  });
+  res.render('auth/google/return');
 });
 
 app.get('/contacts.json', auth.dataEndpoint, function(req, res) {
