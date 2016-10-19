@@ -75,8 +75,13 @@ var ComposeArea = React.createClass({
   updateEmail: function(e) {
     this.setState({ email: e.target.value });
   },
-  updateSign: function() {
-    thi.setState({});
+  updateSign: function(e) {
+    if(e.target.checked) {
+      this.setState({sign: 'checked' });
+    } else {
+      this.setState({sign: '' });
+    }
+    console.log(sign);
   },
 
   componentDidMount: function() {
@@ -142,11 +147,21 @@ var ComposeArea = React.createClass({
         reject('Please give the Keybase Username of the user you wish to encrypt to.');
         return;
       }
-      var params = {
-        msg: this.state.email,
-        encrypt_for: keyManagers,
-        sign_with: ourPrivateManager
-      };
+      
+      if(this.state.sign === 'checked') {
+        var params = {
+          msg: this.state.email,
+          encrypt_for: keyManagers,
+          sign_with: ourPrivateManager
+        };
+        //need to add kbpgp stuff
+      } else {
+        var params = {
+          msg: this.state.email,
+          encrypt_for: keyManagers
+        };
+        //need to add kbpgp stuff
+      }
       kbpgp.box(params, function(err, result_string) {
         if (!err) {
           fulfill(result_string);
@@ -353,7 +368,7 @@ var ComposeArea = React.createClass({
                             rows="8"
                             className="form-control">
                   </textarea>
-                  <label><input type="checkbox" name="sign-private-key" value="sign-private-key" checked={this.state.sign}/> Sign email with my Private Key</label><br/>
+                  <label><input type="checkbox" name="sign-private-key" value="sign-private-key" checked={this.state.sign} onChange={this.updateSign}/> Sign email with my Private Key</label><br/>
                   <br/>
                 </div>
               </form>
