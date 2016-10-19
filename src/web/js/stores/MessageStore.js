@@ -242,7 +242,7 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
     });
   },
 
-  archiveSelectedMessages: function() {
+  archiveSelectedThreads: function() {
     //For each message, archive it.
     _threads.forEach(function(thread) {
       console.log(thread);
@@ -279,8 +279,8 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
       MessageStore.fetchNextPage();
     } else if (action.type === 'PREV_PAGE') {
       MessageStore.fetchPrevPage();
-    } else if (action.type === 'ARCHIVE_MESSAGES') {
-      MessageStore.archiveSelectedMessages();
+    } else if (action.type === 'ARCHIVE_SELECTED_THREADS') {
+      MessageStore.archiveSelectedThreads();
     }
   })
 });

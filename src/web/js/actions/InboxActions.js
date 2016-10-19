@@ -39,8 +39,8 @@ module.exports = {
   /**
    * Archive all selected messages.
    */
-  archiveSelectedMessages: function() {
-    InboxDispatcher.dispatch({ type: 'ARCHIVE_MESSAGES' });
+  archiveSelectedThreads: function() {
+    InboxDispatcher.dispatch({ type: 'ARCHIVE_SELECTED_THREADS' });
   },
 
   ///////////////////////////////

@@ -7,8 +7,8 @@ var InboxActions = require('../actions/InboxActions');
  * The archive button archives all selected messages in the inbox.
  */
 var ArchiveButton = React.createClass({
-  archiveSelectedMessages: function() {
-    InboxActions.archiveSelectedMessages({});
+  archiveSelectedThreads: function() {
+    InboxActions.archiveSelectedThreads({});
   },
 
   render: function() {
@@ -16,9 +16,7 @@ var ArchiveButton = React.createClass({
       <button type="button"
               id="archive-button"
               className="btn btn-primary inbox-button"
-              data-toggle="modal"
-              data-target="#archiveMessage"
-              onClick={this.archiveSelectedMessages}>
+              onClick={this.archiveSelectedThreads}>
         Archive 
       </button>
     );

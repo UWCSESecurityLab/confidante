@@ -191,6 +191,19 @@ app.post('/markAsRead', auth.dataEndpoint, function(req, res) {
   });
 });
 
+app.post('/archiveThread', auth.dataEndpoint, function(req, res) {
+  if (!req.query.threadId) {
+    res.status(400).send('Missing thread id');
+  }
+  var gmailClient = new GmailClient(req.session.googleToken);
+  gmailClient.markAsRead(req.query.threadId).then(function() {
+    res.status(200).send('OK');
+  }).catch(function(err) {
+    console.error(err);
+    res.status(500).send(err);
+  });
+});
+
 /**
  * Part 1 of 2 in sending an invite to a non-Keymail user.
  * The inviter calls this endpoint to get a temporary public key for the
