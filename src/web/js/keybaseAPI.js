@@ -10,13 +10,14 @@ var Sets = require('../../set.js');
 var xhr = require('xhr');
 
 const ORIGIN = window.location.origin + '/keybase';
-const KB_STAGING = 'https://stage0.keybase.io/_/api/1.0';
-const KB_PROD = 'https://keybase.io/_/api/1.0';
+const KB_STAGING = 'https://stage0.keybase.io';
+const KB_PROD = 'https://keybase.io';
+const API_STRING = '/_/api/1.0';
 
 // The host to use when directly making requests to Keybase (staging vs. prod).
 const kbUrl = document.getElementById('staging') ? KB_STAGING : KB_PROD;
 // The host to use when using non-CORS enabled Keybase APIs (native vs. web).
-const nonCors = flags.ELECTRON ? kbUrl : ORIGIN;
+const nonCors = flags.ELECTRON ? kbUrl + 'API_STRING' : ORIGIN;
 
 /**
  * Client for accessing the Keybase API from the browser.
@@ -29,7 +30,7 @@ class KeybaseAPI {
    * @return {string} The Keybase base URL (protocol and host)
    */
   static url() {
-    return kbUrl;
+    return kbUrl + API_STRING;
   }
 
   /**
@@ -78,7 +79,7 @@ class KeybaseAPI {
   static userLookup(keyFingerprint) {
     return new Promise(function(resolve, reject) {
       xhr.get({
-        url: kbUrl + '/user/lookup.json?key_fingerprint=' + keyFingerprint
+        url: kbUrl + API_STRING + '/user/lookup.json?key_fingerprint=' + keyFingerprint
       }, function(error, response, body) {
         handleKeybaseResponse(error, response, body, resolve, reject);
       });
@@ -307,7 +308,7 @@ class KeybaseAPI {
   static autocomplete(q) {
     return new Promise(function(resolve, reject) {
       xhr.get({
-        url: kbUrl + '/user/autocomplete.json?q=' + q
+        url: kbUrl + API_STRING + '/user/autocomplete.json?q=' + q
       }, function (error, response, body) {
         handleKeybaseResponse(error, response, body, resolve, reject);
       });
