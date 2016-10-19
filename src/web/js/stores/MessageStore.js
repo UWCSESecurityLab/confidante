@@ -245,7 +245,24 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
   archiveSelectedThreads: function() {
     //For each message, archive it.
     _threads.forEach(function(thread) {
+      console.log('archiving');
       console.log(thread);
+
+      xhr.post({
+        url: window.location.origin + '/archiveThread?threadId=' + thread.id
+      }, function(err, response) {
+        if (err) {
+          _netError = 'NETWORK';
+          console.error(err);
+          MessageStore.emitChange();
+        } else if (response.statusCode != 200) {
+          _netError = 'AUTHENTICATION';
+          MessageStore.emitChange();
+        } else {
+          _netError = '';
+        }
+        MessageStore.refreshCurrentPage();
+      });
     });
   },
 

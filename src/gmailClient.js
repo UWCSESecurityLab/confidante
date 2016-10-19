@@ -187,6 +187,27 @@ class GmailClient {
     }.bind(this));
   }
 
+  archiveThread(threadId) {
+    return new Promise(function(resolve, reject) {
+      google.gmail('v1').users.threads.modify({
+        auth: this.oauth2Client,
+        userId: 'me',
+        id: threadId,
+        resource: {
+          'removeLabelIds': [
+            'INBOX'
+          ]
+        }
+      }, function(err, response) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(response);
+        }
+      });
+    }.bind(this));
+  }
+
   markAsRead(threadId) {
     return new Promise(function(resolve, reject) {
       google.gmail('v1').users.threads.modify({
