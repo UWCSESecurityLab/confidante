@@ -3,6 +3,7 @@
 var React = require('react');
 var ComposeArea = require('./ComposeArea.react');
 var ComposeButton = require('./ComposeButton.react');
+var ArchiveButton = require('./ArchiveButton.react');
 var Header = require('./Header.react');
 var Inbox = require('./Inbox.react');
 var InviteButton = require('./InviteButton.react');
@@ -88,6 +89,7 @@ var EmailClient = React.createClass({
                 mailbox={this.state.mailbox}/>
         <div className="container">
           <ComposeButton />
+          <ArchiveButton />
           <RefreshButton spinning={this.state.refreshing}/>
           { this.state.refreshing
             ? <span id="loading-text">Loading...</span>
