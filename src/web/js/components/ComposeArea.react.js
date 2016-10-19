@@ -154,22 +154,29 @@ var ComposeArea = React.createClass({
           encrypt_for: keyManagers,
           sign_with: ourPrivateManager
         };
-        //need to add kbpgp stuff
+        kbpgp.box(params, function(err, result_string) {
+          if (!err) {
+            fulfill(result_string);
+          } else {
+            reject(err);
+          }
+        });
+      //}.bind(this)); NOT SURE IF THIS IS NEEDED??
       } else {
         var params = {
           msg: this.state.email,
           encrypt_for: keyManagers
         };
-        //need to add kbpgp stuff
+        kbpgp.box(params, function(err, result_string) {
+          if (!err) {
+            fulfill(result_string);
+          } else {
+            reject(err);
+          }
+        });
+      //}.bind(this)); NOT SURE IF THIS IS NEEDED?
       }
-      kbpgp.box(params, function(err, result_string) {
-        if (!err) {
-          fulfill(result_string);
-        } else {
-          reject(err);
-        }
-      });
-    }.bind(this));
+      
   },
 
   /**
