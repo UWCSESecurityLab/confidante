@@ -36,6 +36,13 @@ module.exports = {
     InboxDispatcher.dispatch({ type: 'RESET_FIELDS' });
   },
 
+  /**
+   * Archive all selected messages.
+   */
+  archiveSelectedMessages: function() {
+    InboxDispatcher.dispatch({ type: 'ARCHIVE_MESSAGES' });
+  },
+
   ///////////////////////////////
   //// Message Store Actions ////
   ///////////////////////////////
