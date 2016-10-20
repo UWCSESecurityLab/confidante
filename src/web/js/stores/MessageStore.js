@@ -118,6 +118,24 @@ function _decryptMessage(message) {
     });
 }
 
+function _archiveThread(threadId) {
+  xhr.post({
+    url: window.location.origin + '/archiveThread?threadId=' + threadId
+  }, function(err, response) {
+    if (err) {
+      _netError = 'NETWORK';
+      console.error(err);
+      MessageStore.emitChange();
+    } else if (response.statusCode != 200) {
+      _netError = 'AUTHENTICATION';
+      MessageStore.emitChange();
+    } else {
+      _netError = '';
+    }
+    MessageStore.refreshCurrentPage();
+  });
+}
+
 var MessageStore = Object.assign({}, EventEmitter.prototype, {
   emitChange: function() {
     this.emit('CHANGE');
@@ -258,28 +276,15 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
   },
 
   archiveSelectedThreads: function() {
-    //For each message, archive it.
-    _threads.forEach(function(thread) {
-      console.log('archiving');
-      console.log(thread);
-
-      xhr.post({
-        url: window.location.origin + '/archiveThread?threadId=' + thread.id
-      }, function(err, response) {
-        if (err) {
-          _netError = 'NETWORK';
-          console.error(err);
-          MessageStore.emitChange();
-        } else if (response.statusCode != 200) {
-          _netError = 'AUTHENTICATION';
-          MessageStore.emitChange();
-        } else {
-          _netError = '';
-        }
-        MessageStore.refreshCurrentPage();
-      });
+    Object.keys(_checkedThreads).forEach(function(threadId) {
+      if (_checkedThreads[threadId]) {
+        console.log('archiving');
+        console.log(threadId);
+        _archiveThread(threadId);
+      }
     });
   },
+
 
   markAsRead: function(threadId) {
     xhr.post({
