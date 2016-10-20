@@ -3,6 +3,7 @@
 var React = require('react');
 var DateFormat = require('dateformat');
 var InboxActions = require('../actions/InboxActions.js');
+var MessageStore = require('../stores/MessageStore');
 var messageParsing = require('../messageParsing');
 var Thread = require('./Thread.react');
 
@@ -45,6 +46,15 @@ var ThreadSnippet = React.createClass({
     if (this.props.startOpen) {
       this.setState({ fullThread: true });
     }
+    MessageStore.addChangeListener(this.updateChecked);
+  },
+  updateChecked: function() {
+    let checked = MessageStore.getAll().checked[this.props.thread.id];
+    this.setState({checked: checked});
+
+  },
+  handleCheckboxClick: function(e) {
+    InboxActions.setChecked(this.props.thread.id, !this.state.checked);
   },
   render: function() {
     if (!this.state.fullThread) {
@@ -76,13 +86,13 @@ var ThreadSnippet = React.createClass({
       }
 
       return (
-        <div className={snippetClass} onClick={this.openThread}>
+        <div className={snippetClass}>
           <div className="col-md-1 snippet-checkbox">
-            <input type="checkbox" value={this.state.checked} onChange={this.handleChange}></input>
+            <input type="checkbox" value={this.state.checked} onClick={this.handleCheckboxClick}></input>
           </div>
-          <div className="snippet-from col-md-4 col-xs-8">{threadFrom}</div>
-          <div className="snippet-timestamp col-md-2 col-xs-4 col-md-push-5">{timestamp}</div>
-          <div className="snippet-subject col-md-5 col-xs-12 col-md-pull-2">{threadSubject}</div>
+          <div onClick={this.openThread} className="snippet-from col-md-4 col-xs-8">{threadFrom}</div>
+          <div onClick={this.openThread} className="snippet-timestamp col-md-2 col-xs-4 col-md-push-5">{timestamp}</div>
+          <div onClick={this.openThread} className="snippet-subject col-md-5 col-xs-12 col-md-pull-2">{threadSubject}</div>
         </div>
       );
     } else {

@@ -58,6 +58,20 @@ module.exports = {
   },
 
   /**
+   * Select a thread in the UI.
+   * @param threadId The id of the Gmail thread.
+   */
+  setChecked: function(threadId, checked) {
+    InboxDispatcher.dispatch({
+      type: 'SET_CHECKED',
+      message: {
+        threadId: threadId,
+        checked: checked
+      }
+    });
+  },
+
+  /**
    * Fetch new emails from Gmail.
    */
   refresh: function() {

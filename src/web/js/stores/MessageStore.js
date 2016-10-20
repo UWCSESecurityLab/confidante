@@ -7,6 +7,8 @@ var messageParsing = require('../messageParsing');
 var queryString = require('query-string');
 var xhr = require('xhr');
 
+var _checkedThreads = {};
+
 var _threads = {};
 var _mailbox = 'INBOX';
 
@@ -20,6 +22,7 @@ var _linkids = {};
 
 var _errors = {};
 var _netError = '';
+
 
 // A promise containing our local private key.
 var _privateManager = KeybaseAPI.getPrivateManager();
@@ -143,7 +146,8 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
       threads: _threads,
       plaintexts: _plaintexts,
       signers: _signers,
-      linkids: _linkids
+      linkids: _linkids,
+      checked: _checkedThreads
     };
   },
 
@@ -242,6 +246,17 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
     });
   },
 
+  setChecked: function(threadId, checked) {
+    console.log(`setting ${threadId} to ${checked}`);
+    if (checked) {
+      _checkedThreads[threadId] = checked;
+    } else {
+      delete _checkedThreads[threadId];
+    }
+    console.log(_checkedThreads);
+    MessageStore.emitChange();
+  },
+
   archiveSelectedThreads: function() {
     //For each message, archive it.
     _threads.forEach(function(thread) {
@@ -298,6 +313,8 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
       MessageStore.fetchPrevPage();
     } else if (action.type === 'ARCHIVE_SELECTED_THREADS') {
       MessageStore.archiveSelectedThreads();
+    } else if (action.type === 'SET_CHECKED') {
+      MessageStore.setChecked(action.message.threadId, action.message.checked);
     }
   })
 });
