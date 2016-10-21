@@ -262,11 +262,9 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
   },
 
   setChecked: function(threadId, checked) {
-    console.log(`want to set ${threadId}.checked to ${checked}`);
     _threads.forEach((thread) => {
       if (thread.id === threadId) {
         thread['checked'] = checked;
-        console.log(`setting ${threadId} to ${checked}`);
       }
     });
     MessageStore.emitChange();
