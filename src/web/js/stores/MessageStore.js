@@ -7,8 +7,6 @@ var messageParsing = require('../messageParsing');
 var queryString = require('query-string');
 var xhr = require('xhr');
 
-var _checkedThreads = {};
-
 var _threads = {};
 var _mailbox = 'INBOX';
 
@@ -165,7 +163,6 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
       plaintexts: _plaintexts,
       signers: _signers,
       linkids: _linkids,
-      checked: _checkedThreads
     };
   },
 
@@ -265,22 +262,20 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
   },
 
   setChecked: function(threadId, checked) {
-    console.log(`setting ${threadId} to ${checked}`);
-    if (checked) {
-      _checkedThreads[threadId] = checked;
-    } else {
-      delete _checkedThreads[threadId];
-    }
-    console.log(_checkedThreads);
+    console.log(`want to set ${threadId}.checked to ${checked}`);
+    _threads.forEach((thread) => {
+      if (thread.id === threadId) {
+        thread['checked'] = checked;
+        console.log(`setting ${threadId} to ${checked}`);
+      }
+    });
     MessageStore.emitChange();
   },
 
   archiveSelectedThreads: function() {
-    Object.keys(_checkedThreads).forEach(function(threadId) {
-      if (_checkedThreads[threadId]) {
-        console.log('archiving');
-        console.log(threadId);
-        _archiveThread(threadId);
+    _threads.forEach((thread) => {
+      if (thread.checked) {
+        _archiveThread(thread.id);
       }
     });
   },

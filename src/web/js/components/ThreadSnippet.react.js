@@ -19,12 +19,14 @@ var ThreadSnippet = React.createClass({
     signers: React.PropTypes.object,
     startOpen: React.PropTypes.bool
   },
+
   getInitialState: function() {
     return {
       checked: false,
       fullThread: false
     };
   },
+
   openThread: function() {
     this.setState({fullThread: true});
     if (this.isUnread()) {
@@ -32,9 +34,11 @@ var ThreadSnippet = React.createClass({
       InboxActions.refresh();
     }
   },
+
   closeThread: function() {
     this.setState({fullThread: false});
   },
+
   isUnread: function() {
     return this.props.thread.messages.some(function(message) {
       return message.labelIds.some(function(label) {
@@ -42,20 +46,28 @@ var ThreadSnippet = React.createClass({
       });
     });
   },
+  
   componentDidMount: function() {
     if (this.props.startOpen) {
       this.setState({ fullThread: true });
     }
+    console.log(this.updateChecked);
     MessageStore.addChangeListener(this.updateChecked);
   },
-  updateChecked: function() {
-    let checked = MessageStore.getAll().checked[this.props.thread.id];
-    this.setState({checked: checked});
 
+  componentWillUnmount: function() {
+    console.log(this.updateChecked);
+    MessageStore.removeChangeListener(this.updateChecked);
   },
+
+  updateChecked: function() {
+    this.setState({checked: this.props.thread.checked});
+  },
+
   handleCheckboxClick: function(e) {
     InboxActions.setChecked(this.props.thread.id, !this.state.checked);
   },
+
   render: function() {
     if (!this.state.fullThread) {
       let threadSubject = messageParsing.getThreadHeader(this.props.thread, 'Subject');
