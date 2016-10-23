@@ -55,7 +55,7 @@ var ComposeArea = React.createClass({
       email: '',
       feedback: '',
       sendingSpinner: false,
-      sign: 'checked',
+      checked: 'true',
       inReplyTo: ComposeStore.getReply(),
       invite: ComposeStore.getInvite()
     };
@@ -75,13 +75,8 @@ var ComposeArea = React.createClass({
   updateEmail: function(e) {
     this.setState({ email: e.target.value });
   },
-  updateSign: function(e) {
-    if(e.target.checked) {
-      this.setState({sign: 'checked' });
-    } else {
-      this.setState({sign: '' });
-    }
-    console.log(sign);
+  updateChecked: function(e) {
+    this.setState({checked: !e.target.value});
   },
 
   componentDidMount: function() {
@@ -147,36 +142,24 @@ var ComposeArea = React.createClass({
         reject('Please give the Keybase Username of the user you wish to encrypt to.');
         return;
       }
-      
+      var params = {
+        msg: this.state.email,
+        encrypt_for: keyManagers,
+        sign_with: ourPrivateManager
+      };
       if(this.state.sign === 'checked') {
-        var params = {
-          msg: this.state.email,
-          encrypt_for: keyManagers,
-          sign_with: ourPrivateManager
-        };
-        kbpgp.box(params, function(err, result_string) {
-          if (!err) {
-            fulfill(result_string);
-          } else {
-            reject(err);
-          }
-        });
-      //}.bind(this)); NOT SURE IF THIS IS NEEDED??
+
       } else {
-        var params = {
-          msg: this.state.email,
-          encrypt_for: keyManagers
-        };
-        kbpgp.box(params, function(err, result_string) {
-          if (!err) {
-            fulfill(result_string);
-          } else {
-            reject(err);
-          }
-        });
-      //}.bind(this)); NOT SURE IF THIS IS NEEDED?
+
       }
-      
+      kbpgp.box(params, function(err, result_string) {
+        if (!err) {
+          fulfill(result_string);
+        } else {
+          reject(err);
+        }
+      });
+    }.bind(this));
   },
 
   /**
@@ -375,7 +358,7 @@ var ComposeArea = React.createClass({
                             rows="8"
                             className="form-control">
                   </textarea>
-                  <label><input type="checkbox" name="sign-private-key" value="sign-private-key" checked={this.state.sign} onChange={this.updateSign}/> Sign email with my Private Key</label><br/>
+                  <label><input type="checkbox" name="sign-private-key" value={this.state.checked} onClick={this.updateChecked}/> Sign email with my Private Key</label><br/>
                   <br/>
                 </div>
               </form>
