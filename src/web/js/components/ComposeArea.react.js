@@ -315,35 +315,52 @@ var ComposeArea = React.createClass({
   },
 
   render: function() {
+    var modalHeadingStyle = {
+      backgroundColor: "black",
+      color: "white"
+    };
+    var modalBodyStyle = {
+      //border: "2px solid red",
+      padding: "0px",
+      margin: "0px"
+    };
+
+    var formGroupStyle = {
+      margin: "0"
+    }
+
+    var fieldsStyle = { margin: "0px" };
+
+    let labelTo = "To:";
+    let labelKeybaseUser = "Keybase Username of Recipient:"; 
+
     return (
       <div className="modal fade" id="composeMessage">
         <div className="modal-dialog modal-lg">
           <div className="modal-content">
-            <div className="modal-header">
+            <div className="modal-header" style={modalHeadingStyle}>
               <button type="button" className="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
               <h4 className="modal-title">
                 { this.state.invite
                   ? <span>Invite a friend to {this.props.toolname}</span>
-                  : <span>Compose Email</span>
+                  : <span>New Message</span>
                 }
               </h4>
             </div>
-            <div className="modal-body">
-              <form className="form-horizontal" autoComplete="off">
-                <div className="form-group">
-                  <label htmlFor="to">To:</label>
-                  <ContactsAutocomplete to={this.state.to} updateParent={this.updateTo}/>
+            <div className="modal-body" style={modalBodyStyle}>
+              <form className="form-horizontal" autoComplete="off" style={modalBodyStyle}>
+                <div className="form-group" style={formGroupStyle}>
+                  <ContactsAutocomplete labelName={labelTo} to={this.state.to} updateParent={this.updateTo}/>
                 </div>
                 { this.state.invite
                   ? null
-                  : <div className="form-group">
-                      <label htmlFor="kbto">Keybase Username of Recipient:</label>
-                      <KeybaseAutocomplete kbto={this.state.kbto} updateParent={this.updateKBTo}/>
+                  : <div className="form-group" style={formGroupStyle}>
+                      <KeybaseAutocomplete labelName={labelKeybaseUser} kbto={this.state.kbto} updateParent={this.updateKBTo}/>
                     </div>
                 }
-                <div className="form-group">
+                <div className="form-group" style={formGroupStyle}>
                   <label htmlFor="subject">Subject:</label>
                   <input type="text"
                          value={this.state.subject}
@@ -353,7 +370,7 @@ var ComposeArea = React.createClass({
                   </input>
                   <br/>
                 </div>
-                <div className="form-group">
+                <div className="form-group" style={formGroupStyle}>
                   <textarea value={this.state.email}
                             name="email"
                             id="email"
