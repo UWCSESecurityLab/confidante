@@ -36,6 +36,13 @@ module.exports = {
     InboxDispatcher.dispatch({ type: 'RESET_FIELDS' });
   },
 
+  /**
+   * Archive all selected messages.
+   */
+  archiveSelectedThreads: function() {
+    InboxDispatcher.dispatch({ type: 'ARCHIVE_SELECTED_THREADS' });
+  },
+
   ///////////////////////////////
   //// Message Store Actions ////
   ///////////////////////////////
@@ -47,6 +54,20 @@ module.exports = {
     InboxDispatcher.dispatch({
       type: 'MARK_AS_READ',
       message: threadId
+    });
+  },
+
+  /**
+   * Select a thread in the UI.
+   * @param threadId The id of the Gmail thread.
+   */
+  setChecked: function(threadId, checked) {
+    InboxDispatcher.dispatch({
+      type: 'SET_CHECKED',
+      message: {
+        threadId: threadId,
+        checked: checked
+      }
     });
   },
 

@@ -115,10 +115,33 @@ function _decryptMessage(message) {
     });
 }
 
+/**
+ * Archive a thread by threadID. Unfortunately, GMail's API doesn't seem
+ * to allow batch archiving, so we do it one at a time.
+ */
+function _archiveThread(threadId) {
+  xhr.post({
+    url: window.location.origin + '/archiveThread?threadId=' + threadId
+  }, function(err, response) {
+    if (err) {
+      _netError = 'NETWORK';
+      console.error(err);
+      MessageStore.emitChange();
+    } else if (response.statusCode != 200) {
+      _netError = 'AUTHENTICATION';
+      MessageStore.emitChange();
+    } else {
+      _netError = '';
+    }
+    MessageStore.refreshCurrentPage();
+  });
+}
+
 var MessageStore = Object.assign({}, EventEmitter.prototype, {
   emitChange: function() {
     this.emit('CHANGE');
   },
+
   emitRefreshing: function() {
     this.emit('REFRESH');
   },
@@ -242,6 +265,23 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
     });
   },
 
+  setChecked: function(threadId, checked) {
+    _threads.forEach((thread) => {
+      if (thread.id === threadId) {
+        thread['checked'] = checked;
+      }
+    });
+    MessageStore.emitChange();
+  },
+
+  archiveSelectedThreads: function() {
+    _threads.forEach((thread) => {
+      if (thread.checked) {
+        _archiveThread(thread.id);
+      }
+    });
+  },
+
   markAsRead: function(threadId) {
     xhr.post({
       url: window.location.origin + '/markAsRead?threadId=' + threadId
@@ -272,6 +312,10 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
       MessageStore.fetchNextPage();
     } else if (action.type === 'PREV_PAGE') {
       MessageStore.fetchPrevPage();
+    } else if (action.type === 'ARCHIVE_SELECTED_THREADS') {
+      MessageStore.archiveSelectedThreads();
+    } else if (action.type === 'SET_CHECKED') {
+      MessageStore.setChecked(action.message.threadId, action.message.checked);
     }
   })
 });
