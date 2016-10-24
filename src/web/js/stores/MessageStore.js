@@ -21,7 +21,6 @@ var _linkids = {};
 var _errors = {};
 var _netError = '';
 
-
 // A promise containing our local private key.
 var _privateManager = KeybaseAPI.getPrivateManager();
 
@@ -116,6 +115,10 @@ function _decryptMessage(message) {
     });
 }
 
+/**
+ * Archive a thread by threadID. Unfortunately, GMail's API doesn't seem
+ * to allow batch archiving, so we do it one at a time.
+ */
 function _archiveThread(threadId) {
   xhr.post({
     url: window.location.origin + '/archiveThread?threadId=' + threadId
@@ -138,6 +141,7 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
   emitChange: function() {
     this.emit('CHANGE');
   },
+
   emitRefreshing: function() {
     this.emit('REFRESH');
   },
@@ -277,7 +281,6 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
       }
     });
   },
-
 
   markAsRead: function(threadId) {
     xhr.post({
