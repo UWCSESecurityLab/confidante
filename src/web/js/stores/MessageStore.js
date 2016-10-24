@@ -162,7 +162,7 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
       threads: _threads,
       plaintexts: _plaintexts,
       signers: _signers,
-      linkids: _linkids,
+      linkids: _linkids
     };
   },
 
