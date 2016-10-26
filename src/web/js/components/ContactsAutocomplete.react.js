@@ -139,6 +139,9 @@ var ContactsAutocomplete = React.createClass({
 
   // Converts an RFC string of addresses into JSON email contacts
   parseContacts: function(string) {
+    if (string === '') {
+      return [];
+    }
     let addresses = AddressParser.parse(string);
     return addresses.filter(function(address) {
       // First, filter out invalid email addresses.
