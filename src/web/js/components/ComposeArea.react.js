@@ -312,6 +312,7 @@ var ComposeArea = React.createClass({
   },
 
   render: function() {
+    //******NOTE: change css stuff to be included in mail.ejs file*****
     var modalHeadingStyle = {
       backgroundColor: "black",
       color: "white"
