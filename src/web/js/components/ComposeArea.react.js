@@ -55,7 +55,7 @@ var ComposeArea = React.createClass({
       email: '',
       feedback: '',
       sendingSpinner: false,
-      checked: 'true',
+      checked: 'checked',
       inReplyTo: ComposeStore.getReply(),
       invite: ComposeStore.getInvite()
     };
@@ -76,7 +76,7 @@ var ComposeArea = React.createClass({
     this.setState({ email: e.target.value });
   },
   updateChecked: function(e) {
-    this.setState({checked: !e.target.value});
+    this.setState({ checked: !this.state.checked });
   },
 
   componentDidMount: function() {
@@ -129,6 +129,7 @@ var ComposeArea = React.createClass({
       invite: invite,
       subject: defaultSubject,
       kbto: kbto
+
     });
   },
   _onReset: function() {
@@ -142,23 +143,32 @@ var ComposeArea = React.createClass({
         reject('Please give the Keybase Username of the user you wish to encrypt to.');
         return;
       }
-      var params = {
-        msg: this.state.email,
-        encrypt_for: keyManagers,
-        sign_with: ourPrivateManager
-      };
-      if(this.state.sign === 'checked') {
-
-      } else {
-
-      }
-      kbpgp.box(params, function(err, result_string) {
+      if(this.state.checked) {
+        var params = {
+          msg: this.state.email,
+          encrypt_for: keyManagers,
+          sign_with: ourPrivateManager
+        };
+        kbpgp.box(params, function(err, result_string) {
         if (!err) {
           fulfill(result_string);
         } else {
           reject(err);
         }
       });
+      } else {
+        var params = {
+          msg: this.state.email,
+          encrypt_for: keyManagers
+        };
+        kbpgp.box(params, function(err, result_string) {
+        if (!err) {
+          fulfill(result_string);
+        } else {
+          reject(err);
+        }
+      });
+      }
     }.bind(this));
   },
 
@@ -358,7 +368,7 @@ var ComposeArea = React.createClass({
                             rows="8"
                             className="form-control">
                   </textarea>
-                  <label><input type="checkbox" name="sign-private-key" value={this.state.checked} onClick={this.updateChecked}/> Sign email with my Private Key</label><br/>
+                  <label><input type="checkbox" name="sign-private-key" checked={this.state.checked} onClick={this.updateChecked}/> Sign email with my Private Key</label><br/>
                   <br/>
                 </div>
               </form>
