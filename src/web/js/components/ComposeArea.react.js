@@ -129,7 +129,6 @@ var ComposeArea = React.createClass({
       invite: invite,
       subject: defaultSubject,
       kbto: kbto
-
     });
   },
   _onReset: function() {
