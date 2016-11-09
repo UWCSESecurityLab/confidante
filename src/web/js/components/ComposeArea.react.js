@@ -142,32 +142,26 @@ var ComposeArea = React.createClass({
         reject('Please give the Keybase Username of the user you wish to encrypt to.');
         return;
       }
+      var params;
       if(this.state.checked) {
-        var params = {
+        params = {
           msg: this.state.email,
           encrypt_for: keyManagers,
           sign_with: ourPrivateManager
         };
-        kbpgp.box(params, function(err, result_string) {
-        if (!err) {
-          fulfill(result_string);
-        } else {
-          reject(err);
-        }
-      });
       } else {
-        var params = {
+        params = {
           msg: this.state.email,
           encrypt_for: keyManagers
         };
-        kbpgp.box(params, function(err, result_string) {
+      }
+      kbpgp.box(params, function(err, result_string) {
         if (!err) {
           fulfill(result_string);
         } else {
           reject(err);
         }
       });
-      }
     }.bind(this));
   },
 
