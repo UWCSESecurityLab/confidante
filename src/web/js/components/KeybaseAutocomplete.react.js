@@ -104,8 +104,7 @@ var KeybaseAutocomplete = React.createClass({
         </li>
       );
     }.bind(this));
-
-    let autocompleteStyle = {paddingLeft: "0px", paddingRight: "0px"};
+    
     return (
       <ul className="autocomplete-input" style={autocompleteStyle}>
         <span>{this.props.labelName}</span>

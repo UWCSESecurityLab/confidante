@@ -312,23 +312,6 @@ var ComposeArea = React.createClass({
   },
 
   render: function() {
-    //******NOTE: change css stuff to be included in mail.ejs file*****
-    var modalHeadingStyle = {
-      backgroundColor: "black",
-      color: "white"
-    };
-    var modalBodyStyle = {
-      //border: "2px solid red",
-      padding: "0px",
-      margin: "0px"
-    };
-
-    var formGroupStyle = {
-      margin: "0"
-    }
-
-    var fieldsStyle = { margin: "0px" };
-
     let labelTo = "To:";
     let labelKeybaseUser = "Keybase Username of Recipient:"; 
 
@@ -336,7 +319,7 @@ var ComposeArea = React.createClass({
       <div className="modal fade" id="composeMessage">
         <div className="modal-dialog modal-lg">
           <div className="modal-content">
-            <div className="modal-header" style={modalHeadingStyle}>
+            <div className="modal-header">
               <button type="button" className="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
@@ -347,18 +330,18 @@ var ComposeArea = React.createClass({
                 }
               </h4>
             </div>
-            <div className="modal-body" style={modalBodyStyle}>
-              <form className="form-horizontal" autoComplete="off" style={modalBodyStyle}>
-                <div className="form-group" style={formGroupStyle}>
+            <div className="modal-body">
+              <form className="form-horizontal" autoComplete="off">
+                <div className="form-group">
                   <ContactsAutocomplete labelName={labelTo} to={this.state.to} updateParent={this.updateTo}/>
                 </div>
                 { this.state.invite
                   ? null
-                  : <div className="form-group" style={formGroupStyle}>
+                  : <div className="form-group">
                       <KeybaseAutocomplete labelName={labelKeybaseUser} kbto={this.state.kbto} updateParent={this.updateKBTo}/>
                     </div>
                 }
-                <div className="form-group" style={formGroupStyle}>
+                <div className="form-group">
                   <label htmlFor="subject">Subject:</label>
                   <input type="text"
                          value={this.state.subject}
@@ -368,7 +351,7 @@ var ComposeArea = React.createClass({
                   </input>
                   <br/>
                 </div>
-                <div className="form-group" style={formGroupStyle}>
+                <div className="form-group">
                   <textarea value={this.state.email}
                             name="email"
                             id="email"

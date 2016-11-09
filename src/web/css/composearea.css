@@ -1,0 +1,13 @@
+.modal-header {
+	background-color: black;
+	color: white;
+}
+
+.modal-body, .form-horizontal {
+	padding: 0px;
+	margin: 0px;
+}
+
+.form-group {
+	margin: 0px;
+}
