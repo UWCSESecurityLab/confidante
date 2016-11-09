@@ -55,6 +55,7 @@ var ComposeArea = React.createClass({
       email: '',
       feedback: '',
       sendingSpinner: false,
+      checked: 'checked',
       inReplyTo: ComposeStore.getReply(),
       invite: ComposeStore.getInvite()
     };
@@ -73,6 +74,9 @@ var ComposeArea = React.createClass({
   },
   updateEmail: function(e) {
     this.setState({ email: e.target.value });
+  },
+  updateChecked: function(e) {
+    this.setState({ checked: !this.state.checked });
   },
 
   componentDidMount: function() {
@@ -138,11 +142,19 @@ var ComposeArea = React.createClass({
         reject('Please give the Keybase Username of the user you wish to encrypt to.');
         return;
       }
-      var params = {
-        msg: this.state.email,
-        encrypt_for: keyManagers,
-        sign_with: ourPrivateManager
-      };
+      var params;
+      if(this.state.checked) {
+        params = {
+          msg: this.state.email,
+          encrypt_for: keyManagers,
+          sign_with: ourPrivateManager
+        };
+      } else {
+        params = {
+          msg: this.state.email,
+          encrypt_for: keyManagers
+        };
+      }
       kbpgp.box(params, function(err, result_string) {
         if (!err) {
           fulfill(result_string);
@@ -349,6 +361,7 @@ var ComposeArea = React.createClass({
                             rows="8"
                             className="form-control">
                   </textarea>
+                  <label><input type="checkbox" name="sign-private-key" checked={this.state.checked} onClick={this.updateChecked}/> Sign email with my Private Key</label><br/>
                   <br/>
                 </div>
               </form>
