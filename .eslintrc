@@ -32,8 +32,7 @@
     },
     "globals": {
         "$": true,
-        "KeybaseAPI": true,
-        "scrypt_module_factory": true
+        "KeybaseAPI": true
     },
     "parserOptions": {
       "ecmaFeatures": {
