@@ -1,11 +1,14 @@
 'use strict';
 
+var Auth = require('keybase-proofs').Auth;
 var crypto = require('crypto');
 var flags = require('../../flags');
+var isemail = require('isemail');
 var kbpgp = require('kbpgp');
 var p3skb = require('../../p3skb');
 var purepack = require('purepack');
-var scrypt = scrypt_module_factory(67108864);
+var querystring = require('querystring');
+var triplesec = require('triplesec');
 var Sets = require('../../set.js');
 var xhr = require('xhr');
 
@@ -40,42 +43,6 @@ class KeybaseAPI {
     return kbUrl === KB_STAGING;
   }
 
-  /**
-   * Perform the password hash step of the Keybase login flow by scrypting
-   * the passphrase from the user and the salt from the server with the appropriate
-   * parameters and returning buf.slice(192) from that result.
-   * @return a Buffer containing the password hash used in the /login.json step.
-   */
-  static computePasswordHash(passphrase, salt) {
-    var SCRYPT_PARAMS = {
-      N: Math.pow(2,15),
-      cost: Math.pow(2,15),
-      r: 8,
-      blockSize: 8,
-      p: 1,
-      parallel: 1,
-      size: 224
-    };
-
-    passphrase = new Buffer(passphrase);
-    salt = new Buffer(salt, 'hex');
-
-    try {
-      // var res = scrypt.hashSync(passphrase, SCRYPT_PARAMS, 224, salt);
-      var res = scrypt.crypto_scrypt(passphrase,
-                                     salt,
-                                     SCRYPT_PARAMS.N,
-                                     SCRYPT_PARAMS.r,
-                                     SCRYPT_PARAMS.p,
-                                     SCRYPT_PARAMS.size);
-      var buf = new Buffer(res);
-      return buf.slice(192);
-    } catch (e) {
-      console.error('Password hash computation failed!');
-      return undefined;
-    }
-  }
-
   static userLookup(keyFingerprint) {
     return new Promise(function(resolve, reject) {
       xhr.get({
@@ -93,10 +60,26 @@ class KeybaseAPI {
    */
   static login(emailOrUsername, passphrase) {
     return new Promise(function(resolve, reject) {
-      this._getSalt(emailOrUsername)
+      let salt, session, email, username;
+      if (isemail.validate(emailOrUsername)) {
+        email = emailOrUsername;
+      } else {
+        username = emailOrUsername;
+      }
+
+      KeybaseAPI._getSalt(emailOrUsername)
         .then(function(saltDetails) {
-          return this._login(emailOrUsername, passphrase, saltDetails);
-        }.bind(this)).then(function(loginBody) {
+          salt = saltDetails.salt;
+          session = saltDetails.login_session;
+          return KeybaseAPI._computePasswordHash(passphrase, salt);
+        }).then(function(keys) {
+          return Promise.all([
+            KeybaseAPI._makeSignature(keys.v4, email, username, session),
+            KeybaseAPI._makeSignature(keys.v5, email, username, session)
+          ]);
+        }).then(function(sigs) {
+          return KeybaseAPI._login(emailOrUsername, sigs[0], sigs[1]);
+        }).then(function(loginBody) {
           resolve(loginBody);
         }).catch(function(err) {
           reject(err);
@@ -105,11 +88,11 @@ class KeybaseAPI {
   }
 
   /**
-   * Get the salt for the username with which the API was configured.
-   * @return a Promise containing the response to the getSalt/ api.
+   * Retrieve a salt and a session token from Keybase.
+   * @param {string} emailOrUsername The user's email or username.
+   * @return {Promise} The JSON response object, containing the salt and session.
    */
   static _getSalt(emailOrUsername) {
-    console.log('Get salt...');
     return new Promise(function(resolve, reject) {
       xhr.get({
         url: nonCors + '/getsalt.json?email_or_username=' + emailOrUsername
@@ -120,22 +103,92 @@ class KeybaseAPI {
   }
 
   /**
-   * Perform the /login.json step of the Keybase login flow.
+   * Compute the password hash, using scrypt, and return bytes 192-256 of the
+   * hash, which are used in Keybase's login protocol as EdDSA private keys.
+   * @param {string} passphrase The Keybase passphrase
+   * @param {string} salt The salt from the getSalt JSON endpoint.
+   * @return {Promise} An object containing the v4 and v5 keys specified by
+   * Keybase. Each key is represented by a Uint8Array.
+   */
+  static _computePasswordHash(passphrase, salt) {
+    return new Promise((resolve, reject) => {
+      let pwBuf = new Buffer(passphrase, 'utf8');
+      let saltBuf = new Buffer(salt, 'hex');
+
+      // scrypt is included in the TripleSec library.
+      let encryptor = new triplesec.Encryptor({ key: pwBuf });
+      encryptor.resalt({
+        salt: saltBuf,
+        extra_keymaterial: 64
+      }, function(err, hash) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve({
+            v4: hash.extra.slice(0, 32),
+            v5: hash.extra.slice(32, 64)
+          });
+        }
+      });
+    });
+  }
+
+  /**
+   * Generate a Keybase-style signature to authenticate the user with Keybase.
+   * @param {Uint8Array} key The v4 or v5 key extracted from the hashed password
+   * @param {string} email (undefined if the user provided a username instead)
+   * @param {string} username (undefined if the user provided an email instead)
+   * @param {string} session The session token sent with the salt.
+   * @return {Promise} A Keybase-style signature object
+   */
+  static _makeSignature(key, email, username, session) {
+    return new Promise((resolve, reject) => {
+      kbpgp.rand.SRF().random_bytes(16, (nonce) => {
+        kbpgp.kb.KeyManager.generate({seed: key}, (err, signer) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          let auth = new Auth({
+            sig_eng : signer.make_sig_eng(),
+            host: 'keybase.io',
+            user: {
+              local: {
+                email: email,
+                username: username
+              }
+            },
+            session : session,
+            nonce : nonce
+          });
+          auth.generate(function(err, signature) {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(signature.armored);
+            }
+          });
+        });
+      });
+    });
+  }
+
+  /**
+   * POST the login request to Keybase.
+   * @param {string} emailOrUsername
+   * @param {string} pdpka4 The Keybase signature created with the v4 key
+   * @param {string} pdpka5 The Keybase signature created with the v5 key
    * @return a Promise containing the body of the response to a login attempt.
    */
-  static _login(emailOrUsername, passphrase, saltDetails) {
-    console.log('Login...');
+  static _login(emailOrUsername, pdpka4, pdpka5) {
     return new Promise(function(resolve, reject) {
-      let salt = saltDetails.salt;
-      let login_session = new Buffer(saltDetails.login_session, 'base64');
-      let hash = KeybaseAPI.computePasswordHash(passphrase, salt);
-      let hmac_pwh = crypto.createHmac('SHA512', hash).update(login_session).digest('hex');
-
+      let qs = querystring.stringify({
+        email_or_username: emailOrUsername,
+        pdpka5: pdpka5,
+        pdpka4: pdpka4
+      });
       xhr.post({
-        url: nonCors + '/login.json?' +
-             'email_or_username=' + emailOrUsername + '&' +
-             'hmac_pwh=' + hmac_pwh + '&' +
-             'login_session=' + encodeURIComponent(saltDetails.login_session)
+        url: nonCors + '/login.json?' + qs
       }, function (error, response, body) {
         handleKeybaseResponse(error, response, body, resolve, reject);
       });
@@ -265,7 +318,6 @@ class KeybaseAPI {
           if (!err) {
             resolve(manager);
           } else{
-            console.log(err);
             reject(err);
           }
         });
