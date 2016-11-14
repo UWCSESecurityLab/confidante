@@ -106,7 +106,7 @@ var KeybaseAutocomplete = React.createClass({
     }.bind(this));
     
     return (
-      <ul className="autocomplete-input" style={autocompleteStyle}>
+      <ul className="autocomplete-input">
         <span>{this.props.labelName}</span>
         {selected}
         <Typeahead inputValue={this.state.kbto}
