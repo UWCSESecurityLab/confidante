@@ -4,10 +4,12 @@
 }
 
 .modal-body, .form-horizontal {
-	padding: 0px;
 	margin: 0px;
 }
 
-.form-group {
-	margin: 0px;
+.modal-content {
+	position: absolute;
+	right: -20%;
+	left: 50%;
+	bottom: -600px;
 }
