@@ -1,4 +1,4 @@
-.modal-header {
+/*.modal-header {
 	background-color: black;
 	color: white;
 }
@@ -12,4 +12,16 @@
 	right: -20%;
 	left: 50%;
 	bottom: -600px;
+}*/
+
+#composeMessage {
+	width: 600px;
+	height: 500px;
+	border: 2px red solid;
+	background: rgba(0,0,0,0.4);
+	position: absolute;
+	bottom: 0px;
+	right: 0px;
+	z-index: 1;
+	overflow: auto;
 }

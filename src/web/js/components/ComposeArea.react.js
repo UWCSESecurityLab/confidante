@@ -317,13 +317,12 @@ var ComposeArea = React.createClass({
   render: function() {
     let labelTo = "To:";
     let labelKeybaseUser = "Keybase Username of Recipient:"; 
-
+    console.log(this.state.showComposeUI);
+    //let style={{display: this.state.showComposeUI ? 'block' : 'none' }};
     return (
-      <div className="modal fade" id="composeMessage">
-        <div className="modal-dialog modal-lg">
-          <div className="modal-content">
-            <div className="modal-header">
-              <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+      <div id="composeMessage" >
+        <div className="modalHeader">
+          <button type="button" className="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
               <h4 className="modal-title">
@@ -332,55 +331,8 @@ var ComposeArea = React.createClass({
                   : <span>New Message</span>
                 }
               </h4>
-            </div>
-            <div className="modal-body">
-              <form className="form-horizontal" autoComplete="off">
-                <div className="form-group">
-                  <ContactsAutocomplete labelName={labelTo} to={this.state.to} updateParent={this.updateTo}/>
-                </div>
-                { this.state.invite
-                  ? null
-                  : <div className="form-group">
-                      <KeybaseAutocomplete labelName={labelKeybaseUser} kbto={this.state.kbto} updateParent={this.updateKBTo}/>
-                    </div>
-                }
-                <div className="form-group">
-                  <label htmlFor="subject">Subject:</label>
-                  <input type="text"
-                         value={this.state.subject}
-                         name="subject" id="subject"
-                         onChange={this.updateSubject}
-                         className="form-control">
-                  </input>
-                  <br/>
-                </div>
-                <div className="form-group">
-                  <textarea value={this.state.email}
-                            name="email"
-                            id="email"
-                            onChange={this.updateEmail}
-                            rows="8"
-                            className="form-control">
-                  </textarea>
-                  <label><input type="checkbox" name="sign-private-key" checked={this.state.checked} onClick={this.updateChecked}/> Sign email with my Private Key</label><br/>
-                  <br/>
-                </div>
-              </form>
-            </div>
-            <div className="modal-footer">
-              <div className="alert alert-danger">{this.state.feedback}</div>
-              { this.state.sendingSpinner
-                ? <span className="spinner"></span>
-                : null
-              }
-              <button onClick={this.presend} className="btn btn-primary">
-                { this.state.invite
-                  ? 'Encrypt and Invite'
-                  : 'Encrypt and Send'
-                }
-              </button>
-            </div>
-          </div>
+        </div>
+        <div className="modal-content">
         </div>
       </div>
     );
