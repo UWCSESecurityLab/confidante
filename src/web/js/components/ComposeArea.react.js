@@ -317,10 +317,12 @@ var ComposeArea = React.createClass({
   render: function() {
     let labelTo = "To:";
     let labelKeybaseUser = "Keybase Username of Recipient:"; 
-    console.log(this.state.showComposeUI);
-    //let style={{display: this.state.showComposeUI ? 'block' : 'none' }};
+    
+    var style={
+      display: this.props.showComposeUI ? 'block' : 'none' 
+    };
     return (
-      <div id="composeMessage" >
+      <div id="composeMessage" style={style}>
         <div className="modalHeader">
           <button type="button" className="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>

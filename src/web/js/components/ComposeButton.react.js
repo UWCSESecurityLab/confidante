@@ -36,7 +36,7 @@ var ComposeButton = React.createClass({
           Compose Message
         </button>
         <div>
-          <ComposeArea onComposeUI={true}/>
+          <ComposeArea showComposeUI={this.state.showComposeUI}/>
         </div>
       </div>
     );
