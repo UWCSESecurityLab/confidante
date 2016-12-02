@@ -359,7 +359,7 @@ var ComposeArea = React.createClass({
                         name="email"
                         id="email"
                         onChange={this.updateEmail}
-                        rows="12"
+                        rows="10"
                         className="form-control">
               </textarea>
               <br/>
