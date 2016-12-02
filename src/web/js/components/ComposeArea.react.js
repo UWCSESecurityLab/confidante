@@ -51,7 +51,7 @@ var ComposeArea = React.createClass({
     return {
       to: '',
       kbto: [],
-      subject: '',
+      subject: 'Subject:',
       email: '',
       feedback: '',
       sendingSpinner: false,
@@ -317,13 +317,13 @@ var ComposeArea = React.createClass({
   render: function() {
     let labelTo = "To:";
     let labelKeybaseUser = "Keybase Username of Recipient:"; 
-    
+
     var style={
       display: this.props.showComposeUI ? 'block' : 'none' 
     };
     return (
       <div id="composeMessage" style={style}>
-        <div className="modalHeader">
+        <div className="email-header">
           <button type="button" className="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
@@ -334,7 +334,53 @@ var ComposeArea = React.createClass({
                 }
               </h4>
         </div>
-        <div className="modal-content">
+        <div className="email-body">
+          <form className="formHorizontal" autoComplete="off">
+            <div className="formGroup">
+              <ContactsAutocomplete labelName={labelTo} to={this.state.to} updateParent={this.updateTo}/>
+            </div>
+            { this.state.invite
+              ? null
+              : <div className="formGroup">
+                  <KeybaseAutocomplete labelName={labelKeybaseUser} kbto={this.state.kbto} updateParent={this.updateKBTo}/>
+                </div>
+            }
+            <div className="formGroup">
+              <input type="text"
+                     value={this.state.subject}
+                     name="subject" id="subject"
+                     onChange={this.updateSubject}
+                     className="form-control">
+              </input>
+              <br/>
+            </div>
+            <div className="formGroup">
+              <textarea value={this.state.email}
+                        name="email"
+                        id="email"
+                        onChange={this.updateEmail}
+                        rows="12"
+                        className="form-control">
+              </textarea>
+              <br/>
+            </div>
+          </form>
+        </div>
+        <div className="email-footer">
+          <div className="alert alert-danger">{this.state.feedback}</div>
+          { this.state.sendingSpinner
+            ? <span className="spinner"></span>
+            : null
+          }
+          <div className="button-send">
+            <button onClick={this.presend} className="btn btn-primary">
+              { this.state.invite
+                ? 'Encrypt and Invite'
+                : 'Encrypt and Send'
+              }
+            </button>
+            <label><input type="checkbox" name="sign-private-key" checked={this.state.checked} onClick={this.updateChecked}/> Sign email with my Private Key</label><br/>
+          </div>
         </div>
       </div>
     );

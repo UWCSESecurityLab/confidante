@@ -25,3 +25,39 @@
 	z-index: 1;
 	overflow: auto;
 }
+
+.email-header {
+	border: 2px solid blue;
+	padding: 13px;
+	background-color: black;
+	color: white;
+}
+
+.email-body {
+
+}
+
+.formHorizontal {
+
+}
+
+.formGroup {
+
+}
+
+.formControl {
+	padding: 12px;
+}
+
+.email-footer {
+	position: absolute;
+	bottom: 0px;
+	left: 0px;
+	background-color: white;
+	width: 100%;
+	padding: 10px;
+}
+
+.button-send {
+
+}
