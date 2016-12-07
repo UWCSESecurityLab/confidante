@@ -1,23 +1,7 @@
-/*.modal-header {
-	background-color: black;
-	color: white;
-}
-
-.modal-body, .form-horizontal {
-	margin: 0px;
-}
-
-.modal-content {
-	position: absolute;
-	right: -20%;
-	left: 50%;
-	bottom: -600px;
-}*/
-
 #composeMessage {
 	width: 600px;
-	height: 500px;
-	background: rgba(0,0,0,0.4);
+	height: 550px;
+	background-color: #fff;
 	position: absolute;
 	bottom: 0px;
 	right: 10px;
@@ -25,7 +9,6 @@
 	overflow: auto;
 	border: 1px solid #E5E5E5;
   	box-shadow: 0px 0px 5px 3px #EEEEEE;
-
 }
 
 .email-header {
@@ -43,22 +26,34 @@
 
 }
 
-.formGroup {
+.form-groups {
 }
 
-.formControl {
-	padding: 12px;
+.form-controls {
+	/* Flexbox */
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  /* Sizing */
+  padding: 8px 12px;
+  font-size: 14px;
+  line-height: 1.42857143;
+  width: 100%;
+
+  /* Appearance */
+  background-color: #fff;
+  background-image: none;
+  border: 1px solid #ccc;
+  margin-bottom: 0px;
 }
 
 .email-footer {
-	position: absolute;
-	bottom: 0px;
-	left: 0px;
 	background-color: white;
 	width: 100%;
-	padding: 10px;
+	padding: 6px;
 }
 
-.button-send {
-
+.button-send > .btn-primary {
+	margin-right: 6px;
 }

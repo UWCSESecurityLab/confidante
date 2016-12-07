@@ -325,32 +325,32 @@ var ComposeArea = React.createClass({
       <div id="composeMessage" style={style}>
         <div className="email-header">
           <button type="button" className="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-              <h4 className="modal-title">
-                { this.state.invite
-                  ? <span>Invite a friend to {this.props.toolname}</span>
-                  : <span>New Message</span>
-                }
-              </h4>
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 className="modal-title">
+            { this.state.invite
+              ? <span>Invite a friend to {this.props.toolname}</span>
+              : <span>New Message</span>
+            }
+          </h4>
         </div>
         <div className="email-body">
           <form className="formHorizontal" autoComplete="off">
-            <div className="formGroup">
+            <div className="form-groups">
               <ContactsAutocomplete labelName={labelTo} to={this.state.to} updateParent={this.updateTo}/>
             </div>
             { this.state.invite
               ? null
-              : <div className="formGroup">
+              : <div className="form-groups">
                   <KeybaseAutocomplete labelName={labelKeybaseUser} kbto={this.state.kbto} updateParent={this.updateKBTo}/>
                 </div>
             }
-            <div className="formGroup">
+            <div className="form-groups">
               <input type="text"
                      value={this.state.subject}
                      name="subject" id="subject"
                      onChange={this.updateSubject}
-                     className="form-control">
+                     className="form-controls">
               </input>
               <br/>
             </div>
@@ -359,8 +359,8 @@ var ComposeArea = React.createClass({
                         name="email"
                         id="email"
                         onChange={this.updateEmail}
-                        rows="10"
-                        className="form-control">
+                        rows="15"
+                        className="form-controls">
               </textarea>
               <br/>
             </div>
