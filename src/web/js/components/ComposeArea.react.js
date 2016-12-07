@@ -56,6 +56,7 @@ var ComposeArea = React.createClass({
       feedback: '',
       sendingSpinner: false,
       checked: 'checked',
+      showNewMessage: this.props.showComposeUI,
       inReplyTo: ComposeStore.getReply(),
       invite: ComposeStore.getInvite()
     };
@@ -78,7 +79,10 @@ var ComposeArea = React.createClass({
   updateChecked: function(e) {
     this.setState({ checked: !this.state.checked });
   },
-
+  updateShowNewMessage: function(e) {
+    console.log(this.state.showNewMessage);
+    this.setState({showNewMessage: !this.state.showNewMessage});
+  },
   componentDidMount: function() {
     ComposeStore.addChangeListener(this._onComposeStoreChange);
     ComposeStore.addResetListener(this._onReset);
@@ -317,14 +321,18 @@ var ComposeArea = React.createClass({
   render: function() {
     let labelTo = "To:";
     let labelKeybaseUser = "Keybase Username of Recipient:"; 
-
+    if(this.props.showComposeUI) {
+      this.state.showNewMessage = true;
+    }
+    console.log(this.state.showNewMessage);
+    console.log("compose " + this.props.showComposeUI);
     var style={
-      display: this.props.showComposeUI ? 'block' : 'none' 
+      display: this.state.showNewMessage ? 'block' : 'none' 
     };
     return (
       <div id="composeMessage" style={style}>
         <div className="email-header">
-          <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+          <button type="button" className="close" aria-label="Close" onClick={this.updateShowNewMessage}>
             <span aria-hidden="true">&times;</span>
           </button>
           <h4 className="modal-title">

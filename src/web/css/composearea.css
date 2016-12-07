@@ -18,6 +18,10 @@
 	color: white;
 }
 
+.email-header > .close {
+	border: 2px solid white;
+}
+
 .email-body {
 	background-color: white;
 }
