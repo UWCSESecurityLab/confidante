@@ -12,7 +12,6 @@
 }
 
 .email-header {
-	border: 2px solid blue;
 	padding: 13px;
 	background-color: black;
 	color: white;
@@ -20,6 +19,7 @@
 
 .email-header > .close {
 	border: 2px solid white;
+	color: white;
 }
 
 .email-body {

@@ -321,11 +321,11 @@ var ComposeArea = React.createClass({
   render: function() {
     let labelTo = "To:";
     let labelKeybaseUser = "Keybase Username of Recipient:"; 
-    if(this.props.showComposeUI) {
+    /*if(this.props.showComposeUI) {
       this.state.showNewMessage = true;
-    }
+    }*/
     console.log(this.state.showNewMessage);
-    console.log("compose " + this.props.showComposeUI);
+    //console.log("compose " + this.props.showComposeUI);
     var style={
       display: this.state.showNewMessage ? 'block' : 'none' 
     };
