@@ -362,6 +362,7 @@ var ComposeArea = React.createClass({
               </input>
               <br/>
             </div>
+
             <div className="formGroup">
               <textarea value={this.state.email}
                         name="email"
