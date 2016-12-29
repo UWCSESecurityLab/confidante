@@ -15,11 +15,15 @@ var ComposeButton = React.createClass({
   },
 
   onClick: function() {
-    this.setState({ showComposeUI: true });
+    this.setState({ showComposeUI: !this.state.showComposeUI });
+
   },
 
-  /*ADD THIS FUNCTIONALITY BACK*/
+  /**
+   * NOT SURE IF WE STILL NEED THIS??
+   */
   setNullReply: function() {
+    console.log("sss");
     InboxActions.setInReplyTo({
       replyAll: false,
       message: {}
@@ -36,7 +40,7 @@ var ComposeButton = React.createClass({
           Compose Message
         </button>
         <div>
-          <ComposeArea showComposeUI={this.state.showComposeUI}/>
+          <ComposeArea showComposeUI={this.state.showComposeUI} onClick={this.onClick}/>
         </div>
       </div>
     );
