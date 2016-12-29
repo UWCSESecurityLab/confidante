@@ -1,19 +1,50 @@
 'use strict';
 
-var google = require('googleapis');
-var GoogleOAuth = require('./googleOAuth.js');
 var pgp = require('./pgp.js');
-var request = require('request');
+var qs = require('querystring');
 var URLSafeBase64 = require('urlsafe-base64');
+var xhr = require('xhr');
 
+// TODO: Check response codes, provide useful errors
 class GmailClient {
   /**
    * Constructs a new authenticated Gmail Client.
    * @param token The token object provided by the Google OAuth library.
    */
   constructor(token) {
-    this.oauth2Client = GoogleOAuth.buildClient();
-    this.oauth2Client.credentials = token;
+    this.token = token;
+  }
+
+  request(method, options) {
+    return new Promise(function(resolve, reject) {
+      if (!options || !options.url) {
+        reject('Invalid request: missing URL');
+        return;
+      }
+      let headers = { Authorization: 'Bearer ' + this.token };
+      Object.assign(headers, options.headers);
+      xhr({
+        method: method,
+        url: options.query ? options.url + '?' + qs.stringify(options.query) : options.url,
+        headers: headers,
+        body: options.body
+      }, function(error, response, resBody) {
+        if (error) {
+          console.error(error);
+          reject(error);
+        } else {
+          resolve(JSON.parse(resBody));
+        }
+      });
+    }.bind(this));
+  }
+
+  get(options) {
+    return this.request('GET', options);
+  }
+
+  post(url, options) {
+    return this.request('POST', options);
   }
 
   /**
@@ -22,31 +53,25 @@ class GmailClient {
    */
   getEmailAddress() {
     return new Promise(function(resolve, reject) {
-      google.gmail('v1').users.getProfile({
-        auth: this.oauth2Client,
-        userId: 'me'
-      }, function(err, response) {
-        if (err) {
-          reject(err);
-          return;
-        }
+      this.get(
+        'https://www.googleapis.com/gmail/v1/users/me/profile'
+      ).then(function(response) {
         resolve(response.emailAddress);
+      }).catch(function(err) {
+        reject(err);
       });
     }.bind(this));
   }
 
   getName() {
     return new Promise(function(resolve, reject) {
-      google.plus('v1').people.get({
-        auth: this.oauth2Client,
-        fields: ['displayName'],
-        userId: 'me'
-      }, function(err, response) {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(response.displayName);
-        }
+      this.get({
+        url: 'https://www.googleapis.com/plus/v1/people/me',
+        query: {fields: 'displayName'}
+      }).then(function(response) {
+        resolve(response.displayName);
+      }).catch(function(err) {
+        reject(err);
       });
     }.bind(this));
   }
@@ -62,22 +87,19 @@ class GmailClient {
    */
   getEncryptedMail(mailbox, pageToken) {
     let params = {
-      auth: this.oauth2Client,
       maxResults: 25,
       pageToken: pageToken,
-      q: 'BEGIN PGP MESSAGE',
-      userId: 'me'
+      q: 'BEGIN PGP MESSAGE'
     };
     if (mailbox != '') {
       params.labelIds = mailbox;
     }
 
     return new Promise(function(resolve, reject) {
-      google.gmail('v1').users.threads.list(params, function(err, response) {
-        if (err) {
-          reject(err);
-          return;
-        }
+      this.get({
+        url: 'https://www.googleapis.com/gmail/v1/users/me/threads',
+        query: params
+      }).then(function(response) {
         if (response.threads === undefined) {
           resolve({ threads: [] });
           return;
@@ -98,27 +120,17 @@ class GmailClient {
             threads: filtered,
             nextPageToken: response.nextPageToken
           });
-        }.bind(this)).catch(function(error) {
-          reject(error);
-        });
-      }.bind(this));
+        }.bind(this));
+      }.bind(this)).catch(function(err) {
+        reject(err);
+      });
     }.bind(this));
   }
 
   getThread(id) {
-    return new Promise(function(resolve, reject) {
-      google.gmail('v1').users.threads.get({
-        auth: this.oauth2Client,
-        id: id,
-        userId: 'me'
-      }, function(err, response) {
-        if (err) {
-          reject(err);
-          return;
-        }
-        resolve(response);
-      });
-    }.bind(this));
+    return this.get({
+      url: 'https://www.googleapis.com/gmail/v1/users/me/threads/' + id
+    });
   }
 
   /**
@@ -169,64 +181,42 @@ class GmailClient {
       }
       var rfcMessage = this.buildRfcMessage(jsonMessage);
       var encodedMessage = URLSafeBase64.encode(new Buffer(rfcMessage));
-      google.gmail('v1').users.messages.send({
-        auth: this.oauth2Client,
-        userId: 'me',
-        resource: {
+
+      this.post({
+        url: 'https://www.googleapis.com/gmail/v1/users/me/messages/send',
+        body: {
           raw: encodedMessage,
           threadId: threadId
         }
-      }, function(err, response) {
-        if (err) {
-          console.log('Error sending message: ' + err);
-          reject(err);
-          return;
-        }
+      }).then(function(response) {
         resolve(response);
+      }).catch(function(err) {
+        console.log('Error sending message: ' + err);
+        reject(err);
       });
     }.bind(this));
   }
 
   archiveThread(threadId) {
-    return new Promise(function(resolve, reject) {
-      google.gmail('v1').users.threads.modify({
-        auth: this.oauth2Client,
-        userId: 'me',
-        id: threadId,
-        resource: {
-          'removeLabelIds': [
-            'INBOX'
-          ]
-        }
-      }, function(err, response) {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(response);
-        }
-      });
-    }.bind(this));
+    return this.post({
+      url: 'https://www.googleapis.com/gmail/v1/users/me/threads/' + threadId + '/modify',
+      body: {
+        removeLabelIds: [
+          'INBOX'
+        ]
+      }
+    });
   }
 
   markAsRead(threadId) {
-    return new Promise(function(resolve, reject) {
-      google.gmail('v1').users.threads.modify({
-        auth: this.oauth2Client,
-        userId: 'me',
-        id: threadId,
-        resource: {
-          'removeLabelIds': [
-            'UNREAD'
-          ]
-        }
-      }, function(err, response) {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(response);
-        }
-      });
-    }.bind(this));
+    return this.post({
+      url: 'https://www.googleapis.com/gmail/v1/users/me/threads/' + threadId + '/modify',
+      body: {
+        removeLabelIds: [
+          'UNREAD'
+        ]
+      }
+    });
   }
 
   buildRfcMessage(jsonMessage) {
@@ -263,34 +253,28 @@ class GmailClient {
         resolve([]);
         return;
       }
-      request({
-        method: 'GET',
+      this.get({
         url: 'https://www.google.com/m8/feeds/contacts/default/full',
         headers: {
-          'GData-Version': 3.0,
-          'Authorization': 'Bearer ' + this.oauth2Client.credentials.access_token
+          'GData-Version': 3.0
         },
-        qs: {
+        query: {
           'alt': 'json',
           'max-results': 10,
           'q': query
         }
-      }, function(error, response, body) {
-        if (!error && response.statusCode == 200) {
-          let raw = JSON.parse(body);
-          let contacts = raw['feed']['entry'];
-          if (!contacts) {
-            resolve([]);
-            return;
-          }
-          resolve(contacts.map(this.toSmallContact)
-          .reduce(function(flat, next) {
-            return flat.concat(next);
-          }));
-        } else {
-          reject(body);
+      }).then(function(response) {
+        let contacts = response['feed']['entry'];
+        if (!contacts) {
+          resolve([]);
+          return;
         }
-      }.bind(this));
+        resolve(contacts.map(this.toSmallContact).reduce(function(flat, next) {
+          return flat.concat(next);
+        }));
+      }).catch(function(err) {
+        reject(err);
+      });
     }.bind(this));
   }
 

@@ -1,11 +1,11 @@
 'use strict';
 
 var EventEmitter = require('events').EventEmitter;
+const GmailClient = require('../../../gmailClient');
+const GoogleOAuth = require('../../../googleOAuth');
 var InboxDispatcher = require('../dispatcher/InboxDispatcher');
 var KeybaseAPI = require('../keybaseAPI');
 var messageParsing = require('../messageParsing');
-var queryString = require('query-string');
-var xhr = require('xhr');
 
 var _threads = {};
 var _mailbox = 'INBOX';
@@ -27,6 +27,21 @@ var _privateManager = KeybaseAPI.getPrivateManager();
 _privateManager.then(function(pm) {
   console.log(pm);
 });
+
+// TODO: Better token handling, client side authorization checks.
+let token = GoogleOAuth.getAccessToken();
+if (!token) {
+  console.error('No token stored');
+}
+GoogleOAuth.web.validateToken(token.access_token).then(function() {
+  console.log('Good token');
+  console.log(token);
+}).catch(function(err) {
+  console.error('Bad token');
+  console.error(err);
+});
+
+let gmail = new GmailClient(token.access_token);
 
 function _signerFromLiterals(literals) {
   let ds = literals[0].get_data_signer();
@@ -120,19 +135,12 @@ function _decryptMessage(message) {
  * to allow batch archiving, so we do it one at a time.
  */
 function _archiveThread(threadId) {
-  xhr.post({
-    url: window.location.origin + '/archiveThread?threadId=' + threadId
-  }, function(err, response) {
-    if (err) {
-      _netError = 'NETWORK';
-      console.error(err);
-      MessageStore.emitChange();
-    } else if (response.statusCode != 200) {
-      _netError = 'AUTHENTICATION';
-      MessageStore.emitChange();
-    } else {
-      _netError = '';
-    }
+  gmail.archiveThread(threadId).then(function() {
+    MessageStore.refreshCurrentPage();
+  }).catch(function(err) {
+    console.error(err);
+    // TODO: Check error status, update UI
+    MessageStore.emitChange();
     MessageStore.refreshCurrentPage();
   });
 }
@@ -195,36 +203,46 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
   fetchMail(mailbox, pageToken, callback) {
     MessageStore.emitRefreshing();
 
-    let query = queryString.stringify({
-      mailbox: mailbox,
-      pageToken: pageToken
+    gmail.getEncryptedMail(mailbox, pageToken).then(function(response) {
+      _threads = response.threads;
+      _threads.forEach(function(thread) {
+        _decryptThread(thread);
+        _getLinkIDsForThread(thread);
+      });
+      if (callback && response.nextPageToken != '') {
+        callback(response.nextPageToken);
+      }
+    }).catch(function(error) {
+      console.error(error);
+      MessageStore.emitChange();
     });
 
-    xhr.get({
-      url: window.location.origin + '/getMail?' + query
-    }, function(error, response, body) {
-      if (error) {
-        _netError = 'NETWORK';
-        MessageStore.emitChange();
-      } else if (response.statusCode == 401) {
-        _netError = 'AUTHENTICATION';
-        MessageStore.emitChange();
-      } else if (response.statusCode == 500) {
-        _netError = 'INTERNAL ERROR';
-        MessageStore.emitChange();
-      } else {
-        _netError = '';
-        let data = JSON.parse(body);
-        _threads = data.threads;
-        _threads.forEach(function(thread) {
-          _decryptThread(thread);
-          _getLinkIDsForThread(thread);
-        });
-        if (callback && data.nextPageToken != '') {
-          callback(data.nextPageToken);
-        }
-      }
-    }.bind(this));
+
+    // xhr.get({
+    //   url: window.location.origin + '/getMail?' + query
+    // }, function(error, response, body) {
+    //   if (error) {
+    //     _netError = 'NETWORK';
+    //     MessageStore.emitChange();
+    //   } else if (response.statusCode == 401) {
+    //     _netError = 'AUTHENTICATION';
+    //     MessageStore.emitChange();
+    //   } else if (response.statusCode == 500) {
+    //     _netError = 'INTERNAL ERROR';
+    //     MessageStore.emitChange();
+    //   } else {
+    //     _netError = '';
+    //     let data = JSON.parse(body);
+    //     _threads = data.threads;
+    //     _threads.forEach(function(thread) {
+    //       _decryptThread(thread);
+    //       _getLinkIDsForThread(thread);
+    //     });
+    //     if (callback && data.nextPageToken != '') {
+    //       callback(data.nextPageToken);
+    //     }
+    //   }
+    // }.bind(this));
   },
 
   fetchFirstPage: function() {
@@ -283,21 +301,29 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
   },
 
   markAsRead: function(threadId) {
-    xhr.post({
-      url: window.location.origin + '/markAsRead?threadId=' + threadId
-    }, function(err, response) {
-      if (err) {
-        _netError = 'NETWORK';
-        console.error(err);
-        MessageStore.emitChange();
-      } else if (response.statusCode != 200) {
-        _netError = 'AUTHENTICATION';
-        MessageStore.emitChange();
-      } else {
-        _netError = '';
-      }
+    gmail.markAsRead(threadId).then(function() {
+      MessageStore.refreshCurrentPage();
+    }).catch(function(error) {
+      console.error(error);
+      MessageStore.emitChange();
       MessageStore.refreshCurrentPage();
     });
+
+    // xhr.post({
+    //   url: window.location.origin + '/markAsRead?threadId=' + threadId
+    // }, function(err, response) {
+    //   if (err) {
+    //     _netError = 'NETWORK';
+    //     console.error(err);
+    //     MessageStore.emitChange();
+    //   } else if (response.statusCode != 200) {
+    //     _netError = 'AUTHENTICATION';
+    //     MessageStore.emitChange();
+    //   } else {
+    //     _netError = '';
+    //   }
+    //   MessageStore.refreshCurrentPage();
+    // });
   },
 
   dispatchToken: InboxDispatcher.register(function(action) {

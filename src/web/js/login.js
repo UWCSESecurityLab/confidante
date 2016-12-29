@@ -34,7 +34,7 @@ function login() {
       return;
     }
     // If there is a token, validate it with Google
-    GoogleOAuth.web.validateToken(googleToken).then(function() {
+    GoogleOAuth.web.validateToken(googleToken.access_token).then(function() {
       window.location.href = '/mail';
     }).catch(function() {
       // If it isn't good, have the user login again.
