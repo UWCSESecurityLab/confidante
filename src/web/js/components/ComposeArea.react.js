@@ -227,6 +227,8 @@ var ComposeArea = React.createClass({
       .catch(function(err) {
         this.setState({ feedback: err.toString(), sendingSpinner: false });
       }.bind(this));
+      this.props.onClick;
+      console.log("finished send function");
   },
 
   sendInvite: function() {

@@ -28,8 +28,13 @@ var EmailClient = React.createClass({
       errorLinkText: '',
       errorLink: '',
       mailbox: 'Inbox',
-      refreshing: false
+      refreshing: false,
+      showComposeUI: false
     }
+  },
+
+  onClick: function() {
+    this.setState({ showComposeUI: !this.state.showComposeUI });
   },
 
   componentDidMount: function() {
@@ -88,7 +93,7 @@ var EmailClient = React.createClass({
                 staging={this.props.serverVars.staging}
                 mailbox={this.state.mailbox}/>
         <div className="container">
-          <ComposeButton />
+          <ComposeButton onClick={this.onClick}/>
           <ArchiveButton />
           <RefreshButton spinning={this.state.refreshing}/>
           { this.state.refreshing
@@ -102,7 +107,7 @@ var EmailClient = React.createClass({
               </div>
             : null
           }
-          <ComposeArea onSent={this.onSent} toolname={this.props.serverVars.toolname}/>
+          <ComposeArea onSent={this.onSent} toolname={this.props.serverVars.toolname} showComposeUI={this.state.showComposeUI} onClick={this.onClick}/>
           <Inbox linkidToOpen={this.props.linkidToOpen}/>
           <ThreadScrollers disablePrev={this.state.disablePrev} disableNext={this.state.disableNext}/>
           <Toast/>
