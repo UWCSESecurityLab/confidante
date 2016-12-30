@@ -227,8 +227,6 @@ var ComposeArea = React.createClass({
       .catch(function(err) {
         this.setState({ feedback: err.toString(), sendingSpinner: false });
       }.bind(this));
-      this.props.onClick;
-      console.log("finished send function");
   },
 
   sendInvite: function() {
@@ -380,7 +378,7 @@ var ComposeArea = React.createClass({
                 : 'Encrypt and Send'
               }
             </button>
-            <label><input type="checkbox" name="sign-private-key" checked={this.state.checked} onClick={this.updateChecked}/> Sign email with my Private Key</label><br/>
+            <label><input type="checkbox" name="sign-private-key" checked={this.state.checked} onChange={this.updateChecked}/> Sign email with my Private Key</label><br/>
           </div>
         </div>
       </div>
