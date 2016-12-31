@@ -17,11 +17,6 @@
 	color: white;
 }
 
-.email-header > .close {
-	border: 2px solid white;
-	color: white;
-}
-
 .email-body {
 	background-color: white;
 }
@@ -53,4 +48,8 @@
 
 .button-send > .btn-primary {
 	margin-right: 6px;
+}
+
+.close > span {
+	color: white !important;
 }
