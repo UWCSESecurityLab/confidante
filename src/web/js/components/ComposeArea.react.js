@@ -319,7 +319,7 @@ var ComposeArea = React.createClass({
     return (
       <div id="composeMessage" style={style}>
         <div className="email-header">
-          <button type="button" className="close" aria-label="Close" onClick={this.props.onClick}>
+          <button type="button" className="close" aria-label="Close" onClick={this.props.closeComposeUI}>
             <span aria-hidden="true">&times;</span>
           </button>
           <h4 className="modal-title">
