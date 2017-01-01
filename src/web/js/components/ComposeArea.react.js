@@ -51,7 +51,7 @@ var ComposeArea = React.createClass({
     return {
       to: '',
       kbto: [],
-      subject: 'Subject:',
+      subject: '',
       email: '',
       feedback: '',
       sendingSpinner: false,
@@ -344,6 +344,7 @@ var ComposeArea = React.createClass({
               <input type="text"
                      value={this.state.subject}
                      name="subject" id="subject"
+                     placeholder="Subject:"
                      onChange={this.updateSubject}
                      className="form-controls">
               </input>
