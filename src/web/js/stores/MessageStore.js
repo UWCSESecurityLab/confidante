@@ -137,10 +137,8 @@ function _decryptMessage(message) {
 function _archiveThread(threadId) {
   gmail.archiveThread(threadId).then(function() {
     MessageStore.refreshCurrentPage();
-  }).catch(function(err) {
-    console.error(err);
-    // TODO: Check error status, update UI
-    MessageStore.emitChange();
+  }).catch(function(error) {
+    MessageStore.handleGmailError(error);
     MessageStore.refreshCurrentPage();
   });
 }
@@ -213,8 +211,8 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
         callback(response.nextPageToken);
       }
     }).catch(function(error) {
-      console.error(error);
-      MessageStore.emitChange();
+      _threads = [];
+      MessageStore.handleGmailError(error);
     });
 
 
@@ -304,8 +302,7 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
     gmail.markAsRead(threadId).then(function() {
       MessageStore.refreshCurrentPage();
     }).catch(function(error) {
-      console.error(error);
-      MessageStore.emitChange();
+      MessageStore.handleGmailError(error);
       MessageStore.refreshCurrentPage();
     });
 
@@ -324,6 +321,17 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
     //   }
     //   MessageStore.refreshCurrentPage();
     // });
+  },
+
+  handleGmailError: function(response) {
+    console.log(response);
+    if (response.error.status == 'UNAUTHENTICATED') {
+      _netError = 'AUTHENTICATION';
+      MessageStore.emitChange();
+    } else {
+      console.log('Unhandled Gmail Error');
+      console.error(response);
+    }
   },
 
   dispatchToken: InboxDispatcher.register(function(action) {

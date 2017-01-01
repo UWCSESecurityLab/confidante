@@ -23,6 +23,7 @@ class GmailClient {
       }
       let headers = { Authorization: 'Bearer ' + this.token };
       Object.assign(headers, options.headers);
+      console.log('Sending request to ' + options.url);
       xhr({
         method: method,
         url: options.query ? options.url + '?' + qs.stringify(options.query) : options.url,
@@ -30,10 +31,14 @@ class GmailClient {
         body: options.body
       }, function(error, response, resBody) {
         if (error) {
-          console.error(error);
           reject(error);
         } else {
-          resolve(JSON.parse(resBody));
+          let body = JSON.parse(resBody);
+          if (body.error) {
+            reject(body);
+          } else {
+            resolve(body);
+          }
         }
       });
     }.bind(this));
@@ -191,7 +196,6 @@ class GmailClient {
       }).then(function(response) {
         resolve(response);
       }).catch(function(err) {
-        console.log('Error sending message: ' + err);
         reject(err);
       });
     }.bind(this));
