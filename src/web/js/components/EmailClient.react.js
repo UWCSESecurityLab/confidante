@@ -63,18 +63,17 @@ var EmailClient = React.createClass({
         errorLink: '/mail'
       });
     } else {
-      this.setState(this.getInitialState());
+      this.setState({
+        error: '',
+        errorLinkText: '',
+        errorLink: ''
+      });
     }
   },
 
   onMessageStoreChange: function() {
     this.checkError();
-    this.setState({
-      refreshing: false,
-      mailbox: MessageStore.getCurrentMailboxLabel(),
-      disablePrev: MessageStore.getDisablePrev(),
-      disableNext: MessageStore.getDisableNext()
-    });
+    this.setState({ refreshing: false });
   },
 
   onRefreshing: function() {
