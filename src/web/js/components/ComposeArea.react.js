@@ -314,9 +314,6 @@ var ComposeArea = React.createClass({
   },
 
   render: function() {
-    let labelTo = "To:";
-    let labelKeybaseUser = "Keybase Username of Recipient:"; 
-    
     var style = { display: this.props.showComposeUI ? 'block' : 'none' };
 
     return (
@@ -335,12 +332,12 @@ var ComposeArea = React.createClass({
         <div className="email-body">
           <form className="formHorizontal" autoComplete="off">
             <div className="form-groups">
-              <ContactsAutocomplete labelName={labelTo} to={this.state.to} updateParent={this.updateTo}/>
+              <ContactsAutocomplete to={this.state.to} updateParent={this.updateTo}/>
             </div>
             { this.state.invite
               ? null
               : <div className="form-groups">
-                  <KeybaseAutocomplete labelName={labelKeybaseUser} kbto={this.state.kbto} updateParent={this.updateKBTo}/>
+                  <KeybaseAutocomplete kbto={this.state.kbto} updateParent={this.updateKBTo}/>
                 </div>
             }
             <div className="form-groups">

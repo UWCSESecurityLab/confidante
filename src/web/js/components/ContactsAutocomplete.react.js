@@ -171,7 +171,7 @@ var ContactsAutocomplete = React.createClass({
 
     return (
       <ul className="autocomplete-input">
-          <span>{this.props.labelName}</span>
+          <span>To</span>
           {selected}
           <Typeahead inputValue={this.state.to}
                      onChange={this.handleValueChanged}
