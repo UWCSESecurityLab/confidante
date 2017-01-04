@@ -72,6 +72,20 @@ module.exports = {
   },
 
   /**
+   * Set whether a thread is open or closed in the UI.
+   * @param threadId The id of the Gmail thread.
+   */
+  setFullThread: function(threadId, fullThread) {
+    InboxDispatcher.dispatch({
+      type: 'SET_FULL_THREAD',
+      message: {
+        threadId: threadId,
+        fullThread: fullThread
+      }
+    });
+  },
+
+  /**
    * Fetch new emails from Gmail.
    */
   refresh: function() {

@@ -20,7 +20,7 @@ var Thread = React.createClass({
   getInitialState: function() {
     return {
       messages: [],
-      checked: false
+      checked: false,
     };
   },
   close: function() {

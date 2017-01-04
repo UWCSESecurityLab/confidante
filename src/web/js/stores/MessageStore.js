@@ -274,6 +274,15 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
     MessageStore.emitChange();
   },
 
+  setFullThread: function(threadId, fullThread) {
+    _threads.forEach((thread) => {
+      if (thread.id === threadId) {
+        thread['fullThread'] = fullThread;
+      }
+    });
+    MessageStore.emitChange();
+  },
+
   archiveSelectedThreads: function() {
     _threads.forEach((thread) => {
       if (thread.checked) {
@@ -316,6 +325,8 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
       MessageStore.archiveSelectedThreads();
     } else if (action.type === 'SET_CHECKED') {
       MessageStore.setChecked(action.message.threadId, action.message.checked);
+    } else if (action.type === 'SET_FULL_THREAD') {
+      MessageStore.setFullThread(action.message.threadId, action.message.fullThread);
     }
   })
 });
