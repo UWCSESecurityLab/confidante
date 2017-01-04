@@ -55,7 +55,7 @@ var ThreadSnippet = React.createClass({
   },
 
   render: function() {
-    if (!this.props.thread.fullThread) {
+    if (this.props.thread.id !== MessageStore.getFullThreadId()) {
       let threadSubject = messageParsing.getThreadHeader(this.props.thread, 'Subject');
       if (threadSubject === '') {
         threadSubject = '(no subject)';

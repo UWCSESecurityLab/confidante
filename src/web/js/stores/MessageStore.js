@@ -7,6 +7,10 @@ var messageParsing = require('../messageParsing');
 var queryString = require('query-string');
 var xhr = require('xhr');
 
+// Only zero or one thread can be open at a time -- the open thread, if any,
+// is stored here.
+var _currentFullThreadId = undefined;
+
 var _threads = {};
 var _mailbox = 'INBOX';
 
@@ -186,6 +190,10 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
     return _netError;
   },
 
+  getFullThreadId: function() {
+    return _currentFullThreadId;
+  },
+
   /**
    * Fetch PGP email threads from Gmail.
    * @param mailbox The mailbox label to get emails from
@@ -275,11 +283,12 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
   },
 
   setFullThread: function(threadId, fullThread) {
-    _threads.forEach((thread) => {
-      if (thread.id === threadId) {
-        thread['fullThread'] = fullThread;
-      }
-    });
+    if (fullThread) {
+      _currentFullThreadId = threadId;
+    } else {
+      _currentFullThreadId = undefined;
+    }
+
     MessageStore.emitChange();
   },
 
