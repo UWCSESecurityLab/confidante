@@ -190,7 +190,7 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
     return _netError;
   },
 
-  getFullThreadId: function() {
+  getExpandedThreadId: function() {
     return _currentFullThreadId;
   },
 
@@ -282,8 +282,8 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
     MessageStore.emitChange();
   },
 
-  setFullThread: function(threadId, fullThread) {
-    if (fullThread) {
+  setExpandedThread: function(threadId, expanded) {
+    if (expanded) {
       _currentFullThreadId = threadId;
     } else {
       _currentFullThreadId = undefined;
@@ -334,8 +334,8 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
       MessageStore.archiveSelectedThreads();
     } else if (action.type === 'SET_CHECKED') {
       MessageStore.setChecked(action.message.threadId, action.message.checked);
-    } else if (action.type === 'SET_FULL_THREAD') {
-      MessageStore.setFullThread(action.message.threadId, action.message.fullThread);
+    } else if (action.type === 'SET_EXPANDED_THREAD') {
+      MessageStore.setExpandedThread(action.message.threadId, action.message.expanded);
     }
   })
 });

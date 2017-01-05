@@ -25,7 +25,7 @@ var ThreadSnippet = React.createClass({
   },
 
   openThread: function() {
-    InboxActions.setFullThread(this.props.thread.id, true);
+    InboxActions.setExpandedThread(this.props.thread.id, true);
     if (this.isUnread()) {
       InboxActions.markAsRead(this.props.thread.id);
       InboxActions.refresh();
@@ -33,7 +33,7 @@ var ThreadSnippet = React.createClass({
   },
 
   closeThread: function() {
-    InboxActions.setFullThread(this.props.thread.id, false);
+    InboxActions.setExpandedThread(this.props.thread.id, false);
   },
 
   isUnread: function() {
@@ -46,7 +46,7 @@ var ThreadSnippet = React.createClass({
   
   componentDidMount: function() {
     if (this.props.startOpen) {
-      InboxActions.setFullThread(this.props.thread.id, true);
+      InboxActions.setExpandedThread(this.props.thread.id, true);
     }
   },
 
@@ -55,7 +55,7 @@ var ThreadSnippet = React.createClass({
   },
 
   render: function() {
-    if (this.props.thread.id !== MessageStore.getFullThreadId()) {
+    if (this.props.thread.id !== MessageStore.getExpandedThreadId()) {
       let threadSubject = messageParsing.getThreadHeader(this.props.thread, 'Subject');
       if (threadSubject === '') {
         threadSubject = '(no subject)';
