@@ -1,8 +1,8 @@
 const electron = require('electron');
-// Module to control application life.
-const {app} = electron;
-// Module to create native browser window.
-const {BrowserWindow} = electron;
+const ejse = require('ejs-electron');
+
+const {app} = electron;           // Module to control application life.
+const {BrowserWindow} = electron; // Module to create native browser window.
 
 const locals = {
   toolname: 'Confidante',
@@ -12,7 +12,7 @@ const locals = {
   electron: true
 };
 
-require('electron-ejs')(locals);
+ejse.setOptions(locals);
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
