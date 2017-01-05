@@ -72,6 +72,20 @@ module.exports = {
   },
 
   /**
+   * Set whether a thread is expanded or not in the inbox UI.
+   * @param threadId The id of the Gmail thread.
+   */
+  setExpandedThread: function(threadId, expanded) {
+    InboxDispatcher.dispatch({
+      type: 'SET_EXPANDED_THREAD',
+      message: {
+        threadId: threadId,
+        expanded: expanded
+      }
+    });
+  },
+
+  /**
    * Fetch new emails from Gmail.
    */
   refresh: function() {
