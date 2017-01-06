@@ -28,8 +28,13 @@ var EmailClient = React.createClass({
       errorLinkText: '',
       errorLink: '',
       mailbox: 'Inbox',
-      refreshing: false
+      refreshing: false,
+      showComposeUI: false
     }
+  },
+
+  toggleComposeUI: function() {
+    this.setState({ showComposeUI: !this.state.showComposeUI });
   },
 
   componentDidMount: function() {
@@ -58,18 +63,17 @@ var EmailClient = React.createClass({
         errorLink: '/mail'
       });
     } else {
-      this.setState(this.getInitialState());
+      this.setState({
+        error: '',
+        errorLinkText: '',
+        errorLink: ''
+      });
     }
   },
 
   onMessageStoreChange: function() {
     this.checkError();
-    this.setState({
-      refreshing: false,
-      mailbox: MessageStore.getCurrentMailboxLabel(),
-      disablePrev: MessageStore.getDisablePrev(),
-      disableNext: MessageStore.getDisableNext()
-    });
+    this.setState({ refreshing: false });
   },
 
   onRefreshing: function() {
@@ -88,7 +92,7 @@ var EmailClient = React.createClass({
                 staging={this.props.serverVars.staging}
                 mailbox={this.state.mailbox}/>
         <div className="container">
-          <ComposeButton />
+          <ComposeButton onClick={this.toggleComposeUI}/>
           <ArchiveButton />
           <RefreshButton spinning={this.state.refreshing}/>
           { this.state.refreshing
@@ -102,7 +106,7 @@ var EmailClient = React.createClass({
               </div>
             : null
           }
-          <ComposeArea onSent={this.onSent} toolname={this.props.serverVars.toolname}/>
+          <ComposeArea onSent={this.onSent} toolname={this.props.serverVars.toolname} showComposeUI={this.state.showComposeUI} closeComposeUI={this.toggleComposeUI}/>
           <Inbox linkidToOpen={this.props.linkidToOpen}/>
           <ThreadScrollers disablePrev={this.state.disablePrev} disableNext={this.state.disableNext}/>
           <Toast/>
