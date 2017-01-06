@@ -2,7 +2,7 @@
 	width: 600px;
 	height: 550px;
 	background-color: #fff;
-	position: absolute;
+	position: fixed;
 	bottom: 0px;
 	right: 10px;
 	z-index: 1;
