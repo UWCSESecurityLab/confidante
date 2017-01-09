@@ -120,6 +120,28 @@ function _decryptMessage(message) {
 }
 
 /**
+ * Delete a thread by threadID. Unfortunately, GMail's API doesn't seem
+ * to allow batch deleting, so we do it one at a time.
+ */
+function _deleteThread(threadId) {
+  xhr.post({
+    url: window.location.origin + '/deleteThread?threadId=' + threadId
+  }, function(err, response) {
+    if (err) {
+      _netError = 'NETWORK';
+      console.error(err);
+      MessageStore.emitChange();
+    } else if (response.statusCode != 200) {
+      _netError = 'AUTHENTICATION';
+      MessageStore.emitChange();
+    } else {
+      _netError = '';
+    }
+    MessageStore.refreshCurrentPage();
+  });
+}
+
+/**
  * Archive a thread by threadID. Unfortunately, GMail's API doesn't seem
  * to allow batch archiving, so we do it one at a time.
  */
@@ -300,6 +322,14 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
     });
   },
 
+  deleteSelectedThreads: function() {
+    _threads.forEach((thread) => {
+      if (thread.checked) {
+        _deleteThread(thread.id);
+      }
+    });
+  },
+
   markAsRead: function(threadId) {
     xhr.post({
       url: window.location.origin + '/markAsRead?threadId=' + threadId
@@ -332,6 +362,8 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
       MessageStore.fetchPrevPage();
     } else if (action.type === 'ARCHIVE_SELECTED_THREADS') {
       MessageStore.archiveSelectedThreads();
+    } else if (action.type === 'DELETE_SELECTED_THREADS') {
+      MessageStore.deleteSelectedThreads();
     } else if (action.type === 'SET_CHECKED') {
       MessageStore.setChecked(action.message.threadId, action.message.checked);
     } else if (action.type === 'SET_EXPANDED_THREAD') {

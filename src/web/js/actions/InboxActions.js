@@ -43,6 +43,13 @@ module.exports = {
     InboxDispatcher.dispatch({ type: 'ARCHIVE_SELECTED_THREADS' });
   },
 
+  /**
+   * Delete all selected messages.
+   */
+  deleteSelectedThreads: function() {
+    InboxDispatcher.dispatch({ type: 'DELETE_SELECTED_THREADS' });
+  },
+
   ///////////////////////////////
   //// Message Store Actions ////
   ///////////////////////////////

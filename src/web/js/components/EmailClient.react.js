@@ -4,6 +4,7 @@ var React = require('react');
 var ComposeArea = require('./ComposeArea.react');
 var ComposeButton = require('./ComposeButton.react');
 var ArchiveButton = require('./ArchiveButton.react');
+var DeleteButton = require('./DeleteButton.react');
 var Header = require('./Header.react');
 var Inbox = require('./Inbox.react');
 var InviteButton = require('./InviteButton.react');
@@ -94,6 +95,7 @@ var EmailClient = React.createClass({
         <div className="container">
           <ComposeButton onClick={this.toggleComposeUI}/>
           <ArchiveButton />
+          <DeleteButton />
           <RefreshButton spinning={this.state.refreshing}/>
           { this.state.refreshing
             ? <span id="loading-text">Loading...</span>
