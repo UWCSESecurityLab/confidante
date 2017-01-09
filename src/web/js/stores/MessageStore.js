@@ -10,6 +10,7 @@ var xhr = require('xhr');
 // Only zero or one thread can be open at a time -- the open thread, if any,
 // is stored here.
 var _currentFullThreadId = undefined;
+var _checkedThreads = {};
 
 var _threads = {};
 var _mailbox = 'INBOX';
@@ -216,6 +217,10 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
     return _currentFullThreadId;
   },
 
+  isThreadChecked: function(threadId) {
+    return _checkedThreads[threadId] === true;
+  },
+
   /**
    * Fetch PGP email threads from Gmail.
    * @param mailbox The mailbox label to get emails from
@@ -296,11 +301,7 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
   },
 
   setChecked: function(threadId, checked) {
-    _threads.forEach((thread) => {
-      if (thread.id === threadId) {
-        thread['checked'] = checked;
-      }
-    });
+    _checkedThreads[threadId] = checked;
     MessageStore.emitChange();
   },
 
@@ -316,7 +317,7 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
 
   archiveSelectedThreads: function() {
     _threads.forEach((thread) => {
-      if (thread.checked) {
+      if (this.isThreadChecked(thread.id)) {
         _archiveThread(thread.id);
       }
     });
@@ -324,7 +325,7 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
 
   deleteSelectedThreads: function() {
     _threads.forEach((thread) => {
-      if (thread.checked) {
+      if (this.isThreadChecked(thread.id)) {
         _deleteThread(thread.id);
       }
     });

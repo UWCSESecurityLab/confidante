@@ -51,7 +51,8 @@ var ThreadSnippet = React.createClass({
   },
 
   handleCheckboxClick: function(e) {
-    InboxActions.setChecked(this.props.thread.id, !this.props.thread.checked);
+    InboxActions.setChecked(this.props.thread.id, 
+                            !MessageStore.isThreadChecked(this.props.thread.id));
   },
 
   render: function() {
@@ -83,10 +84,12 @@ var ThreadSnippet = React.createClass({
         snippetClass += ' unreadSnippet';
       }
 
+      let isChecked = MessageStore.isThreadChecked(this.props.thread.id);
+
       return (
         <div className={snippetClass}>
           <div className="col-md-1 snippet-checkbox">
-            <input type="checkbox" value={this.props.thread.checked} onClick={this.handleCheckboxClick}></input>
+            <input type="checkbox" checked={isChecked} onChange={this.handleCheckboxClick}></input>
           </div>
           <div onClick={this.openThread} className="snippet-from col-md-4 col-xs-8">{threadFrom}</div>
           <div onClick={this.openThread} className="snippet-timestamp col-md-2 col-xs-4 col-md-push-5">{timestamp}</div>
