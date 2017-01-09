@@ -94,8 +94,12 @@ class KeybaseAPI {
    */
   static _getSalt(emailOrUsername) {
     return new Promise(function(resolve, reject) {
+      let qs = querystring.stringify({
+        email_or_username: emailOrUsername,
+        pdpka_login: true
+      });
       xhr.get({
-        url: nonCors + '/getsalt.json?email_or_username=' + emailOrUsername
+        url: nonCors + '/getsalt.json?' + qs
       }, function(error, response, body) {
         handleKeybaseResponse(error, response, body, resolve, reject);
       });
@@ -185,7 +189,8 @@ class KeybaseAPI {
       let qs = querystring.stringify({
         email_or_username: emailOrUsername,
         pdpka5: pdpka5,
-        pdpka4: pdpka4
+        pdpka4: pdpka4,
+        pdpka_login: true
       });
       xhr.post({
         url: nonCors + '/login.json?' + qs
