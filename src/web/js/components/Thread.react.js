@@ -44,6 +44,8 @@ var Thread = React.createClass({
       <div className="row thread">
         <div className="threadHeader" onClick={this.close}>
           <h4 className="subjectLine">{subject}</h4>
+          <button type="button" className="close threadClose" onClick={this.close}>&times;</button>
+          
         </div>
         <ul>{messages}</ul>
       </div>
