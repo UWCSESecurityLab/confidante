@@ -44,7 +44,9 @@ function getKBIDFromSigner(signer) {
 var ComposeArea = React.createClass({
   propTypes: {
     onSent: React.PropTypes.func,
-    toolname: React.PropTypes.string
+    toolname: React.PropTypes.string,
+    showComposeUI: React.PropTypes.bool,
+    closeComposeUI: React.PropTypes.func
   },
 
   getInitialState: function() {

@@ -17,7 +17,9 @@ var ThreadSnippet = React.createClass({
     plaintexts: React.PropTypes.object,
     errors: React.PropTypes.object,
     signers: React.PropTypes.object,
-    startOpen: React.PropTypes.bool
+    startOpen: React.PropTypes.bool,
+    showComposeUI: React.PropTypes.bool,
+    closeComposeUI: React.PropTypes.func
   },
 
   getInitialState: function() {
@@ -101,7 +103,9 @@ var ThreadSnippet = React.createClass({
                       errors={this.props.errors}
                       thread={this.props.thread}
                       signers={this.props.signers}
-                      closeCallback={this.closeThread}/>);
+                      closeCallback={this.closeThread}
+                      showComposeUI={this.props.showComposeUI} 
+                      closeComposeUI={this.props.closeComposeUI}/>);
     }
   }
 });

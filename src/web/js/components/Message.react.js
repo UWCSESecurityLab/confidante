@@ -29,7 +29,9 @@ var Message = React.createClass({
     error: React.PropTypes.instanceOf(Error),
     message: React.PropTypes.object,
     plaintext: React.PropTypes.string,
-    signer: React.PropTypes.object
+    signer: React.PropTypes.object,
+    showComposeUI: React.PropTypes.bool,
+    closeComposeUI: React.PropTypes.func
   },
 
   getInitialState: function() {
@@ -40,10 +42,12 @@ var Message = React.createClass({
   },
 
   reply: function() {
+    console.log("reply clicked");
     InboxActions.setInReplyTo({
       message: this.props.message,
       replyAll: false
     });
+    this.props.closeComposeUI();
   },
 
   replyAll: function() {
@@ -51,6 +55,7 @@ var Message = React.createClass({
       message: this.props.message,
       replyAll: true
     });
+    this.props.closeComposeUI();
   },
 
   showOriginalChanged: function() {
@@ -138,12 +143,12 @@ var Message = React.createClass({
             </div>
         }
 
-        <button type="button" className="btn btn-primary reply" data-toggle="modal" data-target="#composeMessage" onClick={this.reply}>
+        <button type="button" className="btn btn-primary reply" onClick={this.reply}>
           <span className="reply-arrow glyphicon glyphicon-share-alt" aria-hidden="true"></span>
           Reply
         </button>
         { multipleRecipients ?
-          <button type="button" className="btn btn-primary reply" data-toggle="modal" data-target="#composeMessage" onClick={this.replyAll}>
+          <button type="button" className="btn btn-primary reply" onClick={this.replyAll}>
             <span className="glyphicon glyphicon-share-alt" aria-hidden="true"></span>
             <span className="reply-all-arrow glyphicon glyphicon-share-alt" aria-hidden="true"></span>
             Reply All
