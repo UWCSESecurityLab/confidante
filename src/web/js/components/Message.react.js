@@ -42,7 +42,6 @@ var Message = React.createClass({
   },
 
   reply: function() {
-    console.log("reply clicked");
     InboxActions.setInReplyTo({
       message: this.props.message,
       replyAll: false
