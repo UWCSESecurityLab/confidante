@@ -97,7 +97,7 @@ var ComposeArea = React.createClass({
     let signerKBID;
     if (inReplyTo && Object.keys(inReplyTo).length > 0) {
       signerKBID = getKBIDFromSigner(MessageStore.getAll().signers[inReplyTo.id]);
-      // console.log(`signer's KBID is ${signerKBID}`);
+      console.log(`signer's KBID is ${signerKBID}`);
     }
 
     if (Object.keys(inReplyTo).length !== 0) {
@@ -134,7 +134,6 @@ var ComposeArea = React.createClass({
   },
   _onReset: function() {
     this.replaceState(this.getInitialState());
-    $('#composeMessage').modal('hide');
   },
   encryptEmail: function(keyManagers) {
     return new Promise(function(fulfill, reject) {
@@ -316,13 +315,19 @@ var ComposeArea = React.createClass({
     this.setState({ feedback: msg });
   },
 
+  onClose: function() {
+    // how do we account for multiple emails in compose area
+    InboxActions.resetComposeFields();
+    this.props.closeComposeUI();
+  },
+
   render: function() {
     var style = { display: this.props.showComposeUI ? 'block' : 'none' };
 
     return (
       <div id="composeMessage" style={style}>
         <div className="email-header">
-          <button type="button" className="close" aria-label="Close" onClick={this.props.closeComposeUI}>
+          <button type="button" className="close" aria-label="Close" onClick={this.onClose}>
             <span aria-hidden="true">&times;</span>
           </button>
           <h4 className="modal-title">
