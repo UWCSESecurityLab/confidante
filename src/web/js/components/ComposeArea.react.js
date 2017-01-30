@@ -88,7 +88,6 @@ var ComposeArea = React.createClass({
   updateChecked: function(e) {
     this.setState({ checked: !this.state.checked });
   },
-
   componentDidMount: function() {
     ComposeStore.addChangeListener(this._onComposeStoreChange);
     ComposeStore.addResetListener(this._onReset);
@@ -231,6 +230,7 @@ var ComposeArea = React.createClass({
         }
         this.setState({ sendingSpinner: false });
       }.bind(this));
+      this.props.closeComposeUI();
   },
 
   sendInvite: function() {
@@ -318,70 +318,69 @@ var ComposeArea = React.createClass({
   },
 
   render: function() {
+    var style = { display: this.props.showComposeUI ? 'block' : 'none' };
+
     return (
-      <div className="modal fade" id="composeMessage">
-        <div className="modal-dialog modal-lg">
-          <div className="modal-content">
-            <div className="modal-header">
-              <button type="button" className="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-              <h4 className="modal-title">
-                { this.state.invite
-                  ? <span>Invite a friend to {this.props.toolname}</span>
-                  : <span>Compose Email</span>
-                }
-              </h4>
+      <div id="composeMessage" style={style}>
+        <div className="email-header">
+          <button type="button" className="close" aria-label="Close" onClick={this.props.closeComposeUI}>
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 className="modal-title">
+            { this.state.invite
+              ? <span>Invite a friend to {this.props.toolname}</span>
+              : <span>New Message</span>
+            }
+          </h4>
+        </div>
+        <div className="email-body">
+          <form className="formHorizontal" autoComplete="off">
+            <div className="form-groups">
+              <ContactsAutocomplete to={this.state.to} updateParent={this.updateTo}/>
             </div>
-            <div className="modal-body">
-              <form className="form-horizontal" autoComplete="off">
-                <div className="form-group">
-                  <label htmlFor="to">To:</label>
-                  <ContactsAutocomplete to={this.state.to} updateParent={this.updateTo}/>
+            { this.state.invite
+              ? null
+              : <div className="form-groups">
+                  <KeybaseAutocomplete kbto={this.state.kbto} updateParent={this.updateKBTo}/>
                 </div>
-                { this.state.invite
-                  ? null
-                  : <div className="form-group">
-                      <label htmlFor="kbto">Keybase Username of Recipient:</label>
-                      <KeybaseAutocomplete kbto={this.state.kbto} updateParent={this.updateKBTo}/>
-                    </div>
-                }
-                <div className="form-group">
-                  <label htmlFor="subject">Subject:</label>
-                  <input type="text"
-                         value={this.state.subject}
-                         name="subject" id="subject"
-                         onChange={this.updateSubject}
-                         className="form-control">
-                  </input>
-                  <br/>
-                </div>
-                <div className="form-group">
-                  <textarea value={this.state.email}
-                            name="email"
-                            id="email"
-                            onChange={this.updateEmail}
-                            rows="8"
-                            className="form-control">
-                  </textarea>
-                  <label><input type="checkbox" name="sign-private-key" checked={this.state.checked} onChange={this.updateChecked}/> Sign email with my Private Key</label><br/>
-                  <br/>
-                </div>
-              </form>
+            }
+            <div className="form-groups">
+              <input type="text"
+                     value={this.state.subject}
+                     name="subject" id="subject"
+                     placeholder="Subject:"
+                     onChange={this.updateSubject}
+                     className="form-controls">
+              </input>
+              <br/>
             </div>
-            <div className="modal-footer">
-              <div className="alert alert-danger">{this.state.feedback}</div>
-              { this.state.sendingSpinner
-                ? <span className="spinner"></span>
-                : null
+
+            <div className="formGroup">
+              <textarea value={this.state.email}
+                        name="email"
+                        id="email"
+                        onChange={this.updateEmail}
+                        rows="15"
+                        className="form-controls">
+              </textarea>
+              <br/>
+            </div>
+          </form>
+        </div>
+        <div className="email-footer">
+          <div className="alert alert-danger">{this.state.feedback}</div>
+          { this.state.sendingSpinner
+            ? <span className="spinner"></span>
+            : null
+          }
+          <div className="button-send">
+            <button onClick={this.presend} className="btn btn-primary">
+              { this.state.invite
+                ? 'Encrypt and Invite'
+                : 'Encrypt and Send'
               }
-              <button onClick={this.presend} className="btn btn-primary">
-                { this.state.invite
-                  ? 'Encrypt and Invite'
-                  : 'Encrypt and Send'
-                }
-              </button>
-            </div>
+            </button>
+            <label><input type="checkbox" name="sign-private-key" checked={this.state.checked} onChange={this.updateChecked}/> Sign email with my Private Key</label><br/>
           </div>
         </div>
       </div>

@@ -7,6 +7,11 @@ const InboxDispatcher = require('../dispatcher/InboxDispatcher');
 const KeybaseAPI = require('../keybaseAPI');
 const messageParsing = require('../messageParsing');
 
+// Only zero or one thread can be open at a time -- the open thread, if any,
+// is stored here.
+var _currentFullThreadId = undefined;
+var _checkedThreads = {};
+
 var _threads = {};
 var _mailbox = 'INBOX';
 
@@ -123,6 +128,28 @@ function _decryptMessage(message) {
 }
 
 /**
+ * Delete a thread by threadID. Unfortunately, GMail's API doesn't seem
+ * to allow batch deleting, so we do it one at a time.
+ */
+function _deleteThread(threadId) {
+  xhr.post({
+    url: window.location.origin + '/deleteThread?threadId=' + threadId
+  }, function(err, response) {
+    if (err) {
+      _netError = 'NETWORK';
+      console.error(err);
+      MessageStore.emitChange();
+    } else if (response.statusCode != 200) {
+      _netError = 'AUTHENTICATION';
+      MessageStore.emitChange();
+    } else {
+      _netError = '';
+    }
+    MessageStore.refreshCurrentPage();
+  });
+}
+
+/**
  * Archive a thread by threadID. Unfortunately, GMail's API doesn't seem
  * to allow batch archiving, so we do it one at a time.
  */
@@ -182,6 +209,14 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
 
   getGmailError: function() {
     return _gmailError;
+  },
+
+  getExpandedThreadId: function() {
+    return _currentFullThreadId;
+  },
+
+  isThreadChecked: function(threadId) {
+    return _checkedThreads[threadId] === true;
   },
 
   /**
@@ -246,18 +281,32 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
   },
 
   setChecked: function(threadId, checked) {
-    _threads.forEach((thread) => {
-      if (thread.id === threadId) {
-        thread['checked'] = checked;
-      }
-    });
+    _checkedThreads[threadId] = checked;
+    MessageStore.emitChange();
+  },
+
+  setExpandedThread: function(threadId, expanded) {
+    if (expanded) {
+      _currentFullThreadId = threadId;
+    } else {
+      _currentFullThreadId = undefined;
+    }
+
     MessageStore.emitChange();
   },
 
   archiveSelectedThreads: function() {
     _threads.forEach((thread) => {
-      if (thread.checked) {
+      if (this.isThreadChecked(thread.id)) {
         _archiveThread(thread.id);
+      }
+    });
+  },
+
+  deleteSelectedThreads: function() {
+    _threads.forEach((thread) => {
+      if (this.isThreadChecked(thread.id)) {
+        _deleteThread(thread.id);
       }
     });
   },
@@ -290,8 +339,12 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
       MessageStore.fetchPrevPage();
     } else if (action.type === 'ARCHIVE_SELECTED_THREADS') {
       MessageStore.archiveSelectedThreads();
+    } else if (action.type === 'DELETE_SELECTED_THREADS') {
+      MessageStore.deleteSelectedThreads();
     } else if (action.type === 'SET_CHECKED') {
       MessageStore.setChecked(action.message.threadId, action.message.checked);
+    } else if (action.type === 'SET_EXPANDED_THREAD') {
+      MessageStore.setExpandedThread(action.message.threadId, action.message.expanded);
     }
   })
 });

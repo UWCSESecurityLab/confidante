@@ -43,6 +43,13 @@ module.exports = {
     InboxDispatcher.dispatch({ type: 'ARCHIVE_SELECTED_THREADS' });
   },
 
+  /**
+   * Delete all selected messages.
+   */
+  deleteSelectedThreads: function() {
+    InboxDispatcher.dispatch({ type: 'DELETE_SELECTED_THREADS' });
+  },
+
   ///////////////////////////////
   //// Message Store Actions ////
   ///////////////////////////////
@@ -67,6 +74,20 @@ module.exports = {
       message: {
         threadId: threadId,
         checked: checked
+      }
+    });
+  },
+
+  /**
+   * Set whether a thread is expanded or not in the inbox UI.
+   * @param threadId The id of the Gmail thread.
+   */
+  setExpandedThread: function(threadId, expanded) {
+    InboxDispatcher.dispatch({
+      type: 'SET_EXPANDED_THREAD',
+      message: {
+        threadId: threadId,
+        expanded: expanded
       }
     });
   },

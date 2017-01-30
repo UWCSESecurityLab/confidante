@@ -20,10 +20,11 @@ var Thread = React.createClass({
   getInitialState: function() {
     return {
       messages: [],
-      checked: false
+      checked: false,
     };
   },
   close: function() {
+    console.log('hi');
     this.props.closeCallback();
   },
   render: function() {
@@ -41,9 +42,10 @@ var Thread = React.createClass({
     }
     return (
       <div className="row thread">
-        <div className="threadHeader">
+        <div className="threadHeader" onClick={this.close}>
           <h4 className="subjectLine">{subject}</h4>
           <button type="button" className="close threadClose" onClick={this.close}>&times;</button>
+          
         </div>
         <ul>{messages}</ul>
       </div>

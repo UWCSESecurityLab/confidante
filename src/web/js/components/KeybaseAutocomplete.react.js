@@ -104,9 +104,10 @@ var KeybaseAutocomplete = React.createClass({
         </li>
       );
     }.bind(this));
-
+    
     return (
       <ul className="autocomplete-input">
+        <span>Keybase Username of Recipient:</span>
         {selected}
         <Typeahead inputValue={this.state.kbto}
                    placeholder="Search for people on Keybase"

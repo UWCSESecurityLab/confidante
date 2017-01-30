@@ -21,13 +21,11 @@ var ThreadSnippet = React.createClass({
   },
 
   getInitialState: function() {
-    return {
-      fullThread: false
-    };
+    return {}
   },
 
   openThread: function() {
-    this.setState({fullThread: true});
+    InboxActions.setExpandedThread(this.props.thread.id, true);
     if (this.isUnread()) {
       InboxActions.markAsRead(this.props.thread.id);
       InboxActions.refresh();
@@ -35,7 +33,7 @@ var ThreadSnippet = React.createClass({
   },
 
   closeThread: function() {
-    this.setState({fullThread: false});
+    InboxActions.setExpandedThread(this.props.thread.id, false);
   },
 
   isUnread: function() {
@@ -48,16 +46,17 @@ var ThreadSnippet = React.createClass({
   
   componentDidMount: function() {
     if (this.props.startOpen) {
-      this.setState({ fullThread: true });
+      InboxActions.setExpandedThread(this.props.thread.id, true);
     }
   },
 
   handleCheckboxClick: function(e) {
-    InboxActions.setChecked(this.props.thread.id, !this.props.thread.checked);
+    InboxActions.setChecked(this.props.thread.id, 
+                            !MessageStore.isThreadChecked(this.props.thread.id));
   },
 
   render: function() {
-    if (!this.state.fullThread) {
+    if (this.props.thread.id !== MessageStore.getExpandedThreadId()) {
       let threadSubject = messageParsing.getThreadHeader(this.props.thread, 'Subject');
       if (threadSubject === '') {
         threadSubject = '(no subject)';
@@ -85,10 +84,12 @@ var ThreadSnippet = React.createClass({
         snippetClass += ' unreadSnippet';
       }
 
+      let isChecked = MessageStore.isThreadChecked(this.props.thread.id);
+
       return (
         <div className={snippetClass}>
           <div className="col-md-1 snippet-checkbox">
-            <input type="checkbox" value={this.props.thread.checked} onClick={this.handleCheckboxClick}></input>
+            <input type="checkbox" checked={isChecked} onChange={this.handleCheckboxClick}></input>
           </div>
           <div onClick={this.openThread} className="snippet-from col-md-4 col-xs-8">{threadFrom}</div>
           <div onClick={this.openThread} className="snippet-timestamp col-md-2 col-xs-4 col-md-push-5">{timestamp}</div>

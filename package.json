@@ -24,7 +24,7 @@
     "cookie": "^0.3.1",
     "dateformat": "^1.0.12",
     "ejs": "^2.3.4",
-    "electron-ejs": "^1.0.2",
+    "ejs-electron": "github:eric-zeng/ejs-electron",
     "express": "^4.13.3",
     "express-session": "^1.11.3",
     "flux": "^2.1.1",
