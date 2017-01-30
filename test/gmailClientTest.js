@@ -80,27 +80,25 @@ describe('GmailClient', function() {
 
   describe('#buildRfcMessage()', function() {
     it('should build an RFC 5322 compliant message from JSON', function() {
-      var input = {
-        headers: {
-          from: "me@example.com",
-          to: ["you@example.com", "abc@abc.xyz"],
-          cc: ["cc@cc.tv"],
-          bcc: ["bcc@asdf.com"],
-          subject: "Test subject",
-          date: "Mon Oct 19 2015 13:37:30 GMT-0700 (PDT)"
-        },
-        body: "Test body"
+      let headers = {
+        from: 'me@example.com',
+        to: 'you@example.com, abc@abc.xyz',
+        cc: ['cc@cc.tv'],
+        bcc: ['bcc@asdf.com'],
+        subject: 'Test subject',
+        date: 'Mon Oct 19 2015 13:37:30 GMT-0700 (PDT)'
       };
-      var expectedOutput = "From: me@example.com\r\n"+
-          "To: you@example.com, abc@abc.xyz\r\n" +
-          "Cc: cc@cc.tv\r\n" +
-          "Bcc: bcc@asdf.com\r\n" +
-          "Subject: Test subject\r\n" +
-          "Date: Mon Oct 19 2015 13:37:30 GMT-0700 (PDT)\r\n" +
-          "\r\n" +
-          "Test body";
+      let body = 'Test body'
+      var expectedOutput = 'From: me@example.com\r\n'+
+          'To: you@example.com, abc@abc.xyz\r\n' +
+          'Cc: cc@cc.tv\r\n' +
+          'Bcc: bcc@asdf.com\r\n' +
+          'Subject: Test subject\r\n' +
+          'Date: Mon Oct 19 2015 13:37:30 GMT-0700 (PDT)\r\n' +
+          '\r\n' +
+          'Test body';
       var gmailClient = new GmailClient(mockToken);
-      gmailClient.buildRfcMessage(input).should.equal(expectedOutput);
+      gmailClient.buildRfcMessage(headers, body).should.equal(expectedOutput);
     });
   });
 
