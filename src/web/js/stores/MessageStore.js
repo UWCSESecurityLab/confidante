@@ -1,11 +1,11 @@
 'use strict';
 
-var EventEmitter = require('events').EventEmitter;
+const EventEmitter = require('events').EventEmitter;
 const GmailClient = require('../../../gmailClient');
 const GoogleOAuth = require('../../../googleOAuth');
-var InboxDispatcher = require('../dispatcher/InboxDispatcher');
-var KeybaseAPI = require('../keybaseAPI');
-var messageParsing = require('../messageParsing');
+const InboxDispatcher = require('../dispatcher/InboxDispatcher');
+const KeybaseAPI = require('../keybaseAPI');
+const messageParsing = require('../messageParsing');
 
 var _threads = {};
 var _mailbox = 'INBOX';
@@ -19,7 +19,7 @@ var _signers = {};
 var _linkids = {};
 
 var _errors = {};
-var _netError = '';
+var _gmailError = '';
 
 // A promise containing our local private key.
 var _privateManager = KeybaseAPI.getPrivateManager();
@@ -180,8 +180,8 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
     return _pageIndex + 1 >= _pageTokens.length;
   },
 
-  getNetError: function() {
-    return _netError;
+  getGmailError: function() {
+    return _gmailError;
   },
 
   /**
@@ -203,7 +203,6 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
         callback(response.nextPageToken);
       }
     }).catch(function(error) {
-      _threads = [];
       MessageStore.handleGmailError(error);
     });
   },
@@ -272,17 +271,9 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
     });
   },
 
-  handleGmailError: function(response) {
-    console.error(response);
-    if (response.message == 'Internal XMLHttpRequest Error') {
-      _netError = 'NETWORK';
-      MessageStore.emitChange();
-    } else if (response.error.message == 'Invalid Credentials') {
-      _netError = 'AUTHENTICATION';
-      MessageStore.emitChange();
-    } else {
-      console.log('Unhandled Gmail Error');
-    }
+  handleGmailError: function(error) {
+    _gmailError = error;
+    MessageStore.emitChange();
   },
 
   dispatchToken: InboxDispatcher.register(function(action) {

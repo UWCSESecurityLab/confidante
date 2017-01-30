@@ -1,9 +1,13 @@
 'use strict';
 
+const AuthError = require('./error').AuthError;
 const flags = require('./flags.js');
+const InputError = require('./error').InputError;
 const messageParsing = require('./web/js/messageParsing');
+const NetworkError = require('./error').NetworkError;
 const pgp = require('./pgp.js');
 const qs = require('querystring');
+const UnsupportedError = require('./error').UnsupportedError;
 const URLSafeBase64 = require('urlsafe-base64');
 const xhr = require('xhr');
 
@@ -20,7 +24,7 @@ class GmailClient {
   request(method, options) {
     return new Promise(function(resolve, reject) {
       if (!options || !options.url) {
-        reject('Invalid request: missing URL');
+        reject(new InputError('Invalid request: missing URL'));
         return;
       }
       let headers = { Authorization: 'Bearer ' + this.token };
@@ -33,8 +37,13 @@ class GmailClient {
         body: options.body
       }, function(error, response, body) {
         if (error) {
-          reject(error);
+          reject(new NetworkError(error));
         } else {
+          if (body.error) {
+            if (body.error.code === 401) {
+              reject(new AuthError(body.error.message));
+            }
+          }
           resolve(body);
         }
       });
@@ -123,9 +132,8 @@ class GmailClient {
             nextPageToken: response.nextPageToken
           });
         }.bind(this));
-      }.bind(this)).catch(function(err) {
-        reject(err);
-      });
+      }.bind(this))
+      .catch(reject);
     }.bind(this));
   }
 
@@ -168,14 +176,17 @@ class GmailClient {
   }
 
   sendMessage(message) {
-    return new Promise(function(resolve, reject) {
-      Promise.all([this.getEmailAddress(), this.getName()]).then(function(fromData) {
+    if (!message.to) {
+      return Promise.reject(new InputError('Missing recipients'));
+    }
 
+    return new Promise(function(resolve, reject) {
+      // TODO: Cache the name and email address and retrieve it more elegantly
+      Promise.all([this.getEmailAddress(), this.getName()]).then(function(fromData) {
         let parentId = messageParsing.getMessageHeader(message.parentMessage, 'Message-ID');
         let parentReferences = messageParsing.getMessageHeader(message.parentMessage, 'References');
         let ourReferences = [parentReferences, parentId].join(' ');
 
-        // TODO: Get 'from' info
         let from;
         let address = fromData[0];
         let name = fromData[1];
@@ -263,7 +274,9 @@ class GmailClient {
 
   searchContacts(query) {
     if (!flags.ELECTRON) {
-      return Promise.reject('Unsupported on web');
+      return Promise.reject(new UnsupportedError(
+        'Google Contacts is not supported in the web demo.'
+      ));
     }
 
     if (query.length < 2) {

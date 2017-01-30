@@ -5,7 +5,6 @@ const GmailClient = require('../../../gmailClient');
 const GoogleOAuth = require('../../../googleOAuth');
 var InboxDispatcher = require('../dispatcher/InboxDispatcher');
 var KeybaseAPI = require('../keybaseAPI');
-var xhr = require('xhr');
 
 let _contacts = [];
 let _keybase = [];
@@ -84,7 +83,7 @@ var AutocompleteStore = Object.assign({}, EventEmitter.prototype, {
         _contacts = contacts;
         AutocompleteStore.emitContactsChange();
       }).catch(function(err) {
-        if (err !== 'Unsupported on web') {
+        if (err.name !== 'UnsupportedError') {
           console.error(err);
         }
       });
