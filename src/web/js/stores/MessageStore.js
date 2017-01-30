@@ -214,33 +214,6 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
       _threads = [];
       MessageStore.handleGmailError(error);
     });
-
-
-    // xhr.get({
-    //   url: window.location.origin + '/getMail?' + query
-    // }, function(error, response, body) {
-    //   if (error) {
-    //     _netError = 'NETWORK';
-    //     MessageStore.emitChange();
-    //   } else if (response.statusCode == 401) {
-    //     _netError = 'AUTHENTICATION';
-    //     MessageStore.emitChange();
-    //   } else if (response.statusCode == 500) {
-    //     _netError = 'INTERNAL ERROR';
-    //     MessageStore.emitChange();
-    //   } else {
-    //     _netError = '';
-    //     let data = JSON.parse(body);
-    //     _threads = data.threads;
-    //     _threads.forEach(function(thread) {
-    //       _decryptThread(thread);
-    //       _getLinkIDsForThread(thread);
-    //     });
-    //     if (callback && data.nextPageToken != '') {
-    //       callback(data.nextPageToken);
-    //     }
-    //   }
-    // }.bind(this));
   },
 
   fetchFirstPage: function() {
@@ -305,27 +278,13 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
       MessageStore.handleGmailError(error);
       MessageStore.refreshCurrentPage();
     });
-
-    // xhr.post({
-    //   url: window.location.origin + '/markAsRead?threadId=' + threadId
-    // }, function(err, response) {
-    //   if (err) {
-    //     _netError = 'NETWORK';
-    //     console.error(err);
-    //     MessageStore.emitChange();
-    //   } else if (response.statusCode != 200) {
-    //     _netError = 'AUTHENTICATION';
-    //     MessageStore.emitChange();
-    //   } else {
-    //     _netError = '';
-    //   }
-    //   MessageStore.refreshCurrentPage();
-    // });
   },
 
   handleGmailError: function(response) {
-    console.log(response);
-    if (response.error.status == 'UNAUTHENTICATED') {
+    if (response.message == 'Internal XMLHttpRequest Error') {
+      _netError = 'NETWORK';
+      MessageStore.emitChange();
+    } else if (response.error.message == 'Invalid Credentials') {
       _netError = 'AUTHENTICATION';
       MessageStore.emitChange();
     } else {
