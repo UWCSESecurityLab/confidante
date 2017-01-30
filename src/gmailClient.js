@@ -28,17 +28,13 @@ class GmailClient {
         method: method,
         url: options.query ? options.url + '?' + qs.stringify(options.query) : options.url,
         headers: headers,
+        json: true,
         body: options.body
-      }, function(error, response, resBody) {
+      }, function(error, response, body) {
         if (error) {
           reject(error);
         } else {
-          let body = JSON.parse(resBody);
-          if (body.error) {
-            reject(body);
-          } else {
-            resolve(body);
-          }
+          resolve(body);
         }
       });
     }.bind(this));
@@ -48,7 +44,7 @@ class GmailClient {
     return this.request('GET', options);
   }
 
-  post(url, options) {
+  post(options) {
     return this.request('POST', options);
   }
 
