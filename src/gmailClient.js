@@ -1,9 +1,10 @@
 'use strict';
 
-var pgp = require('./pgp.js');
-var qs = require('querystring');
-var URLSafeBase64 = require('urlsafe-base64');
-var xhr = require('xhr');
+const flags = require('./flags.js');
+const pgp = require('./pgp.js');
+const qs = require('querystring');
+const URLSafeBase64 = require('urlsafe-base64');
+const xhr = require('xhr');
 
 // TODO: Check response codes, provide useful errors
 class GmailClient {
@@ -23,7 +24,6 @@ class GmailClient {
       }
       let headers = { Authorization: 'Bearer ' + this.token };
       Object.assign(headers, options.headers);
-      console.log('Sending request to ' + options.url);
       xhr({
         method: method,
         url: options.query ? options.url + '?' + qs.stringify(options.query) : options.url,
@@ -252,11 +252,14 @@ class GmailClient {
   }
 
   searchContacts(query) {
+    if (!flags.ELECTRON) {
+      return Promise.reject('Unsupported on web');
+    }
+
+    if (query.length < 2) {
+      return Promise.resolve([]);
+    }
     return new Promise(function(resolve, reject) {
-      if (query.length < 2) {
-        resolve([]);
-        return;
-      }
       this.get({
         url: 'https://www.google.com/m8/feeds/contacts/default/full',
         headers: {
