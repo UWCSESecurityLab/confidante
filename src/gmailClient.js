@@ -1,6 +1,7 @@
 'use strict';
 
 const flags = require('./flags.js');
+const messageParsing = require('./web/js/messageParsing');
 const pgp = require('./pgp.js');
 const qs = require('querystring');
 const URLSafeBase64 = require('urlsafe-base64');
@@ -54,9 +55,9 @@ class GmailClient {
    */
   getEmailAddress() {
     return new Promise(function(resolve, reject) {
-      this.get(
-        'https://www.googleapis.com/gmail/v1/users/me/profile'
-      ).then(function(response) {
+      this.get({
+        url: 'https://www.googleapis.com/gmail/v1/users/me/profile'
+      }).then(function(response) {
         resolve(response.emailAddress);
       }).catch(function(err) {
         reject(err);
@@ -166,34 +167,47 @@ class GmailClient {
     });
   }
 
-  sendMessage(jsonMessage, threadId) {
+  sendMessage(message) {
     return new Promise(function(resolve, reject) {
-      if (!jsonMessage.headers.from) {
-        reject(new Error('Message missing \"From\" header'));
-        return;
-      }
-      if (!jsonMessage.headers.to || jsonMessage.headers.to.length < 1) {
-        reject(new Error('Message missing \"To\" header'));
-        return;
-      }
-      if (!jsonMessage.headers.date) {
-        reject(new Error('Message missing \"Date\" header'));
-        return;
-      }
-      var rfcMessage = this.buildRfcMessage(jsonMessage);
-      var encodedMessage = URLSafeBase64.encode(new Buffer(rfcMessage));
+      Promise.all([this.getEmailAddress(), this.getName()]).then(function(fromData) {
 
-      this.post({
-        url: 'https://www.googleapis.com/gmail/v1/users/me/messages/send',
-        body: {
-          raw: encodedMessage,
-          threadId: threadId
+        let parentId = messageParsing.getMessageHeader(message.parentMessage, 'Message-ID');
+        let parentReferences = messageParsing.getMessageHeader(message.parentMessage, 'References');
+        let ourReferences = [parentReferences, parentId].join(' ');
+
+        // TODO: Get 'from' info
+        let from;
+        let address = fromData[0];
+        let name = fromData[1];
+        if (!name || name === '') {
+          from = address;
+        } else {
+          from = name + ' <' + address + '>';
         }
-      }).then(function(response) {
-        resolve(response);
-      }).catch(function(err) {
-        reject(err);
-      });
+        let headers = {
+          to: message.to,
+          from: from,
+          subject: message.subject,
+          date: new Date().toString(),
+          inReplyTo: parentId,
+          references: ourReferences
+        };
+
+        var rfcMessage = this.buildRfcMessage(headers, message.body);
+        var encodedMessage = URLSafeBase64.encode(new Buffer(rfcMessage));
+        console.log(message);
+        this.post({
+          url: 'https://www.googleapis.com/gmail/v1/users/me/messages/send',
+          body: {
+            raw: encodedMessage,
+            threadId: message.parentMessage.threadId
+          }
+        }).then(function(response) {
+          resolve(response);
+        }).catch(function(err) {
+          reject(err);
+        });
+      }.bind(this));
     }.bind(this));
   }
 
@@ -219,30 +233,30 @@ class GmailClient {
     });
   }
 
-  buildRfcMessage(jsonMessage) {
+  buildRfcMessage(headers, body) {
     var rfcMessage = [];
-    rfcMessage.push('From: ' + jsonMessage.headers.from);
-    rfcMessage.push('To: ' + jsonMessage.headers.to.join(', '));
-    if (jsonMessage.headers.cc && jsonMessage.headers.cc.length > 0) {
-      rfcMessage.push('Cc: ' + jsonMessage.headers.cc.join(', '));
+    rfcMessage.push('From: ' + headers.from);
+    rfcMessage.push('To: ' + headers.to);
+    if (headers.cc && headers.cc.length > 0) {
+      rfcMessage.push('Cc: ' + headers.cc.join(', '));
     }
-    if (jsonMessage.headers.bcc && jsonMessage.headers.bcc.length > 0) {
-      rfcMessage.push('Bcc: ' + jsonMessage.headers.bcc.join(', '));
+    if (headers.bcc && headers.bcc.length > 0) {
+      rfcMessage.push('Bcc: ' + headers.bcc.join(', '));
     }
-    if (jsonMessage.headers.inReplyTo) {
-      rfcMessage.push('In-Reply-To: ' + jsonMessage.headers.inReplyTo);
+    if (headers.inReplyTo) {
+      rfcMessage.push('In-Reply-To: ' + headers.inReplyTo);
     }
-    if (jsonMessage.headers.references) {
-      rfcMessage.push('References: ' + jsonMessage.headers.references);
+    if (headers.references) {
+      rfcMessage.push('References: ' + headers.references);
     }
-    if (jsonMessage.headers.contentType) {
-      rfcMessage.push('Content-Type: ' + jsonMessage.headers.contentType);
+    if (headers.contentType) {
+      rfcMessage.push('Content-Type: ' + headers.contentType);
     }
 
-    rfcMessage.push('Subject: ' + jsonMessage.headers.subject);
-    rfcMessage.push('Date: ' + jsonMessage.headers.date);
+    rfcMessage.push('Subject: ' + headers.subject);
+    rfcMessage.push('Date: ' + headers.date);
     rfcMessage.push('');
-    rfcMessage.push(jsonMessage.body);
+    rfcMessage.push(body);
 
     return rfcMessage.join('\r\n');
   }

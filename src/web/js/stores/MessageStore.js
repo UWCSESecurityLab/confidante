@@ -33,14 +33,6 @@ let token = GoogleOAuth.getAccessToken();
 if (!token) {
   console.error('No token stored');
 }
-GoogleOAuth.web.validateToken(token.access_token).then(function() {
-  console.log('Good token');
-  console.log(token);
-}).catch(function(err) {
-  console.error('Bad token');
-  console.error(err);
-});
-
 let gmail = new GmailClient(token.access_token);
 
 function _signerFromLiterals(literals) {
@@ -281,6 +273,7 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
   },
 
   handleGmailError: function(response) {
+    console.error(response);
     if (response.message == 'Internal XMLHttpRequest Error') {
       _netError = 'NETWORK';
       MessageStore.emitChange();
@@ -289,7 +282,6 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
       MessageStore.emitChange();
     } else {
       console.log('Unhandled Gmail Error');
-      console.error(response);
     }
   },
 
