@@ -223,23 +223,13 @@ class GmailClient {
   }
 
   /**
-   * Actually trashes, as recommended by Google's docs. 
+   * Actually trashes, as recommended by Google's docs.
    * This is an interesting design point given privacy needs of users.
    */
   deleteThread(threadId) {
-    return new Promise(function(resolve, reject) {
-      google.gmail('v1').users.threads.trash({
-        auth: this.oauth2Client,
-        userId: 'me',
-        id: threadId,
-      }, function(err, response) {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(response);
-        }
-      });
-    }.bind(this));
+    return this.post({
+      url: 'https://www.googleapis.com/gmail/v1/users/me/threads/' + threadId + '/trash'
+    });
   }
 
   archiveThread(threadId) {

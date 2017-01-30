@@ -128,28 +128,6 @@ function _decryptMessage(message) {
 }
 
 /**
- * Delete a thread by threadID. Unfortunately, GMail's API doesn't seem
- * to allow batch deleting, so we do it one at a time.
- */
-function _deleteThread(threadId) {
-  xhr.post({
-    url: window.location.origin + '/deleteThread?threadId=' + threadId
-  }, function(err, response) {
-    if (err) {
-      _netError = 'NETWORK';
-      console.error(err);
-      MessageStore.emitChange();
-    } else if (response.statusCode != 200) {
-      _netError = 'AUTHENTICATION';
-      MessageStore.emitChange();
-    } else {
-      _netError = '';
-    }
-    MessageStore.refreshCurrentPage();
-  });
-}
-
-/**
  * Archive a thread by threadID. Unfortunately, GMail's API doesn't seem
  * to allow batch archiving, so we do it one at a time.
  */
@@ -306,7 +284,7 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
   deleteSelectedThreads: function() {
     _threads.forEach((thread) => {
       if (this.isThreadChecked(thread.id)) {
-        _deleteThread(thread.id);
+        gmail.deleteThread(thread.id);
       }
     });
   },
