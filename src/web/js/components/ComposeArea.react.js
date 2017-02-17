@@ -318,11 +318,13 @@ var ComposeArea = React.createClass({
   onClose: function() {
     // how do we account for multiple emails in compose area
     InboxActions.resetComposeFields();
-    this.props.closeComposeUI();
+    InboxActions.setComposeUIOpen({
+      message: {}
+    });
   },
 
   render: function() {
-    var style = { display: this.props.showComposeUI ? 'block' : 'none' };
+    var style = { display: ComposeStore.getDisplayCompose() ? 'block' : 'none' };
 
     return (
       <div id="composeMessage" style={style}>
