@@ -9,6 +9,7 @@ var _inReplyTo = {};
 var _invite = false;
 var _subject = '';
 var _email = '';
+var _signPrivate = true;
 
 var ComposeStore = assign({}, EventEmitter.prototype, {
   emitChange: function() {
@@ -55,6 +56,10 @@ var ComposeStore = assign({}, EventEmitter.prototype, {
     return _email;
   },
 
+  getSignPrivate: function() {
+    return _signPrivate;
+  },
+
   dispatchToken: InboxDispatcher.register(function(action) {
     if (action.type === 'SET_IN_REPLY_TO') {
       _replyAll = action.message.replyAll;
@@ -62,12 +67,14 @@ var ComposeStore = assign({}, EventEmitter.prototype, {
       _invite = false;
       _subject = '';
       _email = '';
+      _signPrivate = true;
       ComposeStore.emitChange();
     } else if (action.type === 'SET_INVITE') {
       _inReplyTo = {};
       _invite = action.message;
       _subject = '';
       _email = '';
+      _signPrivate = true;
       ComposeStore.emitChange();
     } else if (action.type === 'RESET_FIELDS') {
       _inReplyTo = {};
@@ -75,6 +82,7 @@ var ComposeStore = assign({}, EventEmitter.prototype, {
       _invite = false;
       _subject = '';
       _email = '';
+      _signPrivate = true;
       ComposeStore.emitReset();
     } else if(action.type === 'SET_EMAIL') {
       _replyAll = action.message.replyAll;
@@ -82,7 +90,10 @@ var ComposeStore = assign({}, EventEmitter.prototype, {
       _invite = false;
       _subject = action.message.subject;
       _email = action.message.email;
+      //_signPrivate = action.message;
       ComposeStore.emitChange();
+    } else if(action.type === 'SET_COMPOSE_ON') {
+      console.log('entered set compose to on');
     }
   })
 });

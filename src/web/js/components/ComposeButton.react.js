@@ -19,9 +19,13 @@ var ComposeButton = React.createClass({
     });
   },
 
+  setOnClick: function() {
+    InboxActions.setComposeUIOpen();
+  },
+
   onClickFunctions: function() {
     this.setNullReply();
-    this.props.onClick();
+    this.setOnClick();
   },
 
   render: function() {
