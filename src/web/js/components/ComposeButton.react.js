@@ -20,7 +20,9 @@ var ComposeButton = React.createClass({
   },
 
   setOnClick: function() {
-    InboxActions.setComposeUIOpen();
+    InboxActions.setComposeUIOpen({
+      message: {}
+    });
   },
 
   onClickFunctions: function() {

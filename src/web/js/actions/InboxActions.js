@@ -25,9 +25,10 @@ module.exports = {
     });
   },
 
-  setComposeUIOpen: function() {
+  setComposeUIOpen: function(message) {
     InboxDispatcher.dispatch({
       type: 'SET_COMPOSE_ON',
+      message: message
     });
   },
 
