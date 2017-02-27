@@ -111,7 +111,7 @@ var ComposeStore = assign({}, EventEmitter.prototype, {
       _signPrivate = true;
       _displayCompose = true;
       ComposeStore.emitChange();
-    } else if(action.type === 'SET_COMPOSE_OFF') {
+    } else if(action.type === 'SET_COMPOSE_CLOSE') {
       console.log(action.message);
       _replyAll = action.message.replyAll;
       _inReplyTo = action.message.message;
@@ -119,7 +119,7 @@ var ComposeStore = assign({}, EventEmitter.prototype, {
       _subject = action.message.subject;
       _email = action.message.email;
       _signPrivate = true;
-      _displayCompose = true;
+      _displayCompose = false;
       ComposeStore.emitChange();
     }
   })
