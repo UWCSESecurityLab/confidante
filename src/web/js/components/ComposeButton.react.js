@@ -12,22 +12,14 @@ var ComposeButton = React.createClass({
     onClick: React.PropTypes.func
   },
 
-  setNullReply: function() {
+  setOnClick: function() {
     InboxActions.setInReplyTo({
       replyAll: false,
       message: {}
     });
-  },
-
-  setOnClick: function() {
     InboxActions.setComposeUIOpen({
       message: {}
     });
-  },
-
-  onClickFunctions: function() {
-    this.setNullReply();
-    this.setOnClick();
   },
 
   render: function() {
@@ -35,7 +27,7 @@ var ComposeButton = React.createClass({
       <button type="button"
               id="compose-button"
               className="btn btn-primary inbox-button"
-              onClick={this.onClickFunctions}>
+              onClick={this.setOnClick}>
         Compose Message
       </button>
     );

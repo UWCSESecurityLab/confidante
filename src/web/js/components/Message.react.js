@@ -29,9 +29,7 @@ var Message = React.createClass({
     error: React.PropTypes.instanceOf(Error),
     message: React.PropTypes.object,
     plaintext: React.PropTypes.string,
-    signer: React.PropTypes.object,
-    showComposeUI: React.PropTypes.bool,
-    closeComposeUI: React.PropTypes.func
+    signer: React.PropTypes.object
   },
 
   getInitialState: function() {
@@ -46,7 +44,9 @@ var Message = React.createClass({
       message: this.props.message,
       replyAll: false
     });
-    this.props.closeComposeUI();
+    InboxActions.setComposeUIOpen({
+      message: this.props.message,
+    });
   },
 
   replyAll: function() {
@@ -54,7 +54,9 @@ var Message = React.createClass({
       message: this.props.message,
       replyAll: true
     });
-    this.props.closeComposeUI();
+    InboxActions.setComposeUIOpen({
+      message: this.props.message,
+    });
   },
 
   showOriginalChanged: function() {

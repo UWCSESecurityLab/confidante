@@ -11,8 +11,6 @@ var ThreadSnippet = require('./ThreadSnippet.react');
 var Inbox = React.createClass({
   propTypes: {
     linkidToOpen: React.PropTypes.string,
-    showComposeUI: React.PropTypes.bool,
-    closeComposeUI: React.PropTypes.func
   },
 
   getInitialState: function() {
@@ -43,9 +41,7 @@ var Inbox = React.createClass({
                                errors={this.state.errors}
                                signers={this.state.signers}
                                plaintexts={this.state.plaintexts}
-                               startOpen={this.props.linkidToOpen === threadLinkid}
-                               showComposeUI={this.props.showComposeUI} 
-                               closeComposeUI={this.props.closeComposeUI}/>
+                               startOpen={this.props.linkidToOpen === threadLinkid} />
               </li>);
     }.bind(this));
     if (snippets.length == 0) {

@@ -70,18 +70,10 @@ var ComposeStore = assign({}, EventEmitter.prototype, {
       _replyAll = action.message.replyAll;
       _inReplyTo = action.message.message;
       _invite = false;
-      _subject = '';
-      _email = '';
-      _signPrivate = true;
-      _displayCompose = true;
       ComposeStore.emitChange();
     } else if (action.type === 'SET_INVITE') {
       _inReplyTo = {};
       _invite = action.message;
-      _subject = '';
-      _email = '';
-      _signPrivate = true;
-      _displayCompose = true;
       ComposeStore.emitChange();
     } else if (action.type === 'RESET_FIELDS') {
       _inReplyTo = {};
@@ -90,35 +82,17 @@ var ComposeStore = assign({}, EventEmitter.prototype, {
       _subject = '';
       _email = '';
       _signPrivate = true;
-      _displayCompose = true;
       ComposeStore.emitReset();
     } else if(action.type === 'SET_EMAIL') {
-      _replyAll = action.message.replyAll;
-      _inReplyTo = action.message.message;
-      _invite = false;
       _subject = action.message.subject;
       _email = action.message.email;
-      //_signPrivate = action.message;
       _displayCompose = true;
       ComposeStore.emitChange();
     } else if(action.type === 'SET_COMPOSE_ON') {
-      console.log(action.message);
-      _replyAll = action.message.replyAll;
-      _inReplyTo = action.message.message;
-      _invite = false;
-      _subject = action.message.subject;
-      _email = action.message.email;
-      _signPrivate = true;
       _displayCompose = true;
       ComposeStore.emitChange();
     } else if(action.type === 'SET_COMPOSE_CLOSE') {
       console.log(action.message);
-      _replyAll = action.message.replyAll;
-      _inReplyTo = action.message.message;
-      _invite = false;
-      _subject = action.message.subject;
-      _email = action.message.email;
-      _signPrivate = true;
       _displayCompose = false;
       ComposeStore.emitChange();
     }
