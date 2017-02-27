@@ -14,9 +14,7 @@ var Thread = React.createClass({
     errors: React.PropTypes.object,
     plaintexts: React.PropTypes.object,
     signers: React.PropTypes.object,
-    thread: React.PropTypes.object,
-    showComposeUI: React.PropTypes.bool,
-    closeComposeUI: React.PropTypes.func
+    thread: React.PropTypes.object
   },
 
   getInitialState: function() {
@@ -34,9 +32,7 @@ var Thread = React.createClass({
                 <Message plaintext={this.props.plaintexts[message.id]}
                          signer={this.props.signers[message.id]}
                          message={message}
-                         error={this.props.errors[message.id]}
-                         showComposeUI={this.props.showComposeUI} 
-                         closeComposeUI={this.props.closeComposeUI}/>
+                         error={this.props.errors[message.id]} />
               </li>);
     }.bind(this));
     var subject = messageParsing.getThreadHeader(this.props.thread, 'Subject');
