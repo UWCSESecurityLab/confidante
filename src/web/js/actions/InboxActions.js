@@ -25,17 +25,15 @@ module.exports = {
     });
   },
 
-  setComposeUIOpen: function(message) {
+  setComposeUIOpen: function() {
     InboxDispatcher.dispatch({
-      type: 'SET_COMPOSE_ON',
-      message: message
+      type: 'SET_COMPOSE_ON'
     });
   },
 
-  setComposeUIClose: function(message) {
+  setComposeUIClose: function() {
     InboxDispatcher.dispatch({
-      type: 'SET_COMPOSE_CLOSE',
-      message: message
+      type: 'SET_COMPOSE_CLOSE'
     });
   },
 

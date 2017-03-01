@@ -15,11 +15,10 @@ var ComposeButton = React.createClass({
   setOnClick: function() {
     InboxActions.setInReplyTo({
       replyAll: false,
-      message: {}
+      messageRecipients: {}
     });
-    InboxActions.setComposeUIOpen({
-      message: {}
-    });
+    InboxActions.resetComposeFields();
+    InboxActions.setComposeUIOpen();
   },
 
   render: function() {

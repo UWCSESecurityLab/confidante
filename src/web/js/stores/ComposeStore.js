@@ -4,7 +4,7 @@ var InboxDispatcher = require('../dispatcher/InboxDispatcher');
 var EventEmitter = require('events').EventEmitter;
 var assign = require('object-assign');
 
-var _replyAll;
+var _replyAll = false;
 var _inReplyTo = {};
 var _invite = false;
 var _subject = '';
@@ -68,7 +68,7 @@ var ComposeStore = assign({}, EventEmitter.prototype, {
   dispatchToken: InboxDispatcher.register(function(action) {
     if (action.type === 'SET_IN_REPLY_TO') {
       _replyAll = action.message.replyAll;
-      _inReplyTo = action.message.message;
+      _inReplyTo = action.message.messageRecipients;
       _invite = false;
       ComposeStore.emitChange();
     } else if (action.type === 'SET_INVITE') {
@@ -92,7 +92,6 @@ var ComposeStore = assign({}, EventEmitter.prototype, {
       _displayCompose = true;
       ComposeStore.emitChange();
     } else if(action.type === 'SET_COMPOSE_CLOSE') {
-      console.log(action.message);
       _displayCompose = false;
       ComposeStore.emitChange();
     }

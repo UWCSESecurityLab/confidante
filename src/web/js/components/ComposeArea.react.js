@@ -176,6 +176,7 @@ var ComposeArea = React.createClass({
   presend: function() {
     InboxActions.forceTokenize(this.state.invite ? this.sendInvite : this.send,
                                this.setBadEmailAddress);
+    InboxActions.setComposeUIClose();
   },
 
   send: function() {
@@ -228,7 +229,6 @@ var ComposeArea = React.createClass({
       .catch(function(err) {
         this.setState({ feedback: err.toString(), sendingSpinner: false });
       }.bind(this));
-      this.props.closeComposeUI();
   },
 
   sendInvite: function() {
@@ -317,10 +317,7 @@ var ComposeArea = React.createClass({
 
   onClose: function() {
     // how do we account for multiple emails in compose area
-    InboxActions.resetComposeFields();
-    InboxActions.setComposeUIClose({
-      message: {}
-    });
+    InboxActions.setComposeUIClose();
   },
 
   render: function() {
