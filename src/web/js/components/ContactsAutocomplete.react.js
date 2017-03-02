@@ -6,6 +6,7 @@ var AutocompleteStore = require('../stores/AutocompleteStore');
 var ContactCompletion = require('./ContactCompletion.react');
 var InboxActions = require('../actions/InboxActions');
 var Typeahead = require('@tappleby/react-typeahead-component');
+var ComposeStore = require('../stores/ComposeStore');
 
 var ContactsAutocomplete = React.createClass({
   propTypes: {
@@ -153,6 +154,8 @@ var ContactsAutocomplete = React.createClass({
   },
 
   render: function() {
+    //TO-DO: determine how to display contents contained in recipients array
+    var recipients = ComposeStore.getReply();
     let selected = this.state.selected.map(function(contact) {
       return (
         <li className="contact-token" key={contact.email}>

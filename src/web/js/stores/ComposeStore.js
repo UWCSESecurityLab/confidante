@@ -7,6 +7,7 @@ var assign = require('object-assign');
 var _replyAll = false;
 var _inReplyTo = {};
 var _invite = false;
+var _keybaseUsername = '';
 var _subject = '';
 var _email = '';
 var _signPrivate = true;
@@ -49,6 +50,10 @@ var ComposeStore = assign({}, EventEmitter.prototype, {
     return _invite;
   },
 
+  getKeybaseUsername: function() {
+    return _keybaseUsername;
+  },
+
   getSubject: function() {
     return _subject;
   },
@@ -83,10 +88,13 @@ var ComposeStore = assign({}, EventEmitter.prototype, {
       _email = '';
       _signPrivate = true;
       ComposeStore.emitReset();
-    } else if(action.type === 'SET_EMAIL') {
+    } else if(action.type === 'SET_CONTENTS') {
+      _replyAll = action.message.replyAll;
+      _inReplyTo = action.message.messageRecipients;
+      _keybaseUsername = action.message.keybaseUsername;
       _subject = action.message.subject;
       _email = action.message.email;
-      _displayCompose = true;
+      _signPrivate = action.message.signPrivate;
       ComposeStore.emitChange();
     } else if(action.type === 'SET_COMPOSE_ON') {
       _displayCompose = true;
