@@ -18,13 +18,13 @@ module.exports = {
     });
   },
 
-  setEmail: function(message) {
+  setContents: function(message) {
     InboxDispatcher.dispatch({
-      type: 'SET_EMAIL',
+      type: 'SET_CONTENTS',
       message: message
     });
   },
-
+  
   setComposeUIOpen: function() {
     InboxDispatcher.dispatch({
       type: 'SET_COMPOSE_ON'
