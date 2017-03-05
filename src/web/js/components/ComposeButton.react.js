@@ -8,10 +8,6 @@ var ComposeArea = require('./ComposeArea.react');
  * The compose button opens the compose UI to write a new (non-reply) email.
  */
 var ComposeButton = React.createClass({
-  propTypes: {
-    onClick: React.PropTypes.func
-  },
-
   setOnClick: function() {
     InboxActions.setInReplyTo({
       replyAll: false,

@@ -88,7 +88,7 @@ var EmailClient = React.createClass({
                 staging={this.props.serverVars.staging}
                 mailbox={this.state.mailbox}/>
         <div className="container">
-          <ComposeButton onClick={this.openComposeUI}/>
+          <ComposeButton/>
           <ArchiveButton />
           <DeleteButton />
           <RefreshButton spinning={this.state.refreshing}/>

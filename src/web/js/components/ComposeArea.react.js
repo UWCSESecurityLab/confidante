@@ -44,9 +44,7 @@ function getKBIDFromSigner(signer) {
 var ComposeArea = React.createClass({
   propTypes: {
     onSent: React.PropTypes.func,
-    toolname: React.PropTypes.string,
-    showComposeUI: React.PropTypes.bool,
-    closeComposeUI: React.PropTypes.func
+    toolname: React.PropTypes.string
   },
 
   getInitialState: function() {
@@ -97,7 +95,7 @@ var ComposeArea = React.createClass({
     let signerKBID;
     if (inReplyTo && Object.keys(inReplyTo).length > 0) {
       signerKBID = getKBIDFromSigner(MessageStore.getAll().signers[inReplyTo.id]);
-      console.log(`signer's KBID is ${signerKBID}`);
+      //console.log(`signer's KBID is ${signerKBID}`);
     }
 
     if (Object.keys(inReplyTo).length !== 0) {
@@ -316,7 +314,6 @@ var ComposeArea = React.createClass({
   },
 
   onClose: function() {
-    // how do we account for multiple emails in compose area
     InboxActions.setComposeUIClose();
   },
 
