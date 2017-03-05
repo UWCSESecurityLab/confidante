@@ -315,6 +315,7 @@ var ComposeArea = React.createClass({
 
   onClose: function() {
     InboxActions.setComposeUIClose();
+    InboxActions.resetComposeFields();
   },
 
   render: function() {
