@@ -89,6 +89,7 @@ var ComposeStore = assign({}, EventEmitter.prototype, {
       _signPrivate = true;
       ComposeStore.emitReset();
     } else if(action.type === 'SET_CONTENTS') {
+      // required for the drafts feature, not used yet
       _replyAll = action.message.replyAll;
       _inReplyTo = action.message.messageRecipients;
       _keybaseUsername = action.message.keybaseUsername;
