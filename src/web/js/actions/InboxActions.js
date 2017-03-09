@@ -14,17 +14,17 @@ module.exports = {
   setInReplyTo: function(message) {
     InboxDispatcher.dispatch({
       type: 'SET_IN_REPLY_TO',
+      messageInfo: message
+    });
+  },
+
+  setComposeContents: function(message) {
+    InboxDispatcher.dispatch({
+      type: 'SET_COMPOSE_CONTENTS',
       message: message
     });
   },
 
-  setContents: function(message) {
-    InboxDispatcher.dispatch({
-      type: 'SET_CONTENTS',
-      message: message
-    });
-  },
-  
   setComposeUIOpen: function() {
     InboxDispatcher.dispatch({
       type: 'SET_COMPOSE_ON'
