@@ -41,15 +41,16 @@ var Message = React.createClass({
 
   reply: function() {
     InboxActions.setInReplyTo({
-      messageRecipients: this.props.message,
+      messageInfo: this.props.message,
       replyAll: false
     });
     InboxActions.setComposeUIOpen();
   },
 
   replyAll: function() {
+    console.log(this.props.message)
     InboxActions.setInReplyTo({
-      messageRecipients: this.props.message,
+      messageInfo: this.props.message,
       replyAll: true
     });
     InboxActions.setComposeUIOpen();
