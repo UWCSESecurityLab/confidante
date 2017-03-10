@@ -14,7 +14,7 @@ module.exports = {
   setInReplyTo: function(message) {
     InboxDispatcher.dispatch({
       type: 'SET_IN_REPLY_TO',
-      messageInfo: message
+      message: message
     });
   },
 

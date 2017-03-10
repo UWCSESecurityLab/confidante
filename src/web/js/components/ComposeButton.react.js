@@ -11,7 +11,7 @@ var ComposeButton = React.createClass({
   setOnClick: function() {
     InboxActions.setInReplyTo({
       replyAll: false,
-      messageInfo: {}
+      message: {}
     });
     InboxActions.resetComposeFields();
     InboxActions.setComposeUIOpen();

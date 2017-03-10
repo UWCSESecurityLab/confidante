@@ -73,7 +73,7 @@ var ComposeStore = assign({}, EventEmitter.prototype, {
   dispatchToken: InboxDispatcher.register(function(action) {
     if (action.type === 'SET_IN_REPLY_TO') {
       _replyAll = action.message.replyAll;
-      _inReplyTo = action.message.messageInfo;
+      _inReplyTo = action.message.message;
       _invite = false;
       ComposeStore.emitChange();
     } else if (action.type === 'SET_INVITE') {
@@ -91,7 +91,7 @@ var ComposeStore = assign({}, EventEmitter.prototype, {
     } else if(action.type === 'SET_COMPOSE_CONTENTS') {
       // required for the drafts feature, not used yet
       _replyAll = action.message.replyAll;
-      _inReplyTo = action.message.messageInfo;
+      _inReplyTo = action.message.message;
       _keybaseUsername = action.message.keybaseUsername;
       _subject = action.message.subject;
       _email = action.message.email;
