@@ -18,6 +18,25 @@ module.exports = {
     });
   },
 
+  setComposeContents: function(message) {
+    InboxDispatcher.dispatch({
+      type: 'SET_COMPOSE_CONTENTS',
+      message: message
+    });
+  },
+
+  setComposeUIOpen: function() {
+    InboxDispatcher.dispatch({
+      type: 'SET_COMPOSE_ON'
+    });
+  },
+
+  setComposeUIClose: function() {
+    InboxDispatcher.dispatch({
+      type: 'SET_COMPOSE_CLOSE'
+    });
+  },
+
   /**
    * Toggles the ComposeArea between invites and regular emails.
    * @param message True if should show invite dialogue, false otherwise

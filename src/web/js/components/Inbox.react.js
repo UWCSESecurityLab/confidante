@@ -41,7 +41,7 @@ var Inbox = React.createClass({
                                errors={this.state.errors}
                                signers={this.state.signers}
                                plaintexts={this.state.plaintexts}
-                               startOpen={this.props.linkidToOpen === threadLinkid}/>
+                               startOpen={this.props.linkidToOpen === threadLinkid} />
               </li>);
     }.bind(this));
     if (snippets.length == 0) {

@@ -4,9 +4,14 @@ var InboxDispatcher = require('../dispatcher/InboxDispatcher');
 var EventEmitter = require('events').EventEmitter;
 var assign = require('object-assign');
 
-var _replyAll;
+var _replyAll = false;
 var _inReplyTo = {};
 var _invite = false;
+var _keybaseUsername = '';
+var _subject = '';
+var _email = '';
+var _signPrivate = true;
+var _displayCompose = false;
 
 var ComposeStore = assign({}, EventEmitter.prototype, {
   emitChange: function() {
@@ -45,6 +50,26 @@ var ComposeStore = assign({}, EventEmitter.prototype, {
     return _invite;
   },
 
+  getKeybaseUsername: function() {
+    return _keybaseUsername;
+  },
+
+  getSubject: function() {
+    return _subject;
+  },
+
+  getEmail: function() {
+    return _email;
+  },
+
+  getSignPrivate: function() {
+    return _signPrivate;
+  },
+
+  getDisplayCompose: function() {
+    return _displayCompose;
+  },
+
   dispatchToken: InboxDispatcher.register(function(action) {
     if (action.type === 'SET_IN_REPLY_TO') {
       _replyAll = action.message.replyAll;
@@ -59,7 +84,25 @@ var ComposeStore = assign({}, EventEmitter.prototype, {
       _inReplyTo = {};
       _replyAll = false;
       _invite = false;
+      _subject = '';
+      _email = '';
+      _signPrivate = true;
       ComposeStore.emitReset();
+    } else if(action.type === 'SET_COMPOSE_CONTENTS') {
+      // required for the drafts feature, not used yet
+      _replyAll = action.message.replyAll;
+      _inReplyTo = action.message.message;
+      _keybaseUsername = action.message.keybaseUsername;
+      _subject = action.message.subject;
+      _email = action.message.email;
+      _signPrivate = action.message.signPrivate;
+      ComposeStore.emitChange();
+    } else if(action.type === 'SET_COMPOSE_ON') {
+      _displayCompose = true;
+      ComposeStore.emitChange();
+    } else if(action.type === 'SET_COMPOSE_CLOSE') {
+      _displayCompose = false;
+      ComposeStore.emitChange();
     }
   })
 });

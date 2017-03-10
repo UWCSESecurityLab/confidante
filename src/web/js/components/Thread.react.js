@@ -33,7 +33,7 @@ var Thread = React.createClass({
                 <Message plaintext={this.props.plaintexts[message.id]}
                          signer={this.props.signers[message.id]}
                          message={message}
-                         error={this.props.errors[message.id]}/>
+                         error={this.props.errors[message.id]} />
               </li>);
     }.bind(this));
     var subject = messageParsing.getThreadHeader(this.props.thread, 'Subject');

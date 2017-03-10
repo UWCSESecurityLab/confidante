@@ -101,7 +101,7 @@ var ThreadSnippet = React.createClass({
                       errors={this.props.errors}
                       thread={this.props.thread}
                       signers={this.props.signers}
-                      closeCallback={this.closeThread}/>);
+                      closeCallback={this.closeThread} />);
     }
   }
 });

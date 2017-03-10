@@ -95,7 +95,7 @@ var ComposeArea = React.createClass({
     let signerKBID;
     if (inReplyTo && Object.keys(inReplyTo).length > 0) {
       signerKBID = getKBIDFromSigner(MessageStore.getAll().signers[inReplyTo.id]);
-      // console.log(`signer's KBID is ${signerKBID}`);
+      //console.log(`signer's KBID is ${signerKBID}`);
     }
 
     if (Object.keys(inReplyTo).length !== 0) {
@@ -132,7 +132,6 @@ var ComposeArea = React.createClass({
   },
   _onReset: function() {
     this.replaceState(this.getInitialState());
-    $('#composeMessage').modal('hide');
   },
   encryptEmail: function(keyManagers) {
     return new Promise(function(fulfill, reject) {
@@ -175,6 +174,7 @@ var ComposeArea = React.createClass({
   presend: function() {
     InboxActions.forceTokenize(this.state.invite ? this.sendInvite : this.send,
                                this.setBadEmailAddress);
+    InboxActions.setComposeUIClose();
   },
 
   send: function() {
@@ -227,7 +227,6 @@ var ComposeArea = React.createClass({
       .catch(function(err) {
         this.setState({ feedback: err.toString(), sendingSpinner: false });
       }.bind(this));
-      this.props.closeComposeUI();
   },
 
   sendInvite: function() {
@@ -314,13 +313,18 @@ var ComposeArea = React.createClass({
     this.setState({ feedback: msg });
   },
 
+  onClose: function() {
+    InboxActions.setComposeUIClose();
+    InboxActions.resetComposeFields();
+  },
+
   render: function() {
-    var style = { display: this.props.showComposeUI ? 'block' : 'none' };
+    var style = { display: ComposeStore.getDisplayCompose() ? 'block' : 'none' };
 
     return (
       <div id="composeMessage" style={style}>
         <div className="email-header">
-          <button type="button" className="close" aria-label="Close" onClick={this.props.closeComposeUI}>
+          <button type="button" className="close" aria-label="Close" onClick={this.onClose}>
             <span aria-hidden="true">&times;</span>
           </button>
           <h4 className="modal-title">
