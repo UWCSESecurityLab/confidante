@@ -184,7 +184,6 @@ var ComposeArea = React.createClass({
   presend: function() {
     InboxActions.forceTokenize(this.state.invite ? this.sendInvite : this.send,
                                this.setBadEmailAddress);
-    InboxActions.setComposeUIClose();
   },
 
   send: function() {
@@ -206,14 +205,14 @@ var ComposeArea = React.createClass({
           subject: this.state.subject,
           body: encryptedEmail,
           parentMessage: this.state.inReplyTo
-          // linkid: parentLinkID
         });
       }.bind(this)).then(function() {
         InboxActions.resetComposeFields();
         InboxActions.clearAutocompletions();
         InboxActions.refresh();
+        InboxActions.setComposeUIClose();
         this.props.onSent();
-      }).catch(function(error) {
+      }.bind(this)).catch(function(error) {
         console.error(error);
         // TODO: figure out the error cases and rewrite the handling here
         if (error) {
