@@ -39,6 +39,10 @@ describe('GmailClient', function() {
     mockery.deregisterAll();
   });
 
+  // TODO: tests were commented out during migration to a server-less Gmail
+  // client. These may be reimplemented at a later time, so leaving the old ones
+  // in here.
+
   // describe('#getEmailAddress()', function() {
   //   it('should return a promise containing the user\'s email', function() {
   //     var testEmail = 'me@example.com';
