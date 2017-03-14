@@ -44,13 +44,16 @@ var Message = React.createClass({
       message: this.props.message,
       replyAll: false
     });
+    InboxActions.setComposeUIOpen();
   },
 
   replyAll: function() {
+    console.log(this.props.message)
     InboxActions.setInReplyTo({
       message: this.props.message,
       replyAll: true
     });
+    InboxActions.setComposeUIOpen();
   },
 
   showOriginalChanged: function() {
@@ -138,12 +141,12 @@ var Message = React.createClass({
             </div>
         }
 
-        <button type="button" className="btn btn-primary reply" data-toggle="modal" data-target="#composeMessage" onClick={this.reply}>
+        <button type="button" className="btn btn-primary reply" onClick={this.reply}>
           <span className="reply-arrow glyphicon glyphicon-share-alt" aria-hidden="true"></span>
           Reply
         </button>
         { multipleRecipients ?
-          <button type="button" className="btn btn-primary reply" data-toggle="modal" data-target="#composeMessage" onClick={this.replyAll}>
+          <button type="button" className="btn btn-primary reply" onClick={this.replyAll}>
             <span className="glyphicon glyphicon-share-alt" aria-hidden="true"></span>
             <span className="reply-all-arrow glyphicon glyphicon-share-alt" aria-hidden="true"></span>
             Reply All
