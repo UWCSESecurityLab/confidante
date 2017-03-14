@@ -12,7 +12,7 @@ const messageParsing = require('../messageParsing');
 var _currentFullThreadId = undefined;
 var _checkedThreads = {};
 
-var _threads = {};
+var _threads = [];
 var _mailbox = 'INBOX';
 
 var _pageIndex = 0;
