@@ -1,14 +1,19 @@
 'use strict';
 
 var EventEmitter = require('events').EventEmitter;
+const GmailClient = require('../../../gmailClient');
+const GoogleOAuth = require('../../../googleOAuth');
 var InboxDispatcher = require('../dispatcher/InboxDispatcher');
 var KeybaseAPI = require('../keybaseAPI');
-var xhr = require('xhr');
 
 let _contacts = [];
 let _keybase = [];
 let _onTokenizeSuccess = undefined;
 let _onTokenizeError = undefined;
+
+// TODO: Better token handling, client side authorization checks.
+let token = GoogleOAuth.getAccessToken();
+let gmail = new GmailClient(token.access_token);
 
 function simplifyKeybaseResults(kb) {
   return kb.completions.map(function(completion) {
@@ -72,27 +77,15 @@ var AutocompleteStore = Object.assign({}, EventEmitter.prototype, {
     return _keybase;
   },
 
-  fetchContacts: function(query) {
-    return new Promise(function(resolve, reject) {
-      xhr.get({
-        url: window.location.origin + '/contacts.json?q=' + query
-      }, function(error, response, body) {
-        if (!error && response.statusCode == 200) {
-          resolve(JSON.parse(body));
-        } else {
-          reject(error);
-        }
-      });
-    });
-  },
-
   dispatchToken: InboxDispatcher.register(function(action) {
     if (action.type === 'GET_CONTACTS') {
-      AutocompleteStore.fetchContacts(action.query).then(function(contacts) {
+      gmail.searchContacts(action.query).then(function(contacts) {
         _contacts = contacts;
         AutocompleteStore.emitContactsChange();
       }).catch(function(err) {
-        console.error(err);
+        if (err.name !== 'UnsupportedError') {
+          console.error(err);
+        }
       });
     } else if (action.type === 'GET_KEYBASE') {
       KeybaseAPI.autocomplete(action.query).then(function(kb) {

@@ -39,22 +39,22 @@ var EmailClient = React.createClass({
   },
 
   checkError: function() {
-    let error = MessageStore.getNetError();
-    if (error === 'AUTHENTICATION') {
+    let error = MessageStore.getGmailError();
+    if (error.name === 'AuthError') {
       this.setState({
         error: 'Your login has expired!',
         errorLinkText: 'Please sign in again.',
-        errorLink: '/login'
+        errorLink: '/logout'
       });
-    } else if (error === 'NETWORK') {
+    } else if (error.name === 'NetworkError') {
       this.setState({
-        error: 'Couldn\'t connect to ' + this.props.serverVars.toolname + '.',
+        error: 'Couldn\'t connect to Gmail.',
         errorLinkText: 'Try refreshing the page.',
         errorLink: '/mail'
       });
     } else if (error === 'INTERNAL ERROR') {
       this.setState({
-        error: 'Something went wrong in the ' + this.props.serverVars.toolname + ' server.',
+        error: 'Something went wrong in the ' + this.props.serverVars.toolname + '.',
         errorLinkText: 'Try refreshing the page.',
         errorLink: '/mail'
       });

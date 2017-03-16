@@ -20,8 +20,6 @@ var db = require('./db.js');
 var flags = require('./flags.js');
 var GoogleOAuth = require('./googleOAuth.js');
 var GmailClient = require('./gmailClient.js');
-var messageParsing = require('./web/js/messageParsing');
-var uuid = require('node-uuid');
 
 // Mongo session store setup.
 var store = new MongoSessionStore({
@@ -81,7 +79,7 @@ app.get('/', function(req, res) {
     toolname: flags.TOOLNAME,
     loggedIn: auth.isAuthenticated(req.session),
     staging: flags.KEYBASE_STAGING,
-    electron: false,
+    electron: false
   });
 });
 
@@ -91,7 +89,7 @@ app.get('/help', function(req, res) {
     email: req.session.email,
     loggedIn: auth.isAuthenticated(req.session),
     staging: flags.KEYBASE_STAGING,
-    electron: false,
+    electron: false
   });
 });
 
@@ -104,7 +102,7 @@ app.get('/login', function(req, res) {
       email: req.session.email,
       loggedIn: false,
       staging: flags.KEYBASE_STAGING,
-      electron: false,
+      electron: false
     });
   }
 });
@@ -115,7 +113,7 @@ app.get('/mail', auth.webEndpoint, function(req, res) {
     email: req.session.email,
     loggedIn: true,
     staging: flags.KEYBASE_STAGING,
-    electron: false,
+    electron: false
   });
 });
 
@@ -124,96 +122,7 @@ app.get('/signup', function(req, res) {
     toolname: flags.TOOLNAME,
     loggedIn: false,
     staging: flags.KEYBASE_STAGING,
-    electron: false,
-  });
-});
-
-app.get('/getMail', auth.dataEndpoint, function(req, res) {
-  var gmailClient = new GmailClient(req.session.googleToken);
-  gmailClient.getEncryptedMail(req.query.mailbox, req.query.pageToken)
-    .then(function(threads) {
-      res.json(threads);
-    }).catch(function(err) {
-      console.error(err);
-      res.status(500).send(err);
-    });
-});
-
-app.post('/sendMessage', auth.dataEndpoint, function(req, res) {
-  var gmailClient = new GmailClient(req.session.googleToken);
-  let parent = req.body.parentMessage;
-  let parentId = messageParsing.getMessageHeader(parent, 'Message-ID');
-  let parentReferences = messageParsing.getMessageHeader(parent, 'References');
-  let ourReferences = [parentReferences, parentId].join(' ');
-
-  let linkid = req.body.linkid || uuid.v4();
-
-  // Prepend plaintext thread pointer.
-  let link = `${HOSTNAME}/mail#linkid:${linkid}`;
-  let header = `View this message in your encrypted inbox: ${link}\n\n`;
-  let email = header + req.body.email;
-
-  let from;
-  if (!req.session.name || req.session.name === '') {
-    from = req.session.email;
-  } else {
-    from = req.session.name + ' <' + req.session.email + '>';
-  }
-
-  gmailClient.sendMessage({
-    headers: {
-      to: [req.body.to],
-      from: from,
-      subject: req.body.subject,
-      date: new Date().toString(),
-      inReplyTo: parentId,
-      references: ourReferences
-    },
-    body: email
-  }, req.body.parentMessage.threadId).then(function() {
-    res.status(200).send('OK');
-  }).catch(function(error) {
-    console.error(error);
-    res.status(500).send(error);
-  });
-});
-
-app.post('/markAsRead', auth.dataEndpoint, function(req, res) {
-  if (!req.query.threadId) {
-    res.status(400).send('Missing thread id');
-  }
-  var gmailClient = new GmailClient(req.session.googleToken);
-  gmailClient.markAsRead(req.query.threadId).then(function() {
-    res.status(200).send('OK');
-  }).catch(function(err) {
-    console.error(err);
-    res.status(500).send(err);
-  });
-});
-
-app.post('/archiveThread', auth.dataEndpoint, function(req, res) {
-  if (!req.query.threadId) {
-    res.status(400).send('Missing thread id');
-  }
-  var gmailClient = new GmailClient(req.session.googleToken);
-  gmailClient.archiveThread(req.query.threadId).then(function() {
-    res.status(200).send('OK');
-  }).catch(function(err) {
-    console.error(err);
-    res.status(500).send(err);
-  });
-});
-
-app.post('/deleteThread', auth.dataEndpoint, function(req, res) {
-  if (!req.query.threadId) {
-    res.status(400).send('Missing thread id');
-  }
-  var gmailClient = new GmailClient(req.session.googleToken);
-  gmailClient.deleteThread(req.query.threadId).then(function() {
-    res.status(200).send('OK');
-  }).catch(function(err) {
-    console.error(err);
-    res.status(500).send(err);
+    electron: false
   });
 });
 
@@ -361,7 +270,7 @@ app.get('/invite', function(req, res) {
     toolname: flags.TOOLNAME,
     loggedIn: false,
     staging: flags.KEYBASE_STAGING,
-    electron: false,
+    electron: false
   });
 });
 
@@ -378,7 +287,7 @@ app.get('/auth/google', function(req, res) {
     res.redirect('/mail');
   }).catch(function(err) {
     console.error(err);
-    GoogleOAuth.redirectToGoogleOAuthUrl(req, res);
+    res.redirect(GoogleOAuth.getAuthUrl());
   });
 });
 
@@ -387,58 +296,7 @@ app.get('/auth/google', function(req, res) {
  * session and user store.
  */
 app.get('/auth/google/return', function(req, res) {
-  var code = req.query.code;
-  if (!code) {
-    res.redirect('/login');
-  }
-
-  // Get tokens, then lookup email address.
-  var tokenPromise = GoogleOAuth.getInitialTokens(code);
-  var emailPromise = tokenPromise.then(function(token) {
-    var gmailClient = new GmailClient(token);
-    return gmailClient.getEmailAddress();
-  });
-  var namePromise = tokenPromise.then(function(token) {
-    var gmailClient = new GmailClient(token);
-    return gmailClient.getName();
-  });
-
-  Promise.all([tokenPromise, emailPromise, namePromise]).then(function(values) {
-    var token = values[0];
-    var email = values[1];
-    var name = values[2];
-
-    // Store full token object in the session for GmailClient.
-    req.session.googleToken = token;
-    req.session.email = email;
-    req.session.name = name;
-
-    // If a refresh token was returned, we need to store it in the database.
-    if (token.refresh_token) {
-      db.storeGoogleCredentials(req.session.keybaseId, email, token.refresh_token)
-        .then(function() {
-          res.redirect('/mail');
-        }).catch(function(error) {
-          console.error(error);
-          res.redirect('/login');
-        });
-    } else {
-      res.redirect('/mail');
-    }
-  }).catch(function(error) {
-    console.error(error);
-    res.redirect('/login');
-  });
-});
-
-app.get('/contacts.json', auth.dataEndpoint, function(req, res) {
-  let gmailClient = new GmailClient(req.session.googleToken);
-  gmailClient.searchContacts(req.query.q).then(function(body) {
-    res.json(body);
-  }).catch(function(err) {
-    console.error(err);
-    res.send(err);
-  });
+  res.render('auth/google/return');
 });
 
 /**

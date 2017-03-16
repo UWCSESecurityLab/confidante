@@ -1,9 +1,11 @@
 'use strict';
 
-var credentials = require('../client_secret.json');
-var flags = require('./flags.js');
-var GoogleAuthLibrary = require('google-auth-library');
+const credentials = require('../client_secret.json'); // TODO: figure out how to securely package credentials
+const flags = require('./flags.js');
+const qs = require('querystring');
+const xhr = require('xhr');
 
+const GOOGLE_OAUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 let GOOGLE_OAUTH_REDIRECT_URI;
 if (flags.PRODUCTION && (flags.TOOLNAME === 'Keymail' || flags.TOOLNAME === 'Confidante')) {
   GOOGLE_OAUTH_REDIRECT_URI = credentials.web.redirect_uris[0];
@@ -14,69 +16,101 @@ if (flags.PRODUCTION && (flags.TOOLNAME === 'Keymail' || flags.TOOLNAME === 'Con
 }
 
 /**
- * Constructs a Google OAuth client with the app's credentials.
+ * Get the URL to start Google's OAuth flow.
  */
-let buildClient = function() {
-  var googleAuth = new GoogleAuthLibrary();
-  return new googleAuth.OAuth2(
-    credentials.web.client_id,
-    credentials.web.client_secret,
-    GOOGLE_OAUTH_REDIRECT_URI
-  );
-};
-exports.buildClient = buildClient;
+exports.getAuthUrl = function() {
+  let scopes = [
+    'email',
+    'profile',
+    'https://www.googleapis.com/auth/contacts.readonly',
+    'https://www.googleapis.com/auth/gmail.modify'
+  ].join(' ');
 
-/**
- * Redirects the user to a Google login to start the OAuth flow.
- */
-exports.redirectToGoogleOAuthUrl = function(req, res) {
-  var oauth2Client = buildClient();
-  var authUrl = oauth2Client.generateAuthUrl({
-    access_type: 'offline',
-    scope: [
-      'email',
-      'profile',
-      'https://www.googleapis.com/auth/contacts.readonly',
-      'https://www.googleapis.com/auth/gmail.modify'
-    ],
-    redirect_uri: GOOGLE_OAUTH_REDIRECT_URI
-  });
-  res.redirect(authUrl);
+  let args = {
+    response_type: 'token',
+    client_id: credentials.web.client_id,
+    redirect_uri: GOOGLE_OAUTH_REDIRECT_URI,
+    scope: scopes
+  };
+  return GOOGLE_OAUTH_URL + '?' + qs.stringify(args);
 };
 
 /**
- * Requests an access token and refresh token (if applicable) from Google.
- * @param authCode the authorization code sent in the OAuth callback
- * @return Promise containing the access token/refresh token object
+ * Stores an access token in localStorage.
+ * @param {object} token The access token object retrieved from Google.
  */
-exports.getInitialTokens = function(authCode) {
-  return new Promise(function(resolve, reject) {
-    var oauth2Client = buildClient();
-    oauth2Client.getToken(authCode, function(err, token) {
-      if (err) {
-        reject(Error('Error while tring to retrieve access token' + err));
-      } else {
-        resolve(token);
-      }
+exports.storeAccessToken = function(token) {
+  localStorage.setItem('oauth', JSON.stringify(token));
+};
+
+/**
+ * Retrieves an access token from localStorage.
+ * @return {object} The access token object retrieved from Google, or null
+ * if it doesn't exist or is invalid.
+ */
+exports.getAccessToken = function() {
+  try {
+    let raw = localStorage.getItem('oauth');
+    if (!raw) {
+      return null;
+    }
+    return JSON.parse(raw);
+  } catch (e) {
+    return null;
+  }
+};
+
+exports.web = {
+  /**
+   * Extract the access token from the response from Google OAuth.
+   * @param {string} url The redirect url called by Google.
+   * @return {object} The access token object encoded in the URL.
+   */
+  parseTokenFromUrl: function(url) {
+    let token = qs.parse(url.split('#')[1]);
+    if (token.error) {
+      console.log('err');
+    } else {
+      return token;
+    }
+  },
+
+  /**
+   * Check with Google to make sure the token isn't forged/expired.
+   * @param {string} accessToken The access token retrieved from Google.
+   * @return {Promise} Empty on success, on error, an object with a code and msg.
+   */
+  validateToken: function(accessToken) {
+    return new Promise(function(resolve, reject) {
+      xhr.get({
+        url: 'https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=' + accessToken
+      }, function(error, response, body) {
+        if (error) {
+          reject({
+            code: 'INVALID_TOKEN',
+            msg: 'OAuth error: Invalid access token (rejected by Google).'
+          });
+          return;
+        }
+        let tokenInfo = JSON.parse(body);
+        if (tokenInfo.aud !== credentials.web.client_id) {
+          reject({
+            code: 'BAD_CLIENT_ID',
+            msg: 'OAuth error: The provided access token\'s client ID does not match the app\'s client id.'
+          });
+        } else if (tokenInfo.expires_in < 0 || tokenInfo.exp < Date.now()/1000) {
+          reject({
+            code: 'EXPIRED',
+            msg: 'OAuth error: The access token has expired.'
+          });
+        } else {
+          resolve();
+        }
+      });
     });
-  });
+  }
 };
 
-/**
- * Get the access token given a refresh token.
- * @param refreshToken The user's refresh token.
- * @return Promise containing the access token.
- */
-exports.refreshAccessToken = function(refreshToken) {
-  return new Promise(function(resolve, reject) {
-    var oauth2Client = buildClient();
-    oauth2Client.credentials.refresh_token = refreshToken;
-    oauth2Client.getAccessToken(function(err, token, response) {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(response.body);
-      }
-    });
-  });
+exports.installed = {
+  // TODO: implement OAuth for installed applications
 };

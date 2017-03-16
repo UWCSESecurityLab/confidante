@@ -3,6 +3,8 @@
 var React = require('react');
 var ComposeStore = require('../stores/ComposeStore');
 var ContactsAutocomplete = require('./ContactsAutocomplete.react');
+const GmailClient = require('../../../gmailClient');
+const GoogleOAuth = require('../../../googleOAuth');
 var kbpgp = require('kbpgp');
 var KeybaseAutocomplete = require('./KeybaseAutocomplete.react');
 var InboxActions = require('../actions/InboxActions');
@@ -30,6 +32,14 @@ var ourPublicKeyManager =
     ourPublicKeyManager = Promise.reject(new Error(err));
   }
 })();
+
+// TODO: Better token handling, client side authorization checks.
+let token = GoogleOAuth.getAccessToken();
+if (!token) {
+  console.error('No token stored');
+}
+let gmail = new GmailClient(token.access_token);
+
 
 function getKBIDFromSigner(signer) {
   if (signer && signer.user && signer.user[0] && signer.user[0].basics) {
@@ -174,7 +184,6 @@ var ComposeArea = React.createClass({
   presend: function() {
     InboxActions.forceTokenize(this.state.invite ? this.sendInvite : this.send,
                                this.setBadEmailAddress);
-    InboxActions.setComposeUIClose();
   },
 
   send: function() {
@@ -185,47 +194,35 @@ var ComposeArea = React.createClass({
     });
     keyManagers.push(ourPublicKeyManager);
 
-    let linkids = MessageStore.getAll().linkids;
-    let parentLinkID = null;
-    if (this.state.inReplyTo) {
-      parentLinkID = linkids[this.state.inReplyTo.id];
-    }
     Promise.all(keyManagers)
       .then(this.encryptEmail)
       .then(function(encryptedEmail) {
         if (this.state.to.length === 0) {
           throw new Error('Please specify at least one recipient email address.');
         }
-        var email = {
+        return gmail.sendMessage({
           to: this.state.to,
           subject: this.state.subject,
-          email: encryptedEmail,
-          parentMessage: this.state.inReplyTo,
-          linkid: parentLinkID
-        };
-
-        xhr.post({
-          url: window.location.origin + '/sendMessage',
-          json: email,
-          withCredentials: true
-        }, function(error, response) {
-          if (error) {
-            this.setState({ feedback: 'Couldn\'t connect to the ' + this.props.toolname + ' server.' });
-          } else if (response.statusCode == 200) {
-            InboxActions.resetComposeFields();
-            InboxActions.clearAutocompletions();
-            InboxActions.refresh();
-            this.props.onSent();
-          } else if (response.statusCode == 401) {
-            this.setState({ feedback: 'Your login expired! Sign in again and try sending the email again.' });
-          } else {
-            this.setState({ feedback: 'Something in ' + this.props.toolname + ' broke. Sorry!' });
-          }
-          this.setState({ sendingSpinner: false });
-        }.bind(this));
-      }.bind(this))
-      .catch(function(err) {
-        this.setState({ feedback: err.toString(), sendingSpinner: false });
+          body: encryptedEmail,
+          parentMessage: this.state.inReplyTo
+        });
+      }.bind(this)).then(function() {
+        InboxActions.resetComposeFields();
+        InboxActions.clearAutocompletions();
+        InboxActions.refresh();
+        InboxActions.setComposeUIClose();
+        this.props.onSent();
+      }.bind(this)).catch(function(error) {
+        console.error(error);
+        // TODO: figure out the error cases and rewrite the handling here
+        if (error) {
+          this.setState({ feedback: 'Couldn\'t connect to the ' + this.props.toolname + ' server.' });
+        } else if (error.statusCode == 401) { // TODO: Figure out how to figure if unauthenticated
+          this.setState({ feedback: 'Your login expired! Sign in again and try sending the email again.' });
+        } else {
+          this.setState({ feedback: 'Something in ' + this.props.toolname + ' broke. Sorry!' });
+        }
+        this.setState({ sendingSpinner: false });
       }.bind(this));
   },
 
