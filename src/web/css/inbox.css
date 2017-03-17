@@ -8,6 +8,10 @@ ul {
   padding: 0;
 }
 
+.alert {
+  margin-top: 20px;
+}
+
 .alert:empty {
   display: none;
 }

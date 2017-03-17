@@ -39,7 +39,7 @@ var EmailClient = React.createClass({
   },
 
   checkError: function() {
-    let error = MessageStore.getGmailError();
+    let error = MessageStore.getGlobalError();
     if (error.name === 'AuthError') {
       this.setState({
         error: 'Your login has expired!',
@@ -98,7 +98,7 @@ var EmailClient = React.createClass({
           }
           <InviteButton />
           { this.state.error
-            ? <div className="alert alert-warning" role="alert">
+            ? <div id="global-error" className="alert alert-warning" role="alert">
                 {this.state.error} <a href={this.state.errorLink}>{this.state.errorLinkText}</a>
               </div>
             : null

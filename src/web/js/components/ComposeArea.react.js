@@ -104,8 +104,7 @@ var ComposeArea = React.createClass({
     let kbto = [];
     let signerKBID;
     if (inReplyTo && Object.keys(inReplyTo).length > 0) {
-      signerKBID = getKBIDFromSigner(MessageStore.getAll().signers[inReplyTo.id]);
-      //console.log(`signer's KBID is ${signerKBID}`);
+      signerKBID = getKBIDFromSigner(MessageStore.getInboxState().signers[inReplyTo.id]);
     }
 
     if (Object.keys(inReplyTo).length !== 0) {
