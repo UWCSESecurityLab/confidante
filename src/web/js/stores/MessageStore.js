@@ -30,10 +30,6 @@ let _globalError = null;
 // A promise containing our local private key.
 let _privateManager = KeybaseAPI.getPrivateManager();
 
-_privateManager.then(function(pm) {
-  console.log(pm);
-});
-
 let token = GoogleOAuth.getAccessToken();
 let gmail = new GmailClient(token.access_token);
 
@@ -296,7 +292,9 @@ let MessageStore = Object.assign({}, EventEmitter.prototype, {
   },
 
   updateGlobalError: function(error) {
-    console.error(error);
+    if (error) {
+      console.error(error);
+    }
     _globalError = error;
     MessageStore.emitChange();
   },
@@ -330,7 +328,7 @@ setInterval(MessageStore.refreshCurrentPage, 60000);
 
 if (!flags.ELECTRON) {
   setInterval(function() {
-    GoogleOAuth.web.validateToken(token.accessToken).catch(function(err) {
+    GoogleOAuth.web.validateToken(token.access_token).catch(function(err) {
       MessageStore.updateGlobalError(err);
     });
   }, 20000);
