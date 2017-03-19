@@ -5,11 +5,15 @@ const flags = require('./flags.js');
 const qs = require('querystring');
 const xhr = require('xhr');
 
-const credentials = flags.ELECTRON ? require('../credentials/electron.json') : require('../credentials/web.json');
+const credentials = flags.ELECTRON
+  ? require('../credentials/installed.json')
+  : require('../credentials/web.json');
 
 const GOOGLE_OAUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 let GOOGLE_OAUTH_REDIRECT_URI;
-if (flags.PRODUCTION && (flags.TOOLNAME === 'Keymail' || flags.TOOLNAME === 'Confidante')) {
+if (flags.ELECTRON) {
+  GOOGLE_OAUTH_REDIRECT_URI = 'http://127.0.0.1:';
+} else if (flags.PRODUCTION && (flags.TOOLNAME === 'Keymail' || flags.TOOLNAME === 'Confidante')) {
   GOOGLE_OAUTH_REDIRECT_URI = credentials.web.redirect_uris[0];
 } else if (flags.PRODUCTION && flags.TOOLNAME === 'Mailsafe') {
   GOOGLE_OAUTH_REDIRECT_URI = credentials.web.redirect_uris[2];
@@ -20,8 +24,10 @@ if (flags.PRODUCTION && (flags.TOOLNAME === 'Keymail' || flags.TOOLNAME === 'Con
 let GoogleOAuth = {
   /**
    * Get the URL to start Google's OAuth flow.
+   * @param port {number} For Electron mode, the port that the app is listening
+   * for an Authorization code on.
    */
-  getAuthUrl: function() {
+  getAuthUrl: function(port) {
     let scopes = [
       'email',
       'profile',
@@ -29,12 +35,23 @@ let GoogleOAuth = {
       'https://www.googleapis.com/auth/gmail.modify'
     ].join(' ');
 
-    let args = {
-      response_type: 'token',
-      client_id: credentials.web.client_id,
-      redirect_uri: GOOGLE_OAUTH_REDIRECT_URI,
-      scope: scopes
-    };
+
+    let args;
+    if (flags.ELECTRON) {
+      args = {
+        response_type: 'code',
+        client_id: credentials.installed.client_id,
+        redirect_uri: GOOGLE_OAUTH_REDIRECT_URI + port,
+        scope: scopes
+      };
+    } else {
+      args = {
+        response_type: 'token',
+        client_id: credentials.web.client_id,
+        redirect_uri: GOOGLE_OAUTH_REDIRECT_URI,
+        scope: scopes
+      };
+    }
     return GOOGLE_OAUTH_URL + '?' + qs.stringify(args);
   },
 
