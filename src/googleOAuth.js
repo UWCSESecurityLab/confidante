@@ -1,6 +1,6 @@
 'use strict';
 
-const {AuthError} = require('./error.js');
+const AuthError = require('./error.js').AuthError;
 const credentials = require('../client_secret.json'); // TODO: figure out how to securely package credentials
 const flags = require('./flags.js');
 const qs = require('querystring');
