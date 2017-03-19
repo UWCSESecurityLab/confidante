@@ -204,8 +204,8 @@ class GmailClient {
           references: ourReferences
         };
 
-        var rfcMessage = this.buildRfcMessage(headers, message.body);
-        var encodedMessage = URLSafeBase64.encode(new Buffer(rfcMessage));
+        let rfcMessage = this.buildRfcMessage(headers, message.body);
+        let encodedMessage = URLSafeBase64.encode(new Buffer(rfcMessage));
         console.log(message);
         this.post({
           url: 'https://www.googleapis.com/gmail/v1/users/me/messages/send',
@@ -218,7 +218,9 @@ class GmailClient {
         }).catch(function(err) {
           reject(err);
         });
-      }.bind(this));
+      }.bind(this)).catch(function(err) {
+        reject(err);
+      });
     }.bind(this));
   }
 

@@ -207,14 +207,11 @@ var ComposeArea = React.createClass({
         InboxActions.setComposeUIClose();
         this.props.onSent();
       }.bind(this)).catch(function(error) {
-        console.error(error);
-        // TODO: figure out the error cases and rewrite the handling here
-        if (error) {
-          this.setState({ feedback: 'Couldn\'t connect to the ' + this.props.toolname + ' server.' });
-        } else if (error.statusCode == 401) { // TODO: Figure out how to figure if unauthenticated
+        if (error.name === 'AuthError') {
           this.setState({ feedback: 'Your login expired! Sign in again and try sending the email again.' });
         } else {
-          this.setState({ feedback: 'Something in ' + this.props.toolname + ' broke. Sorry!' });
+          // TODO: show error message, ask users to send error to us
+          this.setState({ feedback: 'Something in ' + this.props.toolname + ' broke. Sorry!'});
         }
         this.setState({ sendingSpinner: false });
       }.bind(this));
