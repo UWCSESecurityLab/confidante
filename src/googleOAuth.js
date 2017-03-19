@@ -1,10 +1,11 @@
 'use strict';
 
 const AuthError = require('./error.js').AuthError;
-const credentials = require('../client_secret.json'); // TODO: figure out how to securely package credentials
 const flags = require('./flags.js');
 const qs = require('querystring');
 const xhr = require('xhr');
+
+const credentials = flags.ELECTRON ? require('../credentials/electron.json') : require('../credentials/web.json');
 
 const GOOGLE_OAUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 let GOOGLE_OAUTH_REDIRECT_URI;
