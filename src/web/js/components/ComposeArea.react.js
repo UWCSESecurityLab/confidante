@@ -33,13 +33,8 @@ var ourPublicKeyManager =
   }
 })();
 
-// TODO: Better token handling, client side authorization checks.
 let token = GoogleOAuth.getAccessToken();
-if (!token) {
-  console.error('No token stored');
-}
 let gmail = new GmailClient(token.access_token);
-
 
 function getKBIDFromSigner(signer) {
   if (signer && signer.user && signer.user[0] && signer.user[0].basics) {
@@ -85,7 +80,7 @@ var ComposeArea = React.createClass({
   updateEmail: function(e) {
     this.setState({ email: e.target.value });
   },
-  updateChecked: function(e) {
+  updateChecked: function() {
     this.setState({ checked: !this.state.checked });
   },
   componentDidMount: function() {
