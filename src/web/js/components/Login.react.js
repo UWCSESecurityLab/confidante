@@ -4,6 +4,21 @@ const KeybaseAPI = require('../keybaseAPI');
 const GoogleOAuth = require('../../../googleOAuth');
 const React = require('react');
 
+console.log('ELECTRON: ' + flags.ELECTRON);
+
+let ipcRenderer;
+if (flags.ELECTRON) {
+  ipcRenderer = window.require('electron').ipcRenderer;
+}
+
+function redirectToGoogle() {
+  if (flags.ELECTRON) {
+    ipcRenderer.send('google-redirect');
+  } else {
+    window.location.href = GoogleOAuth.getAuthUrl();
+  }
+}
+
 let Login = React.createClass({
   getInitialState: function() {
     return {
@@ -27,7 +42,7 @@ let Login = React.createClass({
         let googleToken = GoogleOAuth.getAccessToken();
         if (!googleToken) {
           // If no token is stored, redirect to the Google OAuth login page.
-          window.location.href = GoogleOAuth.getAuthUrl();
+          redirectToGoogle();
           return;
         }
         // If there is a token, validate it with Google
@@ -35,7 +50,7 @@ let Login = React.createClass({
           window.location.href = '/mail';
         }).catch(function() {
           // If it isn't good, have the user login again.
-          window.location.href = GoogleOAuth.getAuthUrl();
+          redirectToGoogle();
         });
       }.bind(this)).catch(function(error) {
         console.error(error);

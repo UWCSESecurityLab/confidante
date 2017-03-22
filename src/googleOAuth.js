@@ -5,6 +5,8 @@ const flags = require('./flags.js');
 const qs = require('querystring');
 const xhr = require('xhr');
 
+const request = require('request');
+
 const credentials = flags.ELECTRON
   ? require('../credentials/installed.json')
   : require('../credentials/web.json');
@@ -123,7 +125,29 @@ let GoogleOAuth = {
   },
 
   installed: {
-    // TODO: implement OAuth for installed applications
+    requestAccessToken: function(authCode, port) {
+      let params = qs.stringify({
+        code: authCode,
+        client_id: credentials.installed.client_id,
+        client_secret: credentials.installed.client_secret,
+        redirect_uri: GOOGLE_OAUTH_REDIRECT_URI + port,
+        grant_type: 'authorization_code'
+      });
+
+      request.post({
+        url: 'https://www.googleapis.com/oauth2/v4/token',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: params
+      }, function(err, response, body) {
+        if (err) {
+          console.error(err);
+        } else {
+          console.log(body);
+        }
+      });
+    }
   }
 };
 

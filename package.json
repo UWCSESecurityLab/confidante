@@ -29,6 +29,7 @@
     "express": "^4.13.3",
     "express-session": "^1.11.3",
     "flux": "^2.1.1",
+    "get-port": "^3.0.0",
     "google-auth-library": "^0.9.6",
     "googleapis": "^9.0.0",
     "isemail": "^2.2.1",

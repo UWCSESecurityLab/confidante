@@ -1,8 +1,12 @@
 const electron = require('electron');
-const ejse = require('ejs-electron');
-
 const {app} = electron;           // Module to control application life.
 const {BrowserWindow} = electron; // Module to create native browser window.
+const {ipcMain} = electron;
+
+const ejse = require('ejs-electron');
+const GoogleOAuth = require('../googleOAuth.js');
+const getPort = require('get-port');
+const http = require('http');
 
 const locals = {
   toolname: 'Confidante',
@@ -54,4 +58,18 @@ app.on('activate', () => {
   if (win === null) {
     createWindow();
   }
+});
+
+let oauthServerPort;
+let oauthServer = http.createServer((request, response) => {
+  let authCode = request.url.split('/?code=')[1];
+  GoogleOAuth.installed.requestAccessToken(authCode, oauthServerPort);
+});
+
+ipcMain.on('google-redirect', (event, arg) => {
+  getPort().then(port => {
+    oauthServerPort = port;
+    oauthServer.listen(port);
+    win.loadURL(GoogleOAuth.getAuthUrl(port));
+  });
 });
