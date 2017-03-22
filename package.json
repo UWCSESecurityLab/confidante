@@ -6,6 +6,7 @@
   "main": "./src/electron/main.js",
   "scripts": {
     "build": "./scripts/build.sh",
+    "build-electron": "./scripts/build-electron.sh",
     "clean": "./scripts/clean.sh",
     "electron": "electron .",
     "lint": "eslint src/* || true",
