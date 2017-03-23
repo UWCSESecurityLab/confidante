@@ -3,7 +3,7 @@
 var React = require('react');
 var KeybaseAPI = require('../keybaseAPI.js');
 var p3skb = require('../../../p3skb.js');
-var xhr = require('xhr');
+var request = require('request');
 
 var InviteClient = React.createClass({
   getInitialState: function() {
@@ -16,7 +16,7 @@ var InviteClient = React.createClass({
   },
   componentDidMount: function() {
     this.setState({ status: 'Fetching message...'});
-    xhr.get({
+    request.get({
       url: window.location.origin + '/invite/viewInvite?id=' + getQuery('id')
     }, function(err, response, body) {
       if (err) {

@@ -3,8 +3,6 @@
 const AuthError = require('./error.js').AuthError;
 const flags = require('./flags.js');
 const qs = require('querystring');
-const xhr = require('xhr');
-
 const request = require('request');
 
 const credentials = flags.ELECTRON
@@ -104,7 +102,7 @@ let GoogleOAuth = {
      */
     validateToken: function(accessToken) {
       return new Promise(function(resolve, reject) {
-        xhr.get({
+        request.get({
           url: 'https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=' + accessToken
         }, function(error, response, body) {
           if (error) {

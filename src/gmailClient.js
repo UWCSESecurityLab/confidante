@@ -7,9 +7,9 @@ const messageParsing = require('./web/js/messageParsing');
 const NetworkError = require('./error').NetworkError;
 const pgp = require('./pgp.js');
 const qs = require('querystring');
+const request = require('request');
 const UnsupportedError = require('./error').UnsupportedError;
 const URLSafeBase64 = require('urlsafe-base64');
-const xhr = require('xhr');
 
 // TODO: Check response codes, provide useful errors
 class GmailClient {
@@ -21,7 +21,7 @@ class GmailClient {
     this.token = token;
   }
 
-  request(method, options) {
+  gmailRequest(method, options) {
     return new Promise(function(resolve, reject) {
       if (!options || !options.url) {
         reject(new InputError('Invalid request: missing URL'));
@@ -29,7 +29,7 @@ class GmailClient {
       }
       let headers = { Authorization: 'Bearer ' + this.token };
       Object.assign(headers, options.headers);
-      xhr({
+      request({
         method: method,
         url: options.query ? options.url + '?' + qs.stringify(options.query) : options.url,
         headers: headers,
@@ -51,11 +51,11 @@ class GmailClient {
   }
 
   get(options) {
-    return this.request('GET', options);
+    return this.gmailRequest('GET', options);
   }
 
   post(options) {
-    return this.request('POST', options);
+    return this.gmailRequest('POST', options);
   }
 
   /**

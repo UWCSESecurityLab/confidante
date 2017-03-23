@@ -1,16 +1,16 @@
 'use strict';
 
-var Auth = require('keybase-proofs').Auth;
-var crypto = require('crypto');
-var flags = require('../../flags');
-var isemail = require('isemail');
-var kbpgp = require('kbpgp');
-var p3skb = require('../../p3skb');
-var purepack = require('purepack');
-var querystring = require('querystring');
-var triplesec = require('triplesec');
-var Sets = require('../../set.js');
-var xhr = require('xhr');
+const Auth = require('keybase-proofs').Auth;
+const crypto = require('crypto');
+const flags = require('../../flags');
+const isemail = require('isemail');
+const kbpgp = require('kbpgp');
+const p3skb = require('../../p3skb');
+const purepack = require('purepack');
+const querystring = require('querystring');
+const triplesec = require('triplesec');
+const request = require('request');
+const Sets = require('../../set.js');
 
 const ORIGIN = window.location.origin + '/keybase';
 const KB_STAGING = 'https://stage0.keybase.io';
@@ -45,7 +45,7 @@ class KeybaseAPI {
 
   static userLookup(keyFingerprint) {
     return new Promise(function(resolve, reject) {
-      xhr.get({
+      request.get({
         url: kbUrl + API_STRING + '/user/lookup.json?key_fingerprint=' + keyFingerprint
       }, function(error, response, body) {
         handleKeybaseResponse(error, response, body, resolve, reject);
@@ -98,7 +98,7 @@ class KeybaseAPI {
         email_or_username: emailOrUsername,
         pdpka_login: true
       });
-      xhr.get({
+      request.get({
         url: nonCors + '/getsalt.json?' + qs
       }, function(error, response, body) {
         handleKeybaseResponse(error, response, body, resolve, reject);
@@ -192,7 +192,7 @@ class KeybaseAPI {
         pdpka4: pdpka4,
         pdpka_login: true
       });
-      xhr.post({
+      request.post({
         url: nonCors + '/login.json?' + qs
       }, function (error, response, body) {
         handleKeybaseResponse(error, response, body, resolve, reject);
@@ -205,7 +205,7 @@ class KeybaseAPI {
       let salt = crypto.randomBytes(16);
       let pwh = KeybaseAPI.computePasswordHash(passphrase, salt);
 
-      xhr.post({
+      request.post({
         url: nonCors + '/signup.json?' +
              'name=' + name + '&' +
              'email=' + email + '&' +
@@ -227,7 +227,7 @@ class KeybaseAPI {
    */
   static addKey(publicKey, privateKey) {
     return new Promise(function(resolve, reject) {
-      xhr.post({
+      request.post({
         url: nonCors + '/key/add.json?' +
              'public_key=' + encodeURIComponent(publicKey) + '&' +
              'private_key=' + encodeURIComponent(privateKey) + '&' +
@@ -246,7 +246,7 @@ class KeybaseAPI {
    */
   static fetchKey(pgpKeyIds, ops) {
     return new Promise(function(resolve, reject) {
-      xhr.get({
+      request.get({
         url: nonCors + '/key/fetch.json?' +
              'pgp_key_ids=' + pgpKeyIds.join(',') + '&' +
              'ops=' + ops
@@ -263,7 +263,7 @@ class KeybaseAPI {
    */
   static publicKeyForUser(username) {
     return new Promise(function(resolve, reject) {
-      xhr.get({
+      request.get({
         url: kbUrl + '/' + username + '/key.asc'
       }, function(error, response, body) {
         if (error) {
@@ -364,7 +364,7 @@ class KeybaseAPI {
 
   static autocomplete(q) {
     return new Promise(function(resolve, reject) {
-      xhr.get({
+      request.get({
         url: kbUrl + API_STRING + '/user/autocomplete.json?q=' + q
       }, function (error, response, body) {
         handleKeybaseResponse(error, response, body, resolve, reject);

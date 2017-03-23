@@ -1,17 +1,17 @@
 'use strict';
 
-var React = require('react');
-var ComposeStore = require('../stores/ComposeStore');
-var ContactsAutocomplete = require('./ContactsAutocomplete.react');
+const ComposeStore = require('../stores/ComposeStore');
+const ContactsAutocomplete = require('./ContactsAutocomplete.react');
 const GmailClient = require('../../../gmailClient');
 const GoogleOAuth = require('../../../googleOAuth');
-var kbpgp = require('kbpgp');
-var KeybaseAutocomplete = require('./KeybaseAutocomplete.react');
-var InboxActions = require('../actions/InboxActions');
-var KeybaseAPI = require('../keybaseAPI');
-var messageParsing = require('../messageParsing');
-var MessageStore = require('../stores/MessageStore');
-var xhr = require('xhr');
+const kbpgp = require('kbpgp');
+const KeybaseAutocomplete = require('./KeybaseAutocomplete.react');
+const InboxActions = require('../actions/InboxActions');
+const KeybaseAPI = require('../keybaseAPI');
+const messageParsing = require('../messageParsing');
+const MessageStore = require('../stores/MessageStore');
+const React = require('react');
+const request = require('request');
 
 var ourPrivateManager;
 MessageStore.getPrivateManager().then(function(privateManager) {
@@ -221,7 +221,7 @@ var ComposeArea = React.createClass({
     this.setState({ sendingSpinner: true });
     let getKey = function(recipient) {
       return new Promise(function(resolve, reject) {
-        xhr.get({
+        request.get({
           url: window.location.origin + '/invite/getKey?recipient=' + recipient
         }, function(error, response, body) {
           if (error) {
@@ -263,7 +263,7 @@ var ComposeArea = React.createClass({
 
     let sendInvite = function(id, subject, message) {
       return new Promise(function(resolve, reject) {
-        xhr.post({
+        request.post({
           url: window.location.origin + '/invite/sendInvite',
           json: {
             inviteId: id,
