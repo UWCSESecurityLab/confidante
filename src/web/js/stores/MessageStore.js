@@ -1,6 +1,7 @@
 'use strict';
 
 const EventEmitter = require('events').EventEmitter;
+const flags = require('../../../flags');
 const GmailClient = require('../../../gmailClient');
 const GoogleOAuth = require('../../../googleOAuth');
 const InboxDispatcher = require('../dispatcher/InboxDispatcher');
@@ -9,35 +10,27 @@ const messageParsing = require('../messageParsing');
 
 // Only zero or one thread can be open at a time -- the open thread, if any,
 // is stored here.
-var _currentFullThreadId = undefined;
-var _checkedThreads = {};
+let _currentFullThreadId = undefined;
+let _checkedThreads = {};
 
-var _threads = [];
-var _mailbox = 'INBOX';
+// Thread/message state
+let _threads = [];
+let _plaintexts = {};
+let _signers = {};
+let _messageErrors = {};
+let _linkids = {};
 
-var _pageIndex = 0;
-var _pageTokens = [];
+let _mailbox = 'INBOX';
 
-var _plaintexts = {};
-var _signers = {};
+let _pageIndex = 0;
+let _pageTokens = [];
 
-var _linkids = {};
-
-var _errors = {};
-var _gmailError = '';
+let _globalError = null;
 
 // A promise containing our local private key.
-var _privateManager = KeybaseAPI.getPrivateManager();
+let _privateManager = KeybaseAPI.getPrivateManager();
 
-_privateManager.then(function(pm) {
-  console.log(pm);
-});
-
-// TODO: Better token handling, client side authorization checks.
 let token = GoogleOAuth.getAccessToken();
-if (!token) {
-  console.error('No token stored');
-}
 let gmail = new GmailClient(token.access_token);
 
 function _signerFromLiterals(literals) {
@@ -99,7 +92,7 @@ function _decryptThread(thread) {
 }
 
 function _decryptMessage(message) {
-  var body = messageParsing.getMessageBody(message);
+  let body = messageParsing.getMessageBody(message);
   _privateManager
     .then(KeybaseAPI.decrypt(body))
     .then(function(literals) {
@@ -119,10 +112,10 @@ function _decryptMessage(message) {
         });
       }
 
-      delete _errors[message.id];
+      delete _messageErrors[message.id];
       MessageStore.emitChange();
     }).catch(function(err) {
-      _errors[message.id] = err;
+      _messageErrors[message.id] = err;
       MessageStore.emitChange();
     });
 }
@@ -135,12 +128,12 @@ function _archiveThread(threadId) {
   gmail.archiveThread(threadId).then(function() {
     MessageStore.refreshCurrentPage();
   }).catch(function(error) {
-    MessageStore.handleGmailError(error);
+    MessageStore.updateGlobalError(error);
     MessageStore.refreshCurrentPage();
   });
 }
 
-var MessageStore = Object.assign({}, EventEmitter.prototype, {
+let MessageStore = Object.assign({}, EventEmitter.prototype, {
   emitChange: function() {
     this.emit('CHANGE');
   },
@@ -163,9 +156,9 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
     return _privateManager;
   },
 
-  getAll: function() {
+  getInboxState: function() {
     return {
-      errors: _errors,
+      errors: _messageErrors,
       threads: _threads,
       plaintexts: _plaintexts,
       signers: _signers,
@@ -185,8 +178,8 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
     return _pageIndex + 1 >= _pageTokens.length;
   },
 
-  getGmailError: function() {
-    return _gmailError;
+  getGlobalError: function() {
+    return _globalError;
   },
 
   getExpandedThreadId: function() {
@@ -216,7 +209,7 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
         callback(response.nextPageToken);
       }
     }).catch(function(error) {
-      MessageStore.handleGmailError(error);
+      MessageStore.updateGlobalError(error);
     });
   },
 
@@ -293,13 +286,16 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
     gmail.markAsRead(threadId).then(function() {
       MessageStore.refreshCurrentPage();
     }).catch(function(error) {
-      MessageStore.handleGmailError(error);
+      MessageStore.updateGlobalError(error);
       MessageStore.refreshCurrentPage();
     });
   },
 
-  handleGmailError: function(error) {
-    _gmailError = error;
+  updateGlobalError: function(error) {
+    if (error) {
+      console.error(error);
+    }
+    _globalError = error;
     MessageStore.emitChange();
   },
 
@@ -329,5 +325,13 @@ var MessageStore = Object.assign({}, EventEmitter.prototype, {
 
 MessageStore.fetchFirstPage();
 setInterval(MessageStore.refreshCurrentPage, 60000);
+
+if (!flags.ELECTRON) {
+  setInterval(function() {
+    GoogleOAuth.web.validateToken(token.access_token).catch(function(err) {
+      MessageStore.updateGlobalError(err);
+    });
+  }, 20000);
+}
 
 module.exports = MessageStore;

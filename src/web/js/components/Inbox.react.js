@@ -20,7 +20,7 @@ var Inbox = React.createClass({
   },
 
   getMail: function() {
-    this.setState(MessageStore.getAll());
+    this.setState(MessageStore.getInboxState());
   },
 
   componentDidMount: function() {
@@ -28,7 +28,7 @@ var Inbox = React.createClass({
   },
 
   render: function() {
-    let linkids = MessageStore.getAll().linkids;
+    let linkids = MessageStore.getInboxState().linkids;
     var snippets = this.state.threads.map(function(thread) {
       let threadLinkid = null;
       thread.messages.forEach(function(message) {

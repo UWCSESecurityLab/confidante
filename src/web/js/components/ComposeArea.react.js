@@ -33,13 +33,8 @@ var ourPublicKeyManager =
   }
 })();
 
-// TODO: Better token handling, client side authorization checks.
 let token = GoogleOAuth.getAccessToken();
-if (!token) {
-  console.error('No token stored');
-}
 let gmail = new GmailClient(token.access_token);
-
 
 function getKBIDFromSigner(signer) {
   if (signer && signer.user && signer.user[0] && signer.user[0].basics) {
@@ -85,7 +80,7 @@ var ComposeArea = React.createClass({
   updateEmail: function(e) {
     this.setState({ email: e.target.value });
   },
-  updateChecked: function(e) {
+  updateChecked: function() {
     this.setState({ checked: !this.state.checked });
   },
   componentDidMount: function() {
@@ -104,8 +99,7 @@ var ComposeArea = React.createClass({
     let kbto = [];
     let signerKBID;
     if (inReplyTo && Object.keys(inReplyTo).length > 0) {
-      signerKBID = getKBIDFromSigner(MessageStore.getAll().signers[inReplyTo.id]);
-      //console.log(`signer's KBID is ${signerKBID}`);
+      signerKBID = getKBIDFromSigner(MessageStore.getInboxState().signers[inReplyTo.id]);
     }
 
     if (Object.keys(inReplyTo).length !== 0) {
@@ -213,14 +207,11 @@ var ComposeArea = React.createClass({
         InboxActions.setComposeUIClose();
         this.props.onSent();
       }.bind(this)).catch(function(error) {
-        console.error(error);
-        // TODO: figure out the error cases and rewrite the handling here
-        if (error) {
-          this.setState({ feedback: 'Couldn\'t connect to the ' + this.props.toolname + ' server.' });
-        } else if (error.statusCode == 401) { // TODO: Figure out how to figure if unauthenticated
+        if (error.name === 'AuthError') {
           this.setState({ feedback: 'Your login expired! Sign in again and try sending the email again.' });
         } else {
-          this.setState({ feedback: 'Something in ' + this.props.toolname + ' broke. Sorry!' });
+          // TODO: show error message, ask users to send error to us
+          this.setState({ feedback: 'Something in ' + this.props.toolname + ' broke. Sorry!'});
         }
         this.setState({ sendingSpinner: false });
       }.bind(this));

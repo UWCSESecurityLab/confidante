@@ -11,7 +11,6 @@ let _keybase = [];
 let _onTokenizeSuccess = undefined;
 let _onTokenizeError = undefined;
 
-// TODO: Better token handling, client side authorization checks.
 let token = GoogleOAuth.getAccessToken();
 let gmail = new GmailClient(token.access_token);
 
