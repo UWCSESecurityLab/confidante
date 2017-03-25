@@ -45,13 +45,19 @@ let Login = React.createClass({
           redirectToGoogle();
           return;
         }
-        // If there is a token, validate it with Google
-        GoogleOAuth.web.validateToken(googleToken.access_token).then(function() {
-          window.location.href = '/mail';
-        }).catch(function() {
-          // If it isn't good, have the user login again.
-          redirectToGoogle();
-        });
+
+        if (flags.ELECTRON) {
+          // TODO: refresh the access token
+          window.location.href = './mail.ejs';
+        } else {
+          // If there is a token, validate it with Google
+          GoogleOAuth.web.validateToken(googleToken.access_token).then(function() {
+            window.location.href = '/mail';
+          }).catch(function() {
+            // If it isn't good, have the user login again.
+            redirectToGoogle();
+          });
+        }
       }.bind(this)).catch(function(error) {
         console.error(error);
         this.setState({

@@ -58,9 +58,9 @@ var EmailClient = React.createClass({
         errorLinkText: 'Try refreshing the page.',
         errorLink: '/mail'
       });
-    } else if (error === 'INTERNAL ERROR') {
+    } else if (error.name === 'UnsupportedError') {
       this.setState({
-        error: 'Something went wrong in the ' + this.props.serverVars.toolname + '.',
+        error: 'Something went wrong in ' + this.props.serverVars.toolname + ' (' + error.message + ')',
         errorLinkText: 'Try refreshing the page.',
         errorLink: '/mail'
       });

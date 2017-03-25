@@ -3,10 +3,13 @@ const {app} = electron;           // Module to control application life.
 const {BrowserWindow} = electron; // Module to create native browser window.
 const {ipcMain} = electron;
 
+const Config = require('electron-config');
 const ejse = require('ejs-electron');
 const GoogleOAuth = require('../googleOAuth.js');
 const getPort = require('get-port');
 const http = require('http');
+
+const config = new Config();
 
 const locals = {
   toolname: 'Confidante',
@@ -60,10 +63,26 @@ app.on('activate', () => {
   }
 });
 
+// This defines an HTTP Server for handling the OAuth token response.
+// The BrowserWindow makes a request to this server on a successful login,
+// to transfer the authorization code.
 let oauthServerPort;
 let oauthServer = http.createServer((request, response) => {
+  response.statusCode = 200;
+  response.write('<html><body><h2>Logging in...</h2></body></html>');
+  response.end();
+  oauthServer.close();
+
   let authCode = request.url.split('/?code=')[1];
-  GoogleOAuth.installed.requestAccessToken(authCode, oauthServerPort);
+  GoogleOAuth.installed.requestAccessToken(authCode, oauthServerPort)
+    .then((accessToken) => {
+      config.set('oauth', accessToken);
+      win.loadURL('file://' + __dirname + '/../web/views/mail.ejs');
+    }).catch((error) => {
+      console.error(error);
+      // TODO: Show error? Handle more gracefully?
+      win.loadURL('file://' + __dirname + '/../web/views/login.ejs');
+    });
 });
 
 ipcMain.on('google-redirect', (event, arg) => {
@@ -72,4 +91,13 @@ ipcMain.on('google-redirect', (event, arg) => {
     oauthServer.listen(port);
     win.loadURL(GoogleOAuth.getAuthUrl(port));
   });
+});
+
+ipcMain.on('get-access-token', (event, arg) => {
+  let token = config.get('oauth');
+  if (!token) {
+    event.returnValue = '';
+  } else {
+    event.returnValue = token;
+  }
 });
