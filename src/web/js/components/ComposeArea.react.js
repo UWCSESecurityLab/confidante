@@ -11,7 +11,7 @@ const KeybaseAPI = require('../keybaseAPI');
 const messageParsing = require('../messageParsing');
 const MessageStore = require('../stores/MessageStore');
 const React = require('react');
-const request = require('request');
+const xhr = require('xhr');
 
 var ourPrivateManager;
 MessageStore.getPrivateManager().then(function(privateManager) {
@@ -221,7 +221,7 @@ var ComposeArea = React.createClass({
     this.setState({ sendingSpinner: true });
     let getKey = function(recipient) {
       return new Promise(function(resolve, reject) {
-        request.get({
+        xhr.get({
           url: window.location.origin + '/invite/getKey?recipient=' + recipient
         }, function(error, response, body) {
           if (error) {
@@ -263,7 +263,7 @@ var ComposeArea = React.createClass({
 
     let sendInvite = function(id, subject, message) {
       return new Promise(function(resolve, reject) {
-        request.post({
+        xhr.post({
           url: window.location.origin + '/invite/sendInvite',
           json: {
             inviteId: id,
