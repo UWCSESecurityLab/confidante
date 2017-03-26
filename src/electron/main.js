@@ -26,7 +26,6 @@ ejse.setOptions(locals);
 let win;
 
 function createWindow() {
-  console.log('hi');
   // Create the browser window.
   win = new BrowserWindow({width: 1366, height: 768});
 
@@ -77,7 +76,7 @@ let oauthServer = http.createServer((request, response) => {
   GoogleOAuth.installed.requestAccessToken(authCode, oauthServerPort)
     .then((accessToken) => {
       let token = GoogleOAuth.addTokenExpireTime(accessToken);
-      config.set('oauth', token);
+      config.set('oauth', JSON.stringify(token));
       win.loadURL('file://' + __dirname + '/../web/views/mail.ejs');
     }).catch((error) => {
       console.error(error);
@@ -105,4 +104,19 @@ ipcMain.on('get-access-token', (event, arg) => {
 
 ipcMain.on('delete-access-token', (event, arg) => {
   config.delete('oauth');
+});
+
+ipcMain.on('refresh-access-token', (event, arg) => {
+  let token = JSON.parse(config.get('oauth'));
+  GoogleOAuth.installed.refreshAccessToken(token.refresh_token)
+    .then(function(newToken) {
+      // Copy over the refresh token before storing.
+      newToken.refresh_token = token.refresh_token;
+      newToken = GoogleOAuth.addTokenExpireTime(newToken);
+      config.set('oauth', JSON.stringify(newToken));
+      event.sender.send('refreshed-access-token', newToken);
+    }).catch(function(err) {
+      console.error(err);
+      event.sender.send('refreshed-access-token', null);
+    });
 });

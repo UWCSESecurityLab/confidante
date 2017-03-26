@@ -2,8 +2,6 @@
 
 const ComposeStore = require('../stores/ComposeStore');
 const ContactsAutocomplete = require('./ContactsAutocomplete.react');
-const GmailClient = require('../../../gmailClient');
-const GoogleOAuth = require('../../../googleOAuth');
 const kbpgp = require('kbpgp');
 const KeybaseAutocomplete = require('./KeybaseAutocomplete.react');
 const InboxActions = require('../actions/InboxActions');
@@ -33,8 +31,7 @@ var ourPublicKeyManager =
   }
 })();
 
-let token = GoogleOAuth.getAccessToken();
-let gmail = new GmailClient(token.access_token);
+let gmail = MessageStore.getGmailClient();
 
 function getKBIDFromSigner(signer) {
   if (signer && signer.user && signer.user[0] && signer.user[0].basics) {

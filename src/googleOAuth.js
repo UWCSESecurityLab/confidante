@@ -106,6 +106,7 @@ let GoogleOAuth = {
     }
   },
 
+  // These functions are only called by the web client.
   web: {
     /**
      * Extract the access token from the response from Google OAuth.
@@ -126,7 +127,7 @@ let GoogleOAuth = {
      * @param {object} token The access token object retrieved from Google.
      */
     storeAccessToken: function(token) {
-      localStorage.setItem('oauth', token);
+      localStorage.setItem('oauth', JSON.stringify(token));
     },
 
     /**
@@ -159,6 +160,7 @@ let GoogleOAuth = {
     }
   },
 
+  // These functions are only called in Electron by the main process.
   installed: {
     requestAccessToken: function(authCode, port) {
       return new Promise(function(resolve, reject) {
@@ -182,7 +184,38 @@ let GoogleOAuth = {
           } else if (response.statusCode !== 200) {
             reject(body);
           } else {
-            resolve(body);
+            resolve(JSON.parse(body));
+          }
+        });
+      });
+    },
+
+    /**
+     * Get a new temporary access token, given the existing refresh token.
+     * @param {string} refreshToken The refresh_token field of the initial OAuth response.
+     */
+    refreshAccessToken: function(refreshToken) {
+      return new Promise(function(resolve, reject) {
+        let params = qs.stringify({
+          refresh_token: refreshToken,
+          client_id: credentials.installed.client_id,
+          client_secret: credentials.installed.client_secret,
+          grant_type: 'refresh_token'
+        });
+
+        request.post({
+          url: 'https://www.googleapis.com/oauth2/v4/token',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: params
+        }, function(err, response, body) {
+          if (err) {
+            reject(err);
+          } else if (response.statusCode !== 200) {
+            reject(body);
+          } else {
+            resolve(JSON.parse(body));
           }
         });
       });

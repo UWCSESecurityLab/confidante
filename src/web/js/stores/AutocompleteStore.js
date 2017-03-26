@@ -1,18 +1,16 @@
 'use strict';
 
-var EventEmitter = require('events').EventEmitter;
-const GmailClient = require('../../../gmailClient');
-const GoogleOAuth = require('../../../googleOAuth');
-var InboxDispatcher = require('../dispatcher/InboxDispatcher');
-var KeybaseAPI = require('../keybaseAPI');
+const EventEmitter = require('events').EventEmitter;
+const MessageStore = require('../stores/MessageStore');
+const InboxDispatcher = require('../dispatcher/InboxDispatcher');
+const KeybaseAPI = require('../keybaseAPI');
 
 let _contacts = [];
 let _keybase = [];
 let _onTokenizeSuccess = undefined;
 let _onTokenizeError = undefined;
 
-let token = GoogleOAuth.getAccessToken();
-let gmail = new GmailClient(token.access_token);
+let gmail = MessageStore.getGmailClient();
 
 function simplifyKeybaseResults(kb) {
   return kb.completions.map(function(completion) {

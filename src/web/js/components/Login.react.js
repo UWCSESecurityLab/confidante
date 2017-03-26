@@ -47,7 +47,8 @@ let Login = React.createClass({
         }
 
         if (flags.ELECTRON) {
-          // TODO: refresh the access token
+          // Redirect to the inbox. It will refresh the token if necessary
+          // on that page.
           window.location.href = './mail.ejs';
         } else {
           // If there is a token, validate it with Google
