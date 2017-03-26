@@ -4,8 +4,6 @@ const KeybaseAPI = require('../keybaseAPI');
 const GoogleOAuth = require('../../../googleOAuth');
 const React = require('react');
 
-console.log('ELECTRON: ' + flags.ELECTRON);
-
 let ipcRenderer;
 if (flags.ELECTRON) {
   ipcRenderer = window.require('electron').ipcRenderer;

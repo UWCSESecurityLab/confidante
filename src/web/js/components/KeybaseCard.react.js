@@ -1,9 +1,9 @@
 'use strict';
+const flags = require('../../../flags');
+const KeybaseAPI = require('../keybaseAPI');
+const React = require('react');
 
-var React = require('react');
-var KeybaseAPI = require('../keybaseAPI');
-
-var KeybaseCompletion = React.createClass({
+let KeybaseCompletion = React.createClass({
   propTypes: {
     data: React.PropTypes.object,
     isSelected: React.PropTypes.bool,
@@ -36,7 +36,7 @@ var KeybaseCompletion = React.createClass({
           <div className="accounts-line">
             { user.twitter ?
               <span className="line-item">
-                <img src="twitter.png" height="24px"></img>
+                <img src={flags.ELECTRON ? '../img/twitter.png' : 'twitter.png'} height="24px"></img>
                 <a href={'https://twitter.com/' + user.twitter} target="_blank">
                   <span>@{ user.twitter } </span>
                 </a>
@@ -44,7 +44,9 @@ var KeybaseCompletion = React.createClass({
 
             { user.github ?
               <span className="line-item">
-                <img src="github.png" className="github-img" height="16px"></img>
+                <img src={flags.ELECTRON ? '../img/github.png' : 'github.png'}
+                     className="github-img"
+                     height="16px"></img>
                 <a href={'https://github.com/' + user.github} target="_blank">
                   <span>{ user.github }</span>
                 </a>
