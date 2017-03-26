@@ -8,5 +8,6 @@ GoogleOAuth.web.validateToken(tokenObj.access_token).then(function() {
   window.location.href = '/mail';
 }).catch(function(error) {
   console.error(error);
-  // window.location.href = '/login';
+  // TODO: Show error? Handle more gracefully?
+  window.location.href = '/login';
 });
