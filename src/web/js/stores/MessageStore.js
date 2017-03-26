@@ -299,26 +299,50 @@ let MessageStore = Object.assign({}, EventEmitter.prototype, {
     MessageStore.emitChange();
   },
 
+  logout: function() {
+    GoogleOAuth.deleteAccessToken();
+    localStorage.removeItem('keybase');
+    localStorage.removeItem('keybasePassphrase');
+    if (flags.ELECTRON) {
+      window.location.href = './index.ejs';
+    } else {
+      window.location.href = '/logout';
+    }
+  },
+
   dispatchToken: InboxDispatcher.register(function(action) {
-    if (action.type === 'MARK_AS_READ') {
-      MessageStore.markAsRead(action.message);
-    } else if (action.type === 'REFRESH') {
-      MessageStore.refreshCurrentPage();
-    } else if (action.type === 'CHANGE_MAILBOX') {
-      _mailbox = action.mailbox;
-      MessageStore.fetchFirstPage();
-    } else if (action.type === 'NEXT_PAGE') {
-      MessageStore.fetchNextPage();
-    } else if (action.type === 'PREV_PAGE') {
-      MessageStore.fetchPrevPage();
-    } else if (action.type === 'ARCHIVE_SELECTED_THREADS') {
-      MessageStore.archiveSelectedThreads();
-    } else if (action.type === 'DELETE_SELECTED_THREADS') {
-      MessageStore.deleteSelectedThreads();
-    } else if (action.type === 'SET_CHECKED') {
-      MessageStore.setChecked(action.message.threadId, action.message.checked);
-    } else if (action.type === 'SET_EXPANDED_THREAD') {
-      MessageStore.setExpandedThread(action.message.threadId, action.message.expanded);
+    switch (action.type) {
+      case 'MARK_AS_READ':
+        MessageStore.markAsRead(action.message);
+        break;
+      case 'REFRESH':
+        MessageStore.refreshCurrentPage();
+        break;
+      case 'CHANGE_MAILBOX':
+        _mailbox = action.mailbox;
+        MessageStore.fetchFirstPage();
+        break;
+      case 'NEXT_PAGE':
+        MessageStore.fetchNextPage();
+        break;
+      case 'PREV_PAGE':
+        MessageStore.fetchPrevPage();
+        break;
+      case 'ARCHIVE_SELECTED_THREADS':
+        MessageStore.archiveSelectedThreads();
+        break;
+      case 'DELETE_SELECTED_THREADS':
+        MessageStore.deleteSelectedThreads();
+        break;
+      case 'SET_CHECKED':
+        MessageStore.setChecked(action.message.threadId, action.message.checked);
+        break;
+      case 'SET_EXPANDED_THREAD':
+        MessageStore.setExpandedThread(action.message.threadId, action.message.expanded);
+        break;
+      case 'LOGOUT':
+        MessageStore.logout();
+        break;
     }
   })
 });

@@ -66,11 +66,14 @@ let GoogleOAuth = {
   },
 
   /**
-   * Stores an access token in localStorage.
-   * @param {object} token The access token object retrieved from Google.
+   * Add the unix time for when this access token expires to the object, in the
+   * 'expires' field.
+   * @param {object} accessToken The access token to modify.
    */
-  storeAccessToken: function(token) {
-    localStorage.setItem('oauth', JSON.stringify(token));
+  addTokenExpireTime(accessToken) {
+    let expires = Date.now() + 1000 * accessToken.expires_in;
+    accessToken.expires = expires;
+    return accessToken;
   },
 
   /**
@@ -95,6 +98,14 @@ let GoogleOAuth = {
     }
   },
 
+  deleteAccessToken: function() {
+    if (flags.ELECTRON) {
+      ipcRenderer.sendSync('delete-access-token');
+    } else {
+      localStorage.removeItem('oauth');
+    }
+  },
+
   web: {
     /**
      * Extract the access token from the response from Google OAuth.
@@ -108,6 +119,14 @@ let GoogleOAuth = {
       } else {
         return token;
       }
+    },
+
+    /**
+     * Stores an access token in localStorage.
+     * @param {object} token The access token object retrieved from Google.
+     */
+    storeAccessToken: function(token) {
+      localStorage.setItem('oauth', token);
     },
 
     /**

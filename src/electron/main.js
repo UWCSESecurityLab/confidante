@@ -76,7 +76,8 @@ let oauthServer = http.createServer((request, response) => {
   let authCode = request.url.split('/?code=')[1];
   GoogleOAuth.installed.requestAccessToken(authCode, oauthServerPort)
     .then((accessToken) => {
-      config.set('oauth', accessToken);
+      let token = GoogleOAuth.addTokenExpireTime(accessToken);
+      config.set('oauth', token);
       win.loadURL('file://' + __dirname + '/../web/views/mail.ejs');
     }).catch((error) => {
       console.error(error);
@@ -100,4 +101,8 @@ ipcMain.on('get-access-token', (event, arg) => {
   } else {
     event.returnValue = token;
   }
+});
+
+ipcMain.on('delete-access-token', (event, arg) => {
+  config.delete('oauth');
 });

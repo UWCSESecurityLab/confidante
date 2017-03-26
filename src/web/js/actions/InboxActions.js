@@ -149,6 +149,12 @@ module.exports = {
     });
   },
 
+  logout: function() {
+    InboxDispatcher.dispatch({
+      type:'LOGOUT'
+    });
+  },
+
   ////////////////////////////////////
   //// Autocomplete Store Actions ////
   ////////////////////////////////////
