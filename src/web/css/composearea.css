@@ -16,7 +16,7 @@
   border: 1px solid #E5E5E5;
   border-top-right-radius: 8px;
   border-top-left-radius: 8px;
-  box-shadow: 0px 0px 5px 3px #EEEEEE;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.45)
 }
 
 /* The title bar that says "new message" */
