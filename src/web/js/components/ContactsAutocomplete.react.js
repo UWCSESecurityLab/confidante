@@ -171,9 +171,12 @@ var ContactsAutocomplete = React.createClass({
 
     return (
       <ul className="autocomplete-input">
-          <span>To:</span>
+          <span className="glyphicon glyphicon-envelope autocomplete-icon"
+                aria-label="To">
+          </span>
           {selected}
           <Typeahead inputValue={this.state.to}
+                     placeholder="To"
                      onChange={this.handleValueChanged}
                      onOptionChange={this.handleResultScroll}
                      onOptionClick={this.handleResultSelected}

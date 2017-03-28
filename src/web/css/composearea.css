@@ -1,55 +1,70 @@
-#composeMessage {
-	width: 600px;
-	height: 550px;
-	background-color: #fff;
-	position: fixed;
-	bottom: 0px;
-	right: 10px;
-	z-index: 1;
-	overflow: auto;
-	border: 1px solid #E5E5E5;
-  	box-shadow: 0px 0px 5px 3px #EEEEEE;
+/**
+ * Styles for the ComposeArea component
+ */
+
+/* The top level container element */
+.compose-area {
+  width: 600px;
+
+  /* These rules get it to hover over the rest of the content */
+  position: fixed;
+  bottom: 0px;
+  right: 10px;
+  z-index: 1;
+
+  background-color: #fff;
+  border: 1px solid #E5E5E5;
+  border-top-right-radius: 8px;
+  border-top-left-radius: 8px;
+  box-shadow: 0px 0px 5px 3px #EEEEEE;
 }
 
-.email-header {
-	padding: 13px;
-	background-color: black;
-	color: white;
+/* The title bar that says "new message" */
+.compose-header {
+  padding: 12px 14px;
+  background-color: #424242;
+  color: white;
+  border-top-right-radius: 8px;
+  border-top-left-radius: 8px;
 }
 
-.email-body {
-	background-color: white;
+.compose-input {
+  /* Flexbox */
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  /* Sizing */
+  padding: 8px 12px;
+  font-size: 14px;
+  line-height: 1.42857143;
+  width: 100%;
+
+  /* Appearance */
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  border-bottom: 1px solid #ccc;
 }
 
-.form-controls {
-	/* Flexbox */
-	display: inline-flex;
-	align-items: center;
-	flex-wrap: wrap;
-
-	/* Sizing */
-	padding: 8px 12px;
-	font-size: 14px;
-	line-height: 1.42857143;
-	width: 100%;
-
-	/* Appearance */
-	background-color: #fff;
-	background-image: none;
-	border: 1px solid #ccc;
-	margin-bottom: 0px;
+.compose-input:focus {
+  outline: none;
 }
 
-.email-footer {
-	background-color: white;
-	width: 100%;
-	padding: 6px;
+.compose-footer {
+  background-color: white;
+  width: 100%;
+  padding: 6px;
 }
 
-.button-send > .btn-primary {
-	margin-right: 6px;
+.compose-send > button {
+  margin-right: 14px;
 }
 
 .close > span {
-	color: white !important;
+  color: white !important;
+}
+
+#sign-label {
+  margin-left: 5px;
 }
