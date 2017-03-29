@@ -111,7 +111,7 @@ var KeybaseAutocomplete = React.createClass({
               aria-label="Keybase Username">
         </span>
         <span className="autocomplete-label">
-          Select the Keybase profiles of this message's recipients:
+          Encrypt this message for:
         </span>
         {selected}
         <Typeahead inputValue={this.state.kbto}
