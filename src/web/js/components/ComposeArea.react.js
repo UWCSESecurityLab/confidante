@@ -338,7 +338,8 @@ var ComposeArea = React.createClass({
             </input>
             <textarea value={this.state.email}
                       name="email"
-                      id="email"
+                      placeholder="Content in this area will be encrypted"
+                      id="compose-body"
                       onChange={this.updateEmail}
                       rows="18"
                       className="compose-input">

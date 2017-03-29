@@ -110,6 +110,9 @@ var KeybaseAutocomplete = React.createClass({
         <span className="glyphicon glyphicon-lock autocomplete-icon"
               aria-label="Keybase Username">
         </span>
+        <span className="autocomplete-label">
+          Select the Keybase profiles of this message's recipients:
+        </span>
         {selected}
         <Typeahead inputValue={this.state.kbto}
                    placeholder="Search for people on Keybase"

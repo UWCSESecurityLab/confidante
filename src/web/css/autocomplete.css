@@ -26,6 +26,10 @@
   margin-bottom: 0px;
 }
 
+.autocomplete-label {
+  width: 95%;
+}
+
 .completion {
   padding: 0em 1em;
 }

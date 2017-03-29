@@ -51,6 +51,10 @@
   outline: none;
 }
 
+#compose-body:focus {
+	box-shadow: 0 0 10px #beefb5;
+}
+
 .compose-footer {
   background-color: white;
   width: 100%;
