@@ -310,8 +310,8 @@ var ComposeArea = React.createClass({
     var style = { display: ComposeStore.getDisplayCompose() ? 'block' : 'none' };
 
     return (
-      <div id="composeMessage" style={style}>
-        <div className="email-header">
+      <div className="compose-area" style={style}>
+        <div className="compose-header">
           <button type="button" className="close" aria-label="Close" onClick={this.onClose}>
             <span aria-hidden="true">&times;</span>
           </button>
@@ -322,54 +322,49 @@ var ComposeArea = React.createClass({
             }
           </h4>
         </div>
-        <div className="email-body">
-          <form className="formHorizontal" autoComplete="off">
-            <div className="form-groups">
-              <ContactsAutocomplete to={this.state.to} updateParent={this.updateTo}/>
-            </div>
+        <div>
+          <form autoComplete="off">
+            <ContactsAutocomplete to={this.state.to} updateParent={this.updateTo}/>
             { this.state.invite
               ? null
-              : <div className="form-groups">
-                  <KeybaseAutocomplete kbto={this.state.kbto} updateParent={this.updateKBTo}/>
-                </div>
+              : <KeybaseAutocomplete kbto={this.state.kbto} updateParent={this.updateKBTo}/>
             }
-            <div className="form-groups">
-              <input type="text"
-                     value={this.state.subject}
-                     name="subject" id="subject"
-                     placeholder="Subject:"
-                     onChange={this.updateSubject}
-                     className="form-controls">
-              </input>
-              <br/>
-            </div>
-
-            <div className="formGroup">
-              <textarea value={this.state.email}
-                        name="email"
-                        id="email"
-                        onChange={this.updateEmail}
-                        rows="15"
-                        className="form-controls">
-              </textarea>
-              <br/>
-            </div>
+            <input type="text"
+                    value={this.state.subject}
+                    name="subject" id="subject"
+                    placeholder="Subject"
+                    onChange={this.updateSubject}
+                    className="compose-input">
+            </input>
+            <textarea value={this.state.email}
+                      name="email"
+                      placeholder="Content in this area will be encrypted"
+                      id="compose-body"
+                      onChange={this.updateEmail}
+                      rows="18"
+                      className="compose-input">
+            </textarea>
           </form>
         </div>
-        <div className="email-footer">
+        <div className="compose-footer">
           <div className="alert alert-danger">{this.state.feedback}</div>
-          { this.state.sendingSpinner
-            ? <span className="spinner"></span>
-            : null
-          }
-          <div className="button-send">
+          <div className="compose-send">
             <button onClick={this.presend} className="btn btn-primary">
               { this.state.invite
                 ? 'Encrypt and Invite'
                 : 'Encrypt and Send'
               }
             </button>
-            <label><input type="checkbox" name="sign-private-key" checked={this.state.checked} onChange={this.updateChecked}/> Sign email with my Private Key</label><br/>
+            <input type="checkbox"
+                   name="sign-private-key"
+                   checked={this.state.checked}
+                   onChange={this.updateChecked}/>
+            <span id="sign-label">Sign email</span>
+            { this.state.sendingSpinner
+              ? <span className="spinner"></span>
+              : null
+            }
+            <br/>
           </div>
         </div>
       </div>
