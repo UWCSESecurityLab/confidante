@@ -25,6 +25,7 @@ var EmailClient = React.createClass({
     return {
       disablePrev: true,
       disableNext: true,
+      email: '',
       error: '',
       errorLinkText: '',
       errorLink: '',
@@ -36,6 +37,9 @@ var EmailClient = React.createClass({
   componentDidMount: function() {
     MessageStore.addChangeListener(this.onMessageStoreChange);
     MessageStore.addRefreshListener(this.onRefreshing);
+    MessageStore.getGmailClient().getEmailAddress().then(function(email) {
+      this.setState({ email: email });
+    }.bind(this));
   },
 
   checkError: function() {
@@ -70,6 +74,12 @@ var EmailClient = React.createClass({
   onMessageStoreChange: function() {
     this.checkError();
     this.setState({ refreshing: false });
+
+    if (this.state.email === '') {
+      MessageStore.getGmailClient().getEmailAddress().then(function(email) {
+        this.setState({ email: email });
+      }.bind(this));
+    }
   },
 
   onRefreshing: function() {
@@ -83,8 +93,8 @@ var EmailClient = React.createClass({
   render: function() {
     return (
       <div>
-        <Header toolname={this.props.serverVars.toolname}
-                email={this.props.serverVars.email}
+        <Header toolname="Confidante"
+                email={this.state.email}
                 staging={this.props.serverVars.staging}
                 mailbox={this.state.mailbox}/>
         <div className="container">

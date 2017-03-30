@@ -44,7 +44,7 @@ let Header = React.createClass({
               <li><a href="/help" target="_blank">Help</a></li>
             </ul>
             <ul className="nav navbar-nav navbar-right">
-              <li><a id="myEmail" href="#">{this.props.email}</a></li>
+              <li><a id="myEmail">{this.props.email}</a></li>
               <li onClick={InboxActions.logout}><a href="#">Log Out</a></li>
             </ul>
           </div>
