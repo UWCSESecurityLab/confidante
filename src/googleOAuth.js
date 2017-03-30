@@ -100,7 +100,7 @@ let GoogleOAuth = {
 
   deleteAccessToken: function() {
     if (flags.ELECTRON) {
-      ipcRenderer.sendSync('delete-access-token');
+      ipcRenderer.send('delete-access-token');
     } else {
       localStorage.removeItem('oauth');
     }
