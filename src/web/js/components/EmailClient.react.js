@@ -54,19 +54,19 @@ var EmailClient = React.createClass({
       this.setState({
         error: 'Your login has expired!',
         errorLinkText: 'Please sign in again.',
-        errorLink: '/logout'
+        errorLink: flags.ELECTRON ? './login.ejs' : '/login'
       });
     } else if (error.name === 'NetworkError') {
       this.setState({
         error: 'Couldn\'t connect to Gmail.',
         errorLinkText: 'Try refreshing the page.',
-        errorLink: '/mail'
+        errorLink: flags.ELECTRON ? './mail.ejs' : '/mail'
       });
     } else if (error.name === 'UnsupportedError') {
       this.setState({
         error: 'Something went wrong in ' + this.props.serverVars.toolname + ' (' + error.message + ')',
         errorLinkText: 'Try refreshing the page.',
-        errorLink: '/mail'
+        errorLink: flags.ELECTRON ? './mail.ejs' : '/mail'
       });
     }
   },
