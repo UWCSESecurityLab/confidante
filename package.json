@@ -10,6 +10,7 @@
     "clean": "./scripts/clean.sh",
     "electron": "electron .",
     "lint": "eslint src/* || true",
+    "package": "node scripts/build-package.js",
     "prod-build": "./scripts/prod-build.sh",
     "postinstall": "./scripts/postinstall.sh",
     "test": "mocha"
