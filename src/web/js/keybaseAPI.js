@@ -3,7 +3,7 @@
 const Auth = require('keybase-proofs').Auth;
 const crypto = require('crypto');
 const flags = require('../../flags');
-const isemail = require('isemail');
+const emailValidator = require('email-validator');
 const kbpgp = require('kbpgp');
 const p3skb = require('../../p3skb');
 const purepack = require('purepack');
@@ -61,7 +61,7 @@ class KeybaseAPI {
   static login(emailOrUsername, passphrase) {
     return new Promise(function(resolve, reject) {
       let salt, session, email, username;
-      if (isemail.validate(emailOrUsername)) {
+      if (emailValidator.validate(emailOrUsername)) {
         email = emailOrUsername;
       } else {
         username = emailOrUsername;
