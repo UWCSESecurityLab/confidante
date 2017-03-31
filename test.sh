@@ -11,5 +11,5 @@ echo '{
         ],
         "token_uri": "https://accounts.google.com/o/oauth2/token"
     }
-}' > client_secret.json
+}' > credentials/web.json
 npm test

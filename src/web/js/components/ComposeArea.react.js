@@ -1,17 +1,15 @@
 'use strict';
 
-var React = require('react');
-var ComposeStore = require('../stores/ComposeStore');
-var ContactsAutocomplete = require('./ContactsAutocomplete.react');
-const GmailClient = require('../../../gmailClient');
-const GoogleOAuth = require('../../../googleOAuth');
-var kbpgp = require('kbpgp');
-var KeybaseAutocomplete = require('./KeybaseAutocomplete.react');
-var InboxActions = require('../actions/InboxActions');
-var KeybaseAPI = require('../keybaseAPI');
-var messageParsing = require('../messageParsing');
-var MessageStore = require('../stores/MessageStore');
-var xhr = require('xhr');
+const ComposeStore = require('../stores/ComposeStore');
+const ContactsAutocomplete = require('./ContactsAutocomplete.react');
+const kbpgp = require('kbpgp');
+const KeybaseAutocomplete = require('./KeybaseAutocomplete.react');
+const InboxActions = require('../actions/InboxActions');
+const KeybaseAPI = require('../keybaseAPI');
+const messageParsing = require('../messageParsing');
+const MessageStore = require('../stores/MessageStore');
+const React = require('react');
+const xhr = require('xhr');
 
 var ourPrivateManager;
 MessageStore.getPrivateManager().then(function(privateManager) {
@@ -33,8 +31,7 @@ var ourPublicKeyManager =
   }
 })();
 
-let token = GoogleOAuth.getAccessToken();
-let gmail = new GmailClient(token.access_token);
+let gmail = MessageStore.getGmailClient();
 
 function getKBIDFromSigner(signer) {
   if (signer && signer.user && signer.user[0] && signer.user[0].basics) {

@@ -15,50 +15,16 @@
 </head>
 <body>
   <%- include('header', { email: email, loggedIn: loggedIn }); %>
-  <div class="container">
-    <div class="row">
-      <div class="col-md-6">
-        <form>
-          <h2>Sign in with your Keybase Account</h2>
-          <% if (electron) { %>
-            <img src="../img/keybase_logo.png" id="keybase-logo">
-          <% } else { %>
-            <img src="keybase_logo.png" id="keybase-logo">
-          <% } %>
-          <div class="form-group">
-            <input type="email" class="form-control" id="username" placeholder="Email or Username"/>
-          </div>
-          <div class="form-group">
-            <input type="password" class="form-control" id="password" placeholder="Password"/>
-          </div>
-        </form>
-        <div>
-          <button class="btn btn-primary" id="submit">Sign In</button>
-          <span class="spinner" id="spinner" aria-hidden="true"></span>
-        </div>
-        <div class="alert alert-danger" role="alert" id="error"></div>
-    </div>
-    <div class="col-md-1"></div>
-    <div class="col-md-5">
-      <h3>Don't have a Keybase Account?</h3>
-      <p>
-        Keybase is a directory of people and their PGP keys. We use Keybase to
-        make encrypting and decrypting your mail easier.
-      </p>
-      <% if (electron) { %>
-        <a class="btn btn-primary" href="signup.ejs">
-      <% } else { %>
-        <a class="btn btn-primary" href="/signup">
-      <% } %>
-        Sign Up
-      </a>
-      <a class="btn btn-info" href="https://keybase.io" target="_blank">
-        Learn More
-      </a>
+  <div id="app">
+    <div class="container">
+      <div>
+        <span class="spinner" id="spinner" aria-hidden="true"></span>
+        Loading...
+      </div>
     </div>
   </div>
   <% if (electron) { %>
-    <script>require("../js/login.js");</script>
+    <script src="../../../gen/login-electron.js"></script>
   <% } else { %>
     <script src="login-bundle.js"></script>
   <% } %>

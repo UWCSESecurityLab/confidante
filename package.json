@@ -6,12 +6,16 @@
   "main": "./src/electron/main.js",
   "scripts": {
     "build": "./scripts/build.sh",
+    "build-electron": "./scripts/build-electron.sh",
     "clean": "./scripts/clean.sh",
     "electron": "electron .",
     "lint": "eslint src/* || true",
     "prod-build": "./scripts/prod-build.sh",
     "postinstall": "./scripts/postinstall.sh",
     "test": "mocha"
+  },
+  "browser": {
+    "request": "xhr"
   },
   "author": "Eric Zeng",
   "dependencies": {
@@ -25,9 +29,11 @@
     "dateformat": "^1.0.12",
     "ejs": "^2.3.4",
     "ejs-electron": "github:eric-zeng/ejs-electron",
+    "electron-config": "^0.2.1",
     "express": "^4.13.3",
     "express-session": "^1.11.3",
     "flux": "^2.1.1",
+    "get-port": "^3.0.0",
     "google-auth-library": "^0.9.6",
     "googleapis": "^9.0.0",
     "isemail": "^2.2.1",

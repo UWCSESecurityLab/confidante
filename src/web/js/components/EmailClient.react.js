@@ -5,6 +5,7 @@ var ComposeArea = require('./ComposeArea.react');
 var ComposeButton = require('./ComposeButton.react');
 var ArchiveButton = require('./ArchiveButton.react');
 var DeleteButton = require('./DeleteButton.react');
+var flags = require('../../../flags');
 var Header = require('./Header.react');
 var Inbox = require('./Inbox.react');
 var InviteButton = require('./InviteButton.react');
@@ -25,6 +26,7 @@ var EmailClient = React.createClass({
     return {
       disablePrev: true,
       disableNext: true,
+      email: '',
       error: '',
       errorLinkText: '',
       errorLink: '',
@@ -36,6 +38,9 @@ var EmailClient = React.createClass({
   componentDidMount: function() {
     MessageStore.addChangeListener(this.onMessageStoreChange);
     MessageStore.addRefreshListener(this.onRefreshing);
+    MessageStore.getGmailClient().getEmailAddress().then(function(email) {
+      this.setState({ email: email });
+    }.bind(this));
   },
 
   checkError: function() {
@@ -50,19 +55,19 @@ var EmailClient = React.createClass({
       this.setState({
         error: 'Your login has expired!',
         errorLinkText: 'Please sign in again.',
-        errorLink: '/logout'
+        errorLink: flags.ELECTRON ? './login.ejs' : '/logout'
       });
     } else if (error.name === 'NetworkError') {
       this.setState({
         error: 'Couldn\'t connect to Gmail.',
         errorLinkText: 'Try refreshing the page.',
-        errorLink: '/mail'
+        errorLink: flags.ELECTRON ? './mail.ejs' : '/mail'
       });
-    } else if (error === 'INTERNAL ERROR') {
+    } else if (error.name === 'UnsupportedError') {
       this.setState({
-        error: 'Something went wrong in the ' + this.props.serverVars.toolname + '.',
+        error: 'Something went wrong in ' + this.props.serverVars.toolname + ' (' + error.message + ')',
         errorLinkText: 'Try refreshing the page.',
-        errorLink: '/mail'
+        errorLink: flags.ELECTRON ? './mail.ejs' : '/mail'
       });
     }
   },
@@ -70,6 +75,12 @@ var EmailClient = React.createClass({
   onMessageStoreChange: function() {
     this.checkError();
     this.setState({ refreshing: false });
+
+    if (this.state.email === '') {
+      MessageStore.getGmailClient().getEmailAddress().then(function(email) {
+        this.setState({ email: email });
+      }.bind(this));
+    }
   },
 
   onRefreshing: function() {
@@ -83,8 +94,8 @@ var EmailClient = React.createClass({
   render: function() {
     return (
       <div>
-        <Header toolname={this.props.serverVars.toolname}
-                email={this.props.serverVars.email}
+        <Header toolname="Confidante"
+                email={this.state.email}
                 staging={this.props.serverVars.staging}
                 mailbox={this.state.mailbox}/>
         <div className="container">

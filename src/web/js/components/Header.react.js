@@ -1,15 +1,16 @@
 'use strict';
+const flags = require('../../../flags.js');
+const InboxActions = require('../actions/InboxActions');
+const React = require('react');
 
-var React = require('react');
-var InboxActions = require('../actions/InboxActions');
-
-var Header = React.createClass({
+let Header = React.createClass({
   propTypes: {
     email: React.PropTypes.string,
     mailbox: React.PropTypes.string,
     staging: React.PropTypes.bool,
     toolname: React.PropTypes.string
   },
+
   render: function() {
     return (
       <nav className="navbar navbar-default">
@@ -21,7 +22,7 @@ var Header = React.createClass({
               <span className="icon-bar"></span>
               <span className="icon-bar"></span>
             </button>
-            <a className="navbar-brand" href="/mail">
+            <a className="navbar-brand" href={flags.ELECTRON ? './mail.ejs' : '/mail'}>
               {this.props.toolname}
               { this.props.staging ? <sub id="staging"> Staging</sub> : null }
             </a>
@@ -43,8 +44,8 @@ var Header = React.createClass({
               <li><a href="/help" target="_blank">Help</a></li>
             </ul>
             <ul className="nav navbar-nav navbar-right">
-              <li><a id="myEmail" href="#">{this.props.email}</a></li>
-              <li><a href="/logout">Log Out</a></li>
+              <li><a id="myEmail">{this.props.email}</a></li>
+              <li onClick={InboxActions.logout}><a href="#">Log Out</a></li>
             </ul>
           </div>
         </div>

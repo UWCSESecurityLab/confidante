@@ -1,5 +1,6 @@
 'use strict';
 
+const AuthError = require('../../../error').AuthError;
 const EventEmitter = require('events').EventEmitter;
 const flags = require('../../../flags');
 const GmailClient = require('../../../gmailClient');
@@ -7,6 +8,11 @@ const GoogleOAuth = require('../../../googleOAuth');
 const InboxDispatcher = require('../dispatcher/InboxDispatcher');
 const KeybaseAPI = require('../keybaseAPI');
 const messageParsing = require('../messageParsing');
+
+let ipcRenderer;
+if (flags.ELECTRON && process.type === 'renderer') {
+  ipcRenderer = window.require('electron').ipcRenderer;
+}
 
 // Only zero or one thread can be open at a time -- the open thread, if any,
 // is stored here.
@@ -30,8 +36,8 @@ let _globalError = null;
 // A promise containing our local private key.
 let _privateManager = KeybaseAPI.getPrivateManager();
 
-let token = GoogleOAuth.getAccessToken();
-let gmail = new GmailClient(token.access_token);
+let _token = GoogleOAuth.getAccessToken();
+let _gmail = new GmailClient(_token.access_token);
 
 function _signerFromLiterals(literals) {
   let ds = literals[0].get_data_signer();
@@ -125,7 +131,7 @@ function _decryptMessage(message) {
  * to allow batch archiving, so we do it one at a time.
  */
 function _archiveThread(threadId) {
-  gmail.archiveThread(threadId).then(function() {
+  _gmail.archiveThread(threadId).then(function() {
     MessageStore.refreshCurrentPage();
   }).catch(function(error) {
     MessageStore.updateGlobalError(error);
@@ -186,6 +192,10 @@ let MessageStore = Object.assign({}, EventEmitter.prototype, {
     return _currentFullThreadId;
   },
 
+  getGmailClient: function() {
+    return _gmail;
+  },
+
   isThreadChecked: function(threadId) {
     return _checkedThreads[threadId] === true;
   },
@@ -199,7 +209,7 @@ let MessageStore = Object.assign({}, EventEmitter.prototype, {
   fetchMail(mailbox, pageToken, callback) {
     MessageStore.emitRefreshing();
 
-    gmail.getEncryptedMail(mailbox, pageToken).then(function(response) {
+    _gmail.getEncryptedMail(mailbox, pageToken).then(function(response) {
       _threads = response.threads;
       _threads.forEach(function(thread) {
         _decryptThread(thread);
@@ -277,13 +287,13 @@ let MessageStore = Object.assign({}, EventEmitter.prototype, {
   deleteSelectedThreads: function() {
     _threads.forEach((thread) => {
       if (this.isThreadChecked(thread.id)) {
-        gmail.deleteThread(thread.id);
+        _gmail.deleteThread(thread.id);
       }
     });
   },
 
   markAsRead: function(threadId) {
-    gmail.markAsRead(threadId).then(function() {
+    _gmail.markAsRead(threadId).then(function() {
       MessageStore.refreshCurrentPage();
     }).catch(function(error) {
       MessageStore.updateGlobalError(error);
@@ -299,39 +309,91 @@ let MessageStore = Object.assign({}, EventEmitter.prototype, {
     MessageStore.emitChange();
   },
 
+  logout: function() {
+    GoogleOAuth.deleteAccessToken();
+    localStorage.removeItem('keybase');
+    localStorage.removeItem('keybasePassphrase');
+    if (flags.ELECTRON) {
+      window.location.href = './index.ejs';
+    } else {
+      window.location.href = '/logout';
+    }
+  },
+
   dispatchToken: InboxDispatcher.register(function(action) {
-    if (action.type === 'MARK_AS_READ') {
-      MessageStore.markAsRead(action.message);
-    } else if (action.type === 'REFRESH') {
-      MessageStore.refreshCurrentPage();
-    } else if (action.type === 'CHANGE_MAILBOX') {
-      _mailbox = action.mailbox;
-      MessageStore.fetchFirstPage();
-    } else if (action.type === 'NEXT_PAGE') {
-      MessageStore.fetchNextPage();
-    } else if (action.type === 'PREV_PAGE') {
-      MessageStore.fetchPrevPage();
-    } else if (action.type === 'ARCHIVE_SELECTED_THREADS') {
-      MessageStore.archiveSelectedThreads();
-    } else if (action.type === 'DELETE_SELECTED_THREADS') {
-      MessageStore.deleteSelectedThreads();
-    } else if (action.type === 'SET_CHECKED') {
-      MessageStore.setChecked(action.message.threadId, action.message.checked);
-    } else if (action.type === 'SET_EXPANDED_THREAD') {
-      MessageStore.setExpandedThread(action.message.threadId, action.message.expanded);
+    switch (action.type) {
+      case 'MARK_AS_READ':
+        MessageStore.markAsRead(action.message);
+        break;
+      case 'REFRESH':
+        MessageStore.refreshCurrentPage();
+        break;
+      case 'CHANGE_MAILBOX':
+        _mailbox = action.mailbox;
+        MessageStore.fetchFirstPage();
+        break;
+      case 'NEXT_PAGE':
+        MessageStore.fetchNextPage();
+        break;
+      case 'PREV_PAGE':
+        MessageStore.fetchPrevPage();
+        break;
+      case 'ARCHIVE_SELECTED_THREADS':
+        MessageStore.archiveSelectedThreads();
+        break;
+      case 'DELETE_SELECTED_THREADS':
+        MessageStore.deleteSelectedThreads();
+        break;
+      case 'SET_CHECKED':
+        MessageStore.setChecked(action.message.threadId, action.message.checked);
+        break;
+      case 'SET_EXPANDED_THREAD':
+        MessageStore.setExpandedThread(action.message.threadId, action.message.expanded);
+        break;
+      case 'LOGOUT':
+        MessageStore.logout();
+        break;
     }
   })
 });
 
+// Initial fetch of inbox
 MessageStore.fetchFirstPage();
+// Check for new mail every 60s
 setInterval(MessageStore.refreshCurrentPage, 60000);
 
-if (!flags.ELECTRON) {
-  setInterval(function() {
-    GoogleOAuth.web.validateToken(token.access_token).catch(function(err) {
-      MessageStore.updateGlobalError(err);
-    });
-  }, 20000);
+/**
+ * Refresh the access token or show an error when the access otken expires.
+ * @param {Number} timeout Milliseconds until the access token expires
+ */
+function onTokenExpiry(timeout) {
+  setTimeout(function() {
+    if (flags.ELECTRON) {
+      ipcRenderer.send('refresh-access-token');
+    } else {
+      GoogleOAuth.web.validateToken(_token.access_token).catch(function(err) {
+        MessageStore.updateGlobalError(err);
+      });
+    }
+  }, timeout);
 }
+
+// Set initial access token timeout.
+onTokenExpiry(_token.expires - Date.now());
+
+if (flags.ELECTRON) {
+  // Handles IPC for when the access token is refreshed.
+  ipcRenderer.on('refreshed-access-token', function(event, arg) {
+    if (arg) {
+      _token = arg;                               // Update store token
+      _gmail.setToken(_token.access_token);       // Update GmailClient's token
+      onTokenExpiry(_token.expires - Date.now());  // Reset the timeout
+      MessageStore.emitChange();
+    } else {
+      MessageStore.updateGlobalError(new AuthError('Refresh failed'));
+    }
+  });
+}
+
 
 module.exports = MessageStore;

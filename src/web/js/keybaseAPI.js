@@ -1,16 +1,16 @@
 'use strict';
 
-var Auth = require('keybase-proofs').Auth;
-var crypto = require('crypto');
-var flags = require('../../flags');
-var isemail = require('isemail');
-var kbpgp = require('kbpgp');
-var p3skb = require('../../p3skb');
-var purepack = require('purepack');
-var querystring = require('querystring');
-var triplesec = require('triplesec');
-var Sets = require('../../set.js');
-var xhr = require('xhr');
+const Auth = require('keybase-proofs').Auth;
+const crypto = require('crypto');
+const flags = require('../../flags');
+const isemail = require('isemail');
+const kbpgp = require('kbpgp');
+const p3skb = require('../../p3skb');
+const purepack = require('purepack');
+const querystring = require('querystring');
+const triplesec = require('triplesec');
+const Sets = require('../../set.js');
+const xhr = require('xhr');
 
 const ORIGIN = window.location.origin + '/keybase';
 const KB_STAGING = 'https://stage0.keybase.io';

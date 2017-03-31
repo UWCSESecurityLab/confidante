@@ -12,12 +12,26 @@ const URLSafeBase64 = require('urlsafe-base64');
 const xhr = require('xhr');
 
 // TODO: Check response codes, provide useful errors
+/**
+ * This class handles all calls to the Gmail API.
+ * IMPORTANT! Get all instances of this class from MessageStore.getGmailClient()!
+ * MessageStore will handle all of the issues with keeping the OAuth access
+ * token current.
+ */
 class GmailClient {
   /**
    * Constructs a new authenticated Gmail Client.
-   * @param token The token object provided by the Google OAuth library.
+   * @param {string} token The access_token field of the Google OAuth response.
    */
   constructor(token) {
+    this.token = token;
+  }
+
+  /**
+   * Updates the GmailClient's access token.
+   * @param {string} token The access_token field of the Google OAuth response.
+   */
+  setToken(token) {
     this.token = token;
   }
 
@@ -314,7 +328,7 @@ class GmailClient {
         resolve(contacts.map(this.toSmallContact).reduce(function(flat, next) {
           return flat.concat(next);
         }));
-      }).catch(function(err) {
+      }.bind(this)).catch(function(err) {
         reject(err);
       });
     }.bind(this));
