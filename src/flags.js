@@ -20,6 +20,6 @@ if (toolnameArg) {
   exports.TOOLNAME = 'Confidante';
 }
 
-exports.PRODUCTION = process.argv.indexOf('--prod') != -1;
+exports.PRODUCTION = process.env.NODE_ENV === 'production';
 exports.KEYBASE_STAGING = process.argv.indexOf('--keybase-staging') != -1;
 exports.ELECTRON = process.versions['electron'] !== undefined;
