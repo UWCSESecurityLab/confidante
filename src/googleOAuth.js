@@ -23,12 +23,10 @@ const GOOGLE_OAUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 let GOOGLE_OAUTH_REDIRECT_URI;
 if (flags.ELECTRON) {
   GOOGLE_OAUTH_REDIRECT_URI = 'http://127.0.0.1:';
-} else if (flags.PRODUCTION && (flags.TOOLNAME === 'Keymail' || flags.TOOLNAME === 'Confidante')) {
-  GOOGLE_OAUTH_REDIRECT_URI = credentials.web.redirect_uris[0];
-} else if (flags.PRODUCTION && flags.TOOLNAME === 'Mailsafe') {
-  GOOGLE_OAUTH_REDIRECT_URI = credentials.web.redirect_uris[2];
-} else {
+} else if (flags.PRODUCTION) {
   GOOGLE_OAUTH_REDIRECT_URI = credentials.web.redirect_uris[1];
+} else {
+  GOOGLE_OAUTH_REDIRECT_URI = credentials.web.redirect_uris[0];
 }
 
 let GoogleOAuth = {
