@@ -1,6 +1,6 @@
 {
   "name": "keymail",
-  "version": "0.5.7",
+  "version": "0.5.8",
   "license": "UNLICENSED",
   "description": "Usable encrypted email",
   "main": "./src/electron/main.js",
