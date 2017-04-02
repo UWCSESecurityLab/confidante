@@ -137,6 +137,11 @@ app.get('/signup', function(req, res) {
  * and the public key. When calling /invite/sendInvite, pass back the invite id.
  */
 app.get('/invite/getKey', auth.dataEndpoint, function(req, res) {
+  if (flags.PRODUCTION) {
+    res.status(404).send('404 Invites currently disabled');
+    return;
+  }
+
   let recipient = req.query.recipient;
   if (!recipient) {
     res.status(500).send('No recipient provided');
@@ -176,6 +181,11 @@ app.get('/invite/getKey', auth.dataEndpoint, function(req, res) {
  * object containing 'message', 'inviteId', and 'subject'.
  */
 app.post('/invite/sendInvite', auth.dataEndpoint, function(req, res) {
+  if (flags.PRODUCTION) {
+    res.status(404).send('404 Invites currently disabled');
+    return;
+  }
+
   if (!req.session.tempPassphrase || !req.body.inviteId || !req.body.message || !req.body.subject) {
     res.status(400).send('Bad request');
     return;
@@ -235,6 +245,11 @@ app.post('/invite/sendInvite', auth.dataEndpoint, function(req, res) {
 });
 
 app.get('/invite/viewInvite', function(req, res) {
+  if (flags.PRODUCTION) {
+    res.status(404).send('404 Invites currently disabled');
+    return;
+  }
+
   if (!req.query.id) {
     res.status(400).send('Bad Request');
     return;
@@ -261,6 +276,11 @@ app.get('/invite/viewInvite', function(req, res) {
 });
 
 app.get('/invite', function(req, res) {
+  if (flags.PRODUCTION) {
+    res.status(404).send('404 Invites currently disabled');
+    return;
+  }
+
   if (!req.query.id || !req.query.pw) {
     res.status(404).send('Not Found');
     return;

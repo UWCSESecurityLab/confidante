@@ -8,7 +8,6 @@ var DeleteButton = require('./DeleteButton.react');
 var flags = require('../../../flags');
 var Header = require('./Header.react');
 var Inbox = require('./Inbox.react');
-var InviteButton = require('./InviteButton.react');
 var MessageStore = require('../stores/MessageStore.js');
 var RefreshButton = require('./RefreshButton.react');
 var ThreadScrollers = require('./ThreadScrollers.react');
@@ -107,7 +106,6 @@ var EmailClient = React.createClass({
             ? <span id="loading-text">Loading...</span>
             : null
           }
-          <InviteButton />
           { this.state.error
             ? <div id="global-error" className="alert alert-warning" role="alert">
                 {this.state.error} <a href={this.state.errorLink}>{this.state.errorLinkText}</a>
