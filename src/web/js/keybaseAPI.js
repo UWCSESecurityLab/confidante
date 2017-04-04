@@ -195,6 +195,9 @@ class KeybaseAPI {
       xhr.post({
         url: nonCors + '/login.json?' + qs
       }, function (error, response, body) {
+        if (!flags.ELECTRON) {
+          storeKeybaseCookie(error, response, body);
+        }
         handleKeybaseResponse(error, response, body, resolve, reject);
       });
     }.bind(this));
@@ -247,6 +250,9 @@ class KeybaseAPI {
   static fetchKey(pgpKeyIds, ops) {
     return new Promise(function(resolve, reject) {
       xhr.get({
+        headers: {
+          'x-keybase-cookie': localStorage.getItem('keybaseCookie'),
+        },
         url: nonCors + '/key/fetch.json?' +
              'pgp_key_ids=' + pgpKeyIds.join(',') + '&' +
              'ops=' + ops
@@ -489,6 +495,18 @@ function handleKeybaseResponse(error, response, body, resolve, reject) {
   } catch(e) {
     reject(body);
   }
+}
+
+/**
+ * storeKeybaseCookie stores the Keybase CSRF Token and Session Cookie 
+ * for later use.
+ */
+function storeKeybaseCookie(error, response, body) {
+  let keybase = JSON.parse(body);
+  localStorage.setItem('keybaseCSRFToken', keybase['csrf_token']);
+
+  let cookie = response.headers['x-keybase-cookie'];
+  localStorage.setItem('keybaseCookie', cookie);
 }
 
 module.exports = KeybaseAPI;
