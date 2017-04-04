@@ -112,7 +112,6 @@ app.get('/login', function(req, res) {
 app.get('/mail', function(req, res) {
   res.render('mail', {
     toolname: flags.TOOLNAME,
-    email: req.session.email,
     loggedIn: true,
     staging: flags.KEYBASE_STAGING,
     electron: false,
