@@ -14,8 +14,6 @@ const crypto = require('crypto');
 const p3skb = require('./p3skb');
 const pgp = require('./pgp.js');
 
-const auth = require('./auth.js');
-const db = require('./db.js');
 const flags = require('./flags.js');
 const GoogleOAuth = require('./googleOAuth.js');
 const GmailClient = require('./gmailClient.js');
@@ -72,7 +70,7 @@ if (!flags.PRODUCTION) {
 app.get('/', function(req, res) {
   res.render('index', {
     toolname: flags.TOOLNAME,
-    loggedIn: auth.isAuthenticated(req.session),
+    loggedIn: false,
     staging: flags.KEYBASE_STAGING,
     electron: false,
     version: version
@@ -82,7 +80,7 @@ app.get('/', function(req, res) {
 app.get('/help', function(req, res) {
   res.render('help', {
     toolname: flags.TOOLNAME,
-    loggedIn: auth.isAuthenticated(req.session),
+    loggedIn: false,
     staging: flags.KEYBASE_STAGING,
     electron: false,
     version: version
@@ -129,7 +127,7 @@ app.get('/signup', function(req, res) {
  * The response body contains a JSON object containing the invite id,
  * and the public key. When calling /invite/sendInvite, pass back the invite id.
  */
-app.get('/invite/getKey', auth.dataEndpoint, function(req, res) {
+app.get('/invite/getKey', function(req, res) {
   if (flags.PRODUCTION) {
     res.status(404).send('404 Invites currently disabled');
     return;
@@ -173,7 +171,7 @@ app.get('/invite/getKey', auth.dataEndpoint, function(req, res) {
  * Sends an invite to a non-Keymail user. The client should provide a JSON
  * object containing 'message', 'inviteId', and 'subject'.
  */
-app.post('/invite/sendInvite', auth.dataEndpoint, function(req, res) {
+app.post('/invite/sendInvite', function(req, res) {
   if (flags.PRODUCTION) {
     res.status(404).send('404 Invites currently disabled');
     return;
@@ -288,23 +286,6 @@ app.get('/invite', function(req, res) {
 });
 
 /**
- * Authenticates the user with Google. The user must have already been
- * authenticated with Keybase so we can identify them.
- */
-app.get('/auth/google', function(req, res) {
-  if (!req.session.keybaseId) {
-    res.statusCode(403).send('No Keybase Username associated with this session');
-    return;
-  }
-  auth.attemptGoogleReauthentication(req.session).then(function() {
-    res.redirect('/mail');
-  }).catch(function(err) {
-    console.error(err);
-    res.redirect(GoogleOAuth.getAuthUrl());
-  });
-});
-
-/**
  * Exchanges an authorization code for tokens from Google, and updates the
  * session and user store.
  */
@@ -388,10 +369,6 @@ app.post('/keybase/login.json', function(req, res) {
 });
 
 app.post('/keybase/signup.json', function(req, res) {
-  if (auth.isAuthenticated(req.session)) {
-    res.status(400).send('Already logged in!');
-    return;
-  }
   request({
     method: 'POST',
     url: KEYBASE_URL + '/_/api/1.0/signup.json',
@@ -407,12 +384,6 @@ app.post('/keybase/signup.json', function(req, res) {
 });
 
 app.post('/keybase/key/add.json', function(req, res) {
-  if (!auth.isAuthenticatedWithKeybase(req.session)) {
-    console.log('POST /keybase/key/add.json failed: need Keybase authentication');
-    res.status(401).send('Cannot add keys without logging into Keybase');
-    return;
-  }
-
   request({
     method: 'POST',
     url: KEYBASE_URL + '/_/api/1.0/key/add.json',
@@ -445,32 +416,27 @@ app.get('/keybase/key/fetch.json', function(req, res) {
 });
 
 app.get('/logout', function(req, res) {
-  if (auth.isAuthenticatedWithKeybase(req.session)) {
-    request({
-      method: 'POST',
-      url: KEYBASE_URL + '/_/api/1.0/session/killall.json',
-      jar: getKeybaseCookieJar(req)
-    }, function(error, response, body) {
-      if (!error) {
-        console.log(body);
-      } else {
-        console.error('Failed to kill sessions: ' + error);
-      }
-    });
-  }
-
-  req.session.destroy(function() {
-    res.redirect('/');
+  res.redirect('/');
+  request({
+    method: 'POST',
+    url: KEYBASE_URL + '/_/api/1.0/session/killall.json',
+    jar: getKeybaseCookieJar(req)
+  }, function(error, response, body) {
+    if (!error) {
+      console.log(body);
+    } else {
+      console.error('Failed to kill sessions: ' + error);
+    }
   });
 });
 
-app.get('/log/console', auth.webEndpoint, auth.isEric, function(req, res) {
+app.get('/log/console', function(req, res) {
   fs.readFile('console.log', (err, data) => {
     res.send(data.toString().split('\n').join('<br/>'));
   });
 });
 
-app.get('/log/error', auth.webEndpoint, auth.isEric, function(req, res) {
+app.get('/log/error', function(req, res) {
   fs.readFile('error.log', (err, data) => {
     res.send(data.toString().split('\n').join('<br/>'));
   });
