@@ -99,18 +99,14 @@ app.get('/help', function(req, res) {
 });
 
 app.get('/login', function(req, res) {
-  if (auth.isAuthenticated(req.session)) {
-    res.redirect('/mail');
-  } else {
-    res.render('login', {
-      toolname: flags.TOOLNAME,
-      email: req.session.email,
-      loggedIn: false,
-      staging: flags.KEYBASE_STAGING,
-      electron: false,
-      version: version
-    });
-  }
+  res.render('login', {
+    toolname: flags.TOOLNAME,
+    email: req.session.email,
+    loggedIn: false,
+    staging: flags.KEYBASE_STAGING,
+    electron: false,
+    version: version
+  });
 });
 
 app.get('/mail', auth.webEndpoint, function(req, res) {
