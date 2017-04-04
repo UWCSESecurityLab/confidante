@@ -1,5 +1,5 @@
 'use strict';
-var React = require('react');
+const React = require('react');
 
 var ContactCompletion = React.createClass({
   propTypes: {

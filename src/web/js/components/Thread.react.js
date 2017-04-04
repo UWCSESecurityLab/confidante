@@ -1,8 +1,8 @@
 'use strict';
 
-var React = require('react');
-var Message = require('./Message.react');
-var messageParsing = require('../messageParsing');
+const React = require('react');
+const Message = require('./Message.react');
+const messageParsing = require('../messageParsing');
 
 /**
  * A Thread is 1 or more messages, displayed in full. It's what you see in

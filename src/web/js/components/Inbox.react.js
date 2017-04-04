@@ -1,8 +1,8 @@
 'use strict';
 
-var React = require('react');
-var MessageStore = require('../stores/MessageStore');
-var ThreadSnippet = require('./ThreadSnippet.react');
+const React = require('react');
+const MessageStore = require('../stores/MessageStore');
+const ThreadSnippet = require('./ThreadSnippet.react');
 
 /**
  * An Inbox represent's the user's encrypted inbox, consisting of a list

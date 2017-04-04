@@ -1,6 +1,6 @@
 'use strict';
-var React = require('react');
-var messageParsing = require('../messageParsing');
+const React = require('react');
+const messageParsing = require('../messageParsing');
 
 /**
  * The body of a Message when some error has occurred, like a decryption failure.

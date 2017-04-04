@@ -1,25 +1,25 @@
 'use strict';
-var express = require('express');
-var fs = require('fs');
-var compression = require('compression');
-var session = require('express-session');
-var bodyParser = require('body-parser');
-var request = require('request');
-var Cookie = require('cookie');
-var URLSafeBase64 = require('urlsafe-base64');
+const express = require('express');
+const fs = require('fs');
+const compression = require('compression');
+const session = require('express-session');
+const bodyParser = require('body-parser');
+const request = require('request');
+const Cookie = require('cookie');
+const URLSafeBase64 = require('urlsafe-base64');
 
-var mongoose = require('mongoose');
-var MongoSessionStore = require('connect-mongodb-session')(session);
+const mongoose = require('mongoose');
+const MongoSessionStore = require('connect-mongodb-session')(session);
 
-var crypto = require('crypto');
-var p3skb = require('./p3skb');
-var pgp = require('./pgp.js');
+const crypto = require('crypto');
+const p3skb = require('./p3skb');
+const pgp = require('./pgp.js');
 
-var auth = require('./auth.js');
-var db = require('./db.js');
-var flags = require('./flags.js');
-var GoogleOAuth = require('./googleOAuth.js');
-var GmailClient = require('./gmailClient.js');
+const auth = require('./auth.js');
+const db = require('./db.js');
+const flags = require('./flags.js');
+const GoogleOAuth = require('./googleOAuth.js');
+const GmailClient = require('./gmailClient.js');
 
 const version = require('../package.json').version;
 

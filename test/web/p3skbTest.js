@@ -1,10 +1,10 @@
 'use strict'
-var chai = require('chai');
-var should = chai.should();
-var chaiAsPromised = require("chai-as-promised");
+const chai = require('chai');
+const should = chai.should();
+const chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
-var p3skb = require('../src/web/js/p3skb.js');
-var fs = require('fs');
+const p3skb = require('../src/web/js/p3skb.js');
+const fs = require('fs');
 var testkey = fs.readFileSync('test/resources/testkey', 'utf8');
 
 describe('p3skb', function() {

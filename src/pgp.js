@@ -1,5 +1,5 @@
 'use strict';
-var kbpgp = require('kbpgp');
+const kbpgp = require('kbpgp');
 
 // Strings used to build PGP Armor
 var ARMOR_LINE = '-----';

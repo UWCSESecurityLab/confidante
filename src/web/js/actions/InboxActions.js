@@ -1,6 +1,6 @@
 'use strict';
 
-var InboxDispatcher = require('../dispatcher/InboxDispatcher');
+const InboxDispatcher = require('../dispatcher/InboxDispatcher');
 
 module.exports = {
   ///////////////////////////////

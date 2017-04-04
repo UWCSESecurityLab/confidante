@@ -1,17 +1,17 @@
 'use strict';
 
-var React = require('react');
-var ComposeArea = require('./ComposeArea.react');
-var ComposeButton = require('./ComposeButton.react');
-var ArchiveButton = require('./ArchiveButton.react');
-var DeleteButton = require('./DeleteButton.react');
-var flags = require('../../../flags');
-var Header = require('./Header.react');
-var Inbox = require('./Inbox.react');
-var MessageStore = require('../stores/MessageStore.js');
-var RefreshButton = require('./RefreshButton.react');
-var ThreadScrollers = require('./ThreadScrollers.react');
-var KeybaseAPI = require('../keybaseAPI');
+const React = require('react');
+const ComposeArea = require('./ComposeArea.react');
+const ComposeButton = require('./ComposeButton.react');
+const ArchiveButton = require('./ArchiveButton.react');
+const DeleteButton = require('./DeleteButton.react');
+const flags = require('../../../flags');
+const Header = require('./Header.react');
+const Inbox = require('./Inbox.react');
+const MessageStore = require('../stores/MessageStore.js');
+const RefreshButton = require('./RefreshButton.react');
+const ThreadScrollers = require('./ThreadScrollers.react');
+const KeybaseAPI = require('../keybaseAPI');
 
 import Toast, {notify} from 'react-notify-toast';
 

@@ -1,22 +1,22 @@
 'use strict';
-var chai = require('chai');
-var should = chai.should();
-var mockery = require('mockery');
-var sinon = require('sinon');
-var request = require('supertest');
+const chai = require('chai');
+const should = chai.should();
+const mockery = require('mockery');
+const sinon = require('sinon');
+const request = require('supertest');
 
-var kbpgp = require('kbpgp');
-var p3skb = require('../src/p3skb');
-var url = require('url');
-var querystring = require('querystring');
+const kbpgp = require('kbpgp');
+const p3skb = require('../src/p3skb');
+const url = require('url');
+const querystring = require('querystring');
 
 // For session mocking
-var express = require('express');
-var session = require('express-session');
+const express = require('express');
+const session = require('express-session');
 
 // Stub out authentication middleware so we don't have to mess with the
 // authentication stuff in sessions.
-var auth = require('../src/auth.js');
+const auth = require('../src/auth.js');
 sinon.stub(auth, "webEndpoint", (req, res, next) => {
   return next();
 });
@@ -26,11 +26,11 @@ sinon.stub(auth, "dataEndpoint", (req, res, next) => {
 });
 
 // Stub out calls to mongoose.Model.save
-var Invite = require('../src/models/invite.js');
+const Invite = require('../src/models/invite.js');
 let inviteSaveStub = sinon.stub(Invite.prototype, "save", (cb) => cb());
 
 // Stub out database calls, generate fake return results if necessary.
-var db = require('../src/db.js');
+const db = require('../src/db.js');
 let mockInvite = {}
 let storeInviteKeysStub = sinon.stub(db, "storeInviteKeys", (recipient, keys) => {
   return new Promise(function(resolve, reject) {
@@ -53,7 +53,7 @@ let getInviteStub = sinon.stub(db, "getInvite", (id) => {
 });
 
 // Stub out Gmail API calls.
-var GmailClient = require('../src/gmailClient.js');
+const GmailClient = require('../src/gmailClient.js');
 let sentMessage = {}
 let sendMessageStub = sinon.stub(GmailClient.prototype, "sendMessage", (jsonMessage, threadId) =>
   new Promise((resolve, reject) => {
@@ -67,7 +67,7 @@ let sendMessageStub = sinon.stub(GmailClient.prototype, "sendMessage", (jsonMess
 // the scope of the test.
 let mockPassphrase = 'sooper%20secret';
 let mockSenderEmail = 'test.runner@example.com';
-var app = require('../src/app.js');
+const app = require('../src/app.js');
 let testApp = express();
 testApp.use(session({
   secret: 'ancient astronauts exist',

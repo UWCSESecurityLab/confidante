@@ -1,6 +1,8 @@
-var should = require('chai').should();
-var pgp = require('../src/pgp.js');
-var data = require('./resources/pgpData.json');
+'use strict';
+
+const should = require('chai').should();
+const pgp = require('../src/pgp.js');
+const data = require('./resources/pgpData.json');
 
 describe('pgp.js', function() {
   describe('containsPGPMessage()', function() {

@@ -1,6 +1,6 @@
 'use strict';
-var Invite = require('./models/invite.js');
-var User = require('./models/user.js');
+const Invite = require('./models/invite.js');
+const User = require('./models/user.js');
 
 function getUser(keybaseId) {
   return new Promise(function(resolve, reject) {

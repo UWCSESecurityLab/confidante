@@ -1,11 +1,11 @@
 'use strict';
 
-var React = require('react');
-var AddressParser = require('address-rfc2822');
-var AutocompleteStore = require('../stores/AutocompleteStore');
-var ContactCompletion = require('./ContactCompletion.react');
-var InboxActions = require('../actions/InboxActions');
-var Typeahead = require('@tappleby/react-typeahead-component');
+const React = require('react');
+const AddressParser = require('address-rfc2822');
+const AutocompleteStore = require('../stores/AutocompleteStore');
+const ContactCompletion = require('./ContactCompletion.react');
+const InboxActions = require('../actions/InboxActions');
+const Typeahead = require('@tappleby/react-typeahead-component');
 
 var ContactsAutocomplete = React.createClass({
   propTypes: {

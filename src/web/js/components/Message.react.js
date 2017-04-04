@@ -1,11 +1,11 @@
 'use strict';
 
-var React = require('react');
-var DateFormat = require('dateformat');
-var ErrorBody = require('./ErrorBody.react');
-var InboxActions = require('../actions/InboxActions');
-var KeybaseCard = require('./KeybaseCard.react');
-var messageParsing = require('../messageParsing');
+const React = require('react');
+const DateFormat = require('dateformat');
+const ErrorBody = require('./ErrorBody.react');
+const InboxActions = require('../actions/InboxActions');
+const KeybaseCard = require('./KeybaseCard.react');
+const messageParsing = require('../messageParsing');
 
 function getTwitterFromUser(user) {
   let proofs = user.proofs_summary.by_proof_type;

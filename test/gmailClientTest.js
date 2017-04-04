@@ -1,21 +1,21 @@
 'use strict'
-var chai = require('chai');
-var should = chai.should();
-var chaiAsPromised = require("chai-as-promised");
+const chai = require('chai');
+const should = chai.should();
+const chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
-var mockery = require('mockery');
-var sinon = require('sinon');
+const mockery = require('mockery');
+const sinon = require('sinon');
 
-var GmailClient = require('../src/gmailClient.js');
+const GmailClient = require('../src/gmailClient.js');
 // var google = require('googleapis');
 // var googleAuth = require('google-auth-library');
 // var auth = new googleAuth();
 
 // Test data
-var nonPgpThread = require('./resources/nonPgpThread.json');
-var pgpThread = require('./resources/pgpThread.json');
-var pgpThreadNoParts = require('./resources/pgpThreadNoParts');
-var threadList = require('./resources/threadList.json');
+const nonPgpThread = require('./resources/nonPgpThread.json');
+const pgpThread = require('./resources/pgpThread.json');
+const pgpThreadNoParts = require('./resources/pgpThreadNoParts');
+const threadList = require('./resources/threadList.json');
 
 // var gmailStub = sinon.stub(google.gmail('v1'));
 // var googleStub = sinon.stub(google, 'gmail', function() {

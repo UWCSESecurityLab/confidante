@@ -1,8 +1,8 @@
 'use strict';
 
-var InboxDispatcher = require('../dispatcher/InboxDispatcher');
-var EventEmitter = require('events').EventEmitter;
-var assign = require('object-assign');
+const InboxDispatcher = require('../dispatcher/InboxDispatcher');
+const EventEmitter = require('events').EventEmitter;
+const assign = require('object-assign');
 
 var _replyAll = false;
 var _inReplyTo = {};
