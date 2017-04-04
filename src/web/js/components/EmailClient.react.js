@@ -11,6 +11,7 @@ var Inbox = require('./Inbox.react');
 var MessageStore = require('../stores/MessageStore.js');
 var RefreshButton = require('./RefreshButton.react');
 var ThreadScrollers = require('./ThreadScrollers.react');
+var KeybaseAPI = require('../keybaseAPI');
 
 import Toast, {notify} from 'react-notify-toast';
 

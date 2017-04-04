@@ -27,15 +27,6 @@ let Login = React.createClass({
     };
   },
 
-  componentDidMount: function() {
-    if (!flags.ELECTRON) {
-      if (KeybaseAPI.keybaseLoggedIn()) {
-        window.location.href = '/mail';
-      }
-    }
-
-  },
-
   login: function(e) {
     e.preventDefault();
     this.setState({ loading: true });

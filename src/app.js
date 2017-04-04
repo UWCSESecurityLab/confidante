@@ -109,7 +109,7 @@ app.get('/login', function(req, res) {
   });
 });
 
-app.get('/mail', auth.webEndpoint, function(req, res) {
+app.get('/mail', function(req, res) {
   res.render('mail', {
     toolname: flags.TOOLNAME,
     email: req.session.email,
