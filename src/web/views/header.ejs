@@ -45,18 +45,13 @@
 				<% } %>
 			</ul>
     	<ul class="nav navbar-nav navbar-right">
-				<% if (!loggedIn) { %>
-          <% if (electron) { %>
-            <li><a href="login.ejs">Log In</a></li>
-            <li><a href="signup.ejs">Sign Up</a></li>
-          <% } else { %>
-            <li><a href="/login">Log In</a></li>
-            <li><a href="/signup">Sign Up</a></li>
-          <% } %>
-				<% } else { %>
-          <li><a id="myEmail" href="#"><%= email %></a></li>
-					<li><a href="/logout">Log Out</a></li>
-				<% } %>
+        <% if (electron) { %>
+          <li><a href="login.ejs">Log In</a></li>
+          <li><a href="signup.ejs">Sign Up</a></li>
+        <% } else { %>
+          <li><a href="/login">Log In</a></li>
+          <li><a href="/signup">Sign Up</a></li>
+        <% } %>
       </ul>
     </div><!-- /.navbar-collapse -->
   </div><!-- /.container-fluid -->

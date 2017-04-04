@@ -78,7 +78,6 @@ if (!flags.PRODUCTION) {
 }
 app.get('/', function(req, res) {
   res.render('index', {
-    email: req.session.email,
     toolname: flags.TOOLNAME,
     loggedIn: auth.isAuthenticated(req.session),
     staging: flags.KEYBASE_STAGING,
@@ -90,7 +89,6 @@ app.get('/', function(req, res) {
 app.get('/help', function(req, res) {
   res.render('help', {
     toolname: flags.TOOLNAME,
-    email: req.session.email,
     loggedIn: auth.isAuthenticated(req.session),
     staging: flags.KEYBASE_STAGING,
     electron: false,
@@ -101,7 +99,6 @@ app.get('/help', function(req, res) {
 app.get('/login', function(req, res) {
   res.render('login', {
     toolname: flags.TOOLNAME,
-    email: req.session.email,
     loggedIn: false,
     staging: flags.KEYBASE_STAGING,
     electron: false,
