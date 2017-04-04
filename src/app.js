@@ -405,8 +405,19 @@ app.post('/keybase/login.json', function(req, res) {
 
     // Create a User record for this user if necessary.
     db.storeKeybaseCredentials(keybase).then(function() {
+      let sessionCookieString = null;
+      response.headers['set-cookie'].forEach((cookieString) => {
+        let cookie = Cookie.parse(cookieString);
+        if (cookie.session) {
+          sessionCookieString = cookieString;
+        }
+      });
+
       // Echo the response with the same status code on success.
-      res.status(response.statusCode).send(body);
+      // Attach the Keybase cookie as a custom header.
+      res.header('X-Keybase-Cookie', sessionCookieString)
+         .status(response.statusCode)
+         .send(body);
     }).catch(function(mongoError) {
       console.error(mongoError);
       req.session.destroy(function(sessionError) {
