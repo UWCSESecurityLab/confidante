@@ -8,7 +8,6 @@ const request = require('request');
 const Cookie = require('cookie');
 const URLSafeBase64 = require('urlsafe-base64');
 
-const mongoose = require('mongoose');
 const MongoSessionStore = require('connect-mongodb-session')(session);
 
 const crypto = require('crypto');
@@ -29,12 +28,6 @@ var store = new MongoSessionStore({
   collection: 'mySessions'
 });
 store.on('error', function(error) {
-  console.error('MongoDB error: ' + error);
-});
-
-// User store setup.
-mongoose.connect('mongodb://localhost/test');
-mongoose.connection.on('error', function(error) {
   console.error('MongoDB error: ' + error);
 });
 
@@ -377,50 +370,20 @@ app.post('/keybase/login.json', function(req, res) {
       return;
     }
 
-    // Save the user's id and Keybase cookies in their session.
-    req.session.keybaseId = keybase.me.id;
-    var parsedCookies = response.headers['set-cookie'].map(
-      function(cookie) {
-        return Cookie.parse(cookie);
-      }
-    );
-    req.session.keybaseCookie = parsedCookies.find(function(cookie) {
-      if (flags.KEYBASE_STAGING) {
-        return cookie.s0_session !== undefined;
-      } else {
-        return cookie.session !== undefined;
+    let sessionCookieString = null;
+    response.headers['set-cookie'].forEach((cookieString) => {
+      let cookie = Cookie.parse(cookieString);
+      if (cookie.session) {
+        sessionCookieString = cookieString;
       }
     });
 
-    // Save the CSRF token in the user's session.
-    req.session.keybaseCSRF = keybase.csrf_token;
-
-    // Create a User record for this user if necessary.
-    db.storeKeybaseCredentials(keybase).then(function() {
-      let sessionCookieString = null;
-      response.headers['set-cookie'].forEach((cookieString) => {
-        let cookie = Cookie.parse(cookieString);
-        if (cookie.session) {
-          sessionCookieString = cookieString;
-        }
-      });
-
-      // Echo the response with the same status code on success.
-      // Attach the Keybase cookie as a custom header.
-      res.header('X-Keybase-Cookie', sessionCookieString)
-         .status(response.statusCode)
-         .send(body);
-    }).catch(function(mongoError) {
-      console.error(mongoError);
-      req.session.destroy(function(sessionError) {
-        console.error(sessionError);
-        if (sessionError) {
-          res.status(500).send(sessionError + mongoError);
-        } else {
-          res.status(500).send(mongoError);
-        }
-      });
-    });
+    // Echo the response with the same status code on success.
+    // Attach the Keybase cookie as a custom header.
+    res
+      .header('X-Keybase-Cookie', sessionCookieString)
+      .status(response.statusCode)
+      .send(body);
   });
 });
 
@@ -454,10 +417,7 @@ app.post('/keybase/key/add.json', function(req, res) {
     method: 'POST',
     url: KEYBASE_URL + '/_/api/1.0/key/add.json',
     qs: req.query,
-    jar: getKeybaseCookieJar(req.session),
-    headers: {
-      'X-CSRF-Token': req.session.keybaseCSRF
-    }
+    jar: getKeybaseCookieJar(req),
   }, function(error, response, body) {
     if (error) {
       console.error(error);
@@ -468,15 +428,12 @@ app.post('/keybase/key/add.json', function(req, res) {
   });
 });
 
-app.get('/keybase/key/fetch.json', auth.dataEndpoint, function(req, res) {
+app.get('/keybase/key/fetch.json', function(req, res) {
   request({
     method: 'GET',
     url: KEYBASE_URL + '/_/api/1.0/key/fetch.json',
     qs: req.query,
-    jar: getKeybaseCookieJar(req.session),
-    headers: {
-      'X-CSRF-Token': req.session.keybaseCSRF
-    }
+    jar: getKeybaseCookieJar(req),
   }, function(error, response, body) {
     if (error) {
       console.error(error);
@@ -492,8 +449,7 @@ app.get('/logout', function(req, res) {
     request({
       method: 'POST',
       url: KEYBASE_URL + '/_/api/1.0/session/killall.json',
-      headers: { 'X-CSRF-Token': req.session.keybaseCSRF },
-      jar: getKeybaseCookieJar(req.session)
+      jar: getKeybaseCookieJar(req)
     }, function(error, response, body) {
       if (!error) {
         console.log(body);
@@ -531,14 +487,9 @@ module.exports = app; // For testing
  * @param session The Keymail session belonging to the Keybase user.
  * @return request.jar containing the session cookie.
  */
-function getKeybaseCookieJar(session) {
+function getKeybaseCookieJar(req) {
   let cookieJar = request.jar();
-  let cookieString;
-  if (flags.KEYBASE_STAGING) {
-    cookieString = 's0_session=' + session.keybaseCookie.s0_session;
-  } else {
-    cookieString = 'session=' +  session.keybaseCookie.session;
-  }
+  let cookieString = req.headers['x-keybase-cookie'];
   cookieJar.setCookie(cookieString, KEYBASE_URL);
   return cookieJar;
 }
