@@ -57,6 +57,7 @@ app.use(express.static(__dirname + '/web/js'));
 app.use(express.static(__dirname + '/web/html'));
 app.use(express.static(__dirname + '/web/css'));
 app.use(express.static(__dirname + '/web/img'));
+app.use('/releases', express.static('../releases'));
 
 let KEYBASE_URL;
 if (flags.KEYBASE_STAGING) {
