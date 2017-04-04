@@ -383,6 +383,13 @@ class KeybaseAPI {
     var p3skbObj = purepack.unpack(buf);
     return p3skbObj;
   }
+
+  static keybaseLoggedIn() {
+    // TODO: Make this more sophisticated (expiry checking, etc.)
+    return localStorage.getItem('keybaseCookie') && 
+           localStorage.getItem('keybase') &&
+           localStorage.getItem('keybaseCSRFToken');
+  }
 }
 
 class KeyFetcher extends kbpgp.KeyFetcher {
@@ -508,5 +515,6 @@ function storeKeybaseCookie(error, response, body) {
   let cookie = response.headers['x-keybase-cookie'];
   localStorage.setItem('keybaseCookie', cookie);
 }
+
 
 module.exports = KeybaseAPI;
