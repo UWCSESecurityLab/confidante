@@ -1,4 +1,5 @@
 gen/
+dist/
 node_modules/
 src/web/*/3rdparty
 

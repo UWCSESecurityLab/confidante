@@ -24,6 +24,13 @@ Now, when you're ready to code, run these commands in separate terminal tabs:
 - `$ scripts/watchify.sh`
 - `$ nodemon src/app.js`
 
+## How to build the Electron app ##
+1. Run `$ npm run build:electron` to build the Electron version of the JavaScript bundles.
+2. If you're just running Electron for development, you can run it directly using `$ npm run electron`.
+3. Run `$ npm run build:package` to build executables that include Electron and packages all of the code. This only builds it for the platform you're running the script on.
+4. Run `$ npm run build:installer-win` to build an installer for Windows. Only works on a Windows machine.
+
+
 ## Helpful Links ##
 - [Design doc](https://docs.google.com/document/d/1RI3u0mPXgB4KFMkguWHM1jwJWKDkNSyGjohBZ2ScaVU/edit)
 - [Slack](https://keymail-uw.slack.com/)

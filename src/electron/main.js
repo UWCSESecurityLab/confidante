@@ -9,6 +9,10 @@ const GoogleOAuth = require('../googleOAuth.js');
 const getPort = require('get-port');
 const http = require('http');
 
+if (require('electron-squirrel-startup')) {
+  return;
+}
+
 const config = new Config();
 
 const locals = {
