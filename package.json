@@ -1,16 +1,18 @@
 {
-  "name": "keymail",
+  "name": "Confidante",
   "version": "0.5.9",
   "license": "UNLICENSED",
   "description": "Usable encrypted email",
+  "author": "University of Washington Security and Privacy Lab",
   "main": "./src/electron/main.js",
   "scripts": {
     "build": "./scripts/build.sh",
-    "build-electron": "node scripts/build-electron.js",
+    "build:electron": "node scripts/build-electron.js",
+    "build:package": "node scripts/build-package.js",
+    "build:installer-win": "node scripts/build-installer-win.js",
     "clean": "./scripts/clean.sh",
     "electron": "electron .",
     "lint": "eslint src/* || true",
-    "package": "node scripts/build-package.js",
     "prod-build": "./scripts/prod-build.sh",
     "postinstall": "./scripts/postinstall.sh",
     "test": "mocha"
@@ -18,7 +20,6 @@
   "browser": {
     "request": "xhr"
   },
-  "author": "Eric Zeng",
   "dependencies": {
     "@tappleby/react-typeahead-component": "^0.10.0-alpha2",
     "address-rfc2822": "^1.0.0",
@@ -31,6 +32,7 @@
     "ejs": "^2.3.4",
     "ejs-electron": "github:eric-zeng/ejs-electron",
     "electron-config": "^0.2.1",
+    "electron-squirrel-startup": "^1.0.0",
     "email-validator": "^1.0.7",
     "express": "^4.13.3",
     "express-session": "^1.11.3",
@@ -64,6 +66,7 @@
     "chai-as-promised": "^5.1.0",
     "electron-packager": "^8.6.0",
     "electron-prebuilt": "^1.2.8",
+    "electron-winstaller": "^2.5.2",
     "envify": "^4.0.0",
     "eslint": "^2.13.1",
     "eslint-plugin-react": "^5.2.2",

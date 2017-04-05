@@ -1,6 +1,8 @@
 const build = require('./build-utils');
 const fs = require('fs');
 
+console.log('Compiling JavaScript bundles for Electron...');
+
 if (!fs.existsSync('gen')){
   fs.mkdirSync('gen');
 }
