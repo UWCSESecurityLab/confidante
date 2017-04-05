@@ -1,6 +1,5 @@
 'use strict';
 const express = require('express');
-const fs = require('fs');
 const compression = require('compression');
 const bodyParser = require('body-parser');
 const request = require('request');
@@ -221,6 +220,7 @@ app.post('/keybase/signup.json', function(req, res) {
   });
 });
 
+// TODO: This might not work without passing through the CSRF token.
 app.post('/keybase/key/add.json', function(req, res) {
   request({
     method: 'POST',
@@ -265,18 +265,6 @@ app.get('/logout', function(req, res) {
     } else {
       console.error('Failed to kill sessions: ' + error);
     }
-  });
-});
-
-app.get('/log/console', function(req, res) {
-  fs.readFile('console.log', (err, data) => {
-    res.send(data.toString().split('\n').join('<br/>'));
-  });
-});
-
-app.get('/log/error', function(req, res) {
-  fs.readFile('error.log', (err, data) => {
-    res.send(data.toString().split('\n').join('<br/>'));
   });
 });
 
