@@ -3,7 +3,7 @@
   "version": "0.5.9",
   "license": "UNLICENSED",
   "description": "Usable encrypted email",
-  "author": "University of Washington Security and Privacy Lab",
+  "author": "UW CSE Security and Privacy Lab",
   "main": "./src/electron/main.js",
   "scripts": {
     "build": "./scripts/build.sh",

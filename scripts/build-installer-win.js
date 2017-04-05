@@ -11,8 +11,8 @@ if (!fs.existsSync('dist/Confidante-win32-x64')){
 installer.createWindowsInstaller({
   appDirectory: 'dist/Confidante-win32-x64',
   outputDirectory: 'dist/Confidante-win32-installer',
-  authors: 'UW Security and Privacy Lab',
-  owners: 'UW Security and Privacy Lab',
+  authors: 'UW CSE Security and Privacy Lab',
+  owners: 'UW CSE Security and Privacy Lab',
   exe: 'Confidante.exe',
   description: 'Usable encrypted email, with Keybase',
   version: package.version,

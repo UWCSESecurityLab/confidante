@@ -20,7 +20,7 @@ packager({
   asar: true,
   name: 'Confidante',
   win32metadata: {
-    CompanyName: 'UW Security and Privacy Lab',
+    CompanyName: 'UW CSE Security and Privacy Lab',
     FileDescription: 'Usable Encrypted Email',
     OriginalFilename: 'Confidante.exe',
     ProductName: 'Confidante',
