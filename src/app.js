@@ -2,32 +2,21 @@
 const express = require('express');
 const fs = require('fs');
 const compression = require('compression');
-const session = require('express-session');
 const bodyParser = require('body-parser');
 const request = require('request');
 const Cookie = require('cookie');
 const URLSafeBase64 = require('urlsafe-base64');
 
-const MongoSessionStore = require('connect-mongodb-session')(session);
-
 const crypto = require('crypto');
 const p3skb = require('./p3skb');
 const pgp = require('./pgp.js');
 
-const flags = require('./flags.js');
 const GoogleOAuth = require('./googleOAuth.js');
 const GmailClient = require('./gmailClient.js');
 
 const version = require('../package.json').version;
 
-// Mongo session store setup.
-var store = new MongoSessionStore({
-  uri: 'mongodb://localhost:27017/test',
-  collection: 'mySessions'
-});
-store.on('error', function(error) {
-  console.error('MongoDB error: ' + error);
-});
+const flags = require('./flags.js');
 
 // Configure Express
 var app = express();
@@ -37,12 +26,6 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(compression());
-app.use(session({
-  secret: 'keyboard cat',
-  resave: false,
-  saveUninitialized: false,
-  store: store
-}));
 
 app.use(express.static('gen'));
 app.use('/fonts', express.static(__dirname + '/web/fonts/3rdparty'));
@@ -117,122 +100,18 @@ app.get('/signup', function(req, res) {
   });
 });
 
-/**
- * Part 1 of 2 in sending an invite to a non-Keymail user.
- * The inviter calls this endpoint to get a temporary public key for the
- * invitee. They should encrypt the invite message on their end, and then
- * call /invite/sendInvite.
- *
- * The request query should contain 'recipient=<invitee's email address>'.
- * The response body contains a JSON object containing the invite id,
- * and the public key. When calling /invite/sendInvite, pass back the invite id.
- */
 app.get('/invite/getKey', function(req, res) {
   if (flags.PRODUCTION) {
     res.status(404).send('404 Invites currently disabled');
     return;
   }
-
-  let recipient = req.query.recipient;
-  if (!recipient) {
-    res.status(500).send('No recipient provided');
-    return;
-  }
-
-  // Get a random code to encrypt the temporary private key
-  let passphrase = URLSafeBase64.encode(crypto.randomBytes(64));
-  // Store in the session, until /invite/sendInvite is sent
-  req.session.tempPassphrase = passphrase;
-
-  // Given an object containing a key pair, replace the private key with
-  // a p3skb-encrypted string
-  let encryptPrivateKey = function(keys) {
-    return new Promise((resolve, reject) => {
-      p3skb.armoredPrivateKeyToP3skb(keys.privateKey, passphrase)
-        .then(encryptedKey => {
-          resolve({publicKey: keys.publicKey, privateKey: encryptedKey});
-        }).catch(err => reject(err));
-    });
-  };
-
-  pgp.generateArmoredKeyPair(recipient)
-    .then(encryptPrivateKey)
-    .then(keys => db.storeInviteKeys(recipient, keys))
-    .then(record => {
-      res.json({ inviteId: record._id, publicKey: record.pgp.public_key });
-    })
-    .catch(err => {
-      console.error(err);
-      res.status(500).send(err);
-    });
 });
 
-/**
- * Sends an invite to a non-Keymail user. The client should provide a JSON
- * object containing 'message', 'inviteId', and 'subject'.
- */
 app.post('/invite/sendInvite', function(req, res) {
   if (flags.PRODUCTION) {
     res.status(404).send('404 Invites currently disabled');
     return;
   }
-
-  if (!req.session.tempPassphrase || !req.body.inviteId || !req.body.message || !req.body.subject) {
-    res.status(400).send('Bad request');
-    return;
-  }
-
-  // Save the encrypted message in the invite model.
-  let addMessageToInvite = function(invite) {
-    return new Promise(function(resolve, reject) {
-      invite.message = req.body.message;
-      invite.subject = req.body.subject;
-      invite.sender = req.session.email;
-      invite.sent = new Date();
-      invite.save(function(err) {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(invite);
-        }
-      });
-    });
-  };
-
-  // Add an invite link to the message and send it over gmail.
-  let sendMessage = function(invite) {
-    let inviteUrl = HOSTNAME + '/invite?' +
-        'id=' + req.body.inviteId + '&' +
-        'pw=' + req.session.tempPassphrase;
-    let inviteEmail = '<p>' + req.session.email +
-        ' wants to send you an encrypted email through ' + flags.TOOLNAME +'! ' +
-        'View the email at this link:</p>' +
-        '<p><a href="' + inviteUrl + '">' + inviteUrl + '<a></p>\n\n' +
-        '<pre>' + req.body.message + '</pre>';
-
-    let gmailClient = new GmailClient(req.session.googleToken);
-    return gmailClient.sendMessage({
-      headers: {
-        to: [invite.recipient],
-        from: req.session.email,
-        subject: req.body.subject,
-        date: new Date().toString(),
-        contentType: 'text/html; charset=utf-8'
-      },
-      body: inviteEmail
-    });
-  };
-
-  db.getInvite(req.body.inviteId)
-    .then(addMessageToInvite)
-    .then(sendMessage)
-    .then(function() {
-      delete req.session.tempPassphrase;
-      res.status(200).send('OK');
-    }).catch(function(err) {
-      console.error(err);
-      res.status(500).send(err);
-    });
 });
 
 app.get('/invite/viewInvite', function(req, res) {
@@ -240,30 +119,6 @@ app.get('/invite/viewInvite', function(req, res) {
     res.status(404).send('404 Invites currently disabled');
     return;
   }
-
-  if (!req.query.id) {
-    res.status(400).send('Bad Request');
-    return;
-  }
-
-  // Look up invite
-  db.getInvite(req.query.id).then(function(invite) {
-    if (invite) {
-      // Return page, invite, and encrypted message
-      res.json({
-        staging: flags.KEYBASE_STAGING,
-        expires: invite.expires.toString(),
-        key: invite.pgp.private_key,
-        message: invite.message,
-        sender: invite.sender,
-        sent: invite.sent.toString(),
-        subject: invite.subject
-      });
-    }
-  }).catch(function(err) {
-    console.error(err);
-    res.status(500).send(err);
-  });
 });
 
 app.get('/invite', function(req, res) {
@@ -271,18 +126,6 @@ app.get('/invite', function(req, res) {
     res.status(404).send('404 Invites currently disabled');
     return;
   }
-
-  if (!req.query.id || !req.query.pw) {
-    res.status(404).send('Not Found');
-    return;
-  }
-
-  res.render('invite', {
-    toolname: flags.TOOLNAME,
-    loggedIn: false,
-    staging: flags.KEYBASE_STAGING,
-    electron: false
-  });
 });
 
 /**
