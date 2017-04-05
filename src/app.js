@@ -21,6 +21,8 @@ var flags = require('./flags.js');
 var GoogleOAuth = require('./googleOAuth.js');
 var GmailClient = require('./gmailClient.js');
 
+const version = require('../package.json').version;
+
 // Mongo session store setup.
 var store = new MongoSessionStore({
   uri: 'mongodb://localhost:27017/test',
@@ -80,7 +82,8 @@ app.get('/', function(req, res) {
     toolname: flags.TOOLNAME,
     loggedIn: auth.isAuthenticated(req.session),
     staging: flags.KEYBASE_STAGING,
-    electron: false
+    electron: false,
+    version: version
   });
 });
 
@@ -90,7 +93,8 @@ app.get('/help', function(req, res) {
     email: req.session.email,
     loggedIn: auth.isAuthenticated(req.session),
     staging: flags.KEYBASE_STAGING,
-    electron: false
+    electron: false,
+    version: version
   });
 });
 
@@ -103,7 +107,8 @@ app.get('/login', function(req, res) {
       email: req.session.email,
       loggedIn: false,
       staging: flags.KEYBASE_STAGING,
-      electron: false
+      electron: false,
+      version: version
     });
   }
 });
@@ -114,7 +119,8 @@ app.get('/mail', auth.webEndpoint, function(req, res) {
     email: req.session.email,
     loggedIn: true,
     staging: flags.KEYBASE_STAGING,
-    electron: false
+    electron: false,
+    version: version
   });
 });
 
@@ -123,7 +129,8 @@ app.get('/signup', function(req, res) {
     toolname: flags.TOOLNAME,
     loggedIn: false,
     staging: flags.KEYBASE_STAGING,
-    electron: false
+    electron: false,
+    version: flags.VERSION
   });
 });
 

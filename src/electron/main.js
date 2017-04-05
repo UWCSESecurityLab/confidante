@@ -9,6 +9,8 @@ const GoogleOAuth = require('../googleOAuth.js');
 const getPort = require('get-port');
 const http = require('http');
 
+const version = require('../../package.json').version;
+
 if (require('electron-squirrel-startup')) {
   return;
 }
@@ -20,7 +22,8 @@ const locals = {
   staging: false,
   email: 'EMAIL',
   loggedIn: false,
-  electron: true
+  electron: true,
+  version: version
 };
 
 ejse.setOptions(locals);
