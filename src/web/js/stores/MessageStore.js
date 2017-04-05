@@ -388,7 +388,9 @@ if (flags.ELECTRON) {
       _token = arg;                               // Update store token
       _gmail.setToken(_token.access_token);       // Update GmailClient's token
       onTokenExpiry(_token.expires - Date.now());  // Reset the timeout
-      MessageStore.emitChange();
+      if (_globalError.name === 'AuthError') {
+        MessageStore.updateGlobalError(null);
+      }
     } else {
       MessageStore.updateGlobalError(new AuthError('Refresh failed'));
     }
