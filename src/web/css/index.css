@@ -1,0 +1,114 @@
+/**
+ * Styles for the home page
+ */
+@font-face {
+  font-family: 'RobotoRegular';
+  src: url("../fonts/Roboto/Roboto-Regular.ttf");
+}
+
+@font-face {
+  font-family: 'RobotoLight';
+  src: url("../fonts/Roboto/Roboto-Light.ttf");
+}
+
+@font-face {
+  font-family: 'RobotoMedium';
+  src: url("../fonts/Roboto/Roboto-Medium.ttf");
+}
+
+body {
+  font-family: 'RobotoRegular';
+}
+
+section {
+  padding: 32px 20px 32px 20px;
+}
+
+p {
+  font-size: 12pt;
+}
+
+h1 {
+ font-size: 48pt;
+ font-family: 'RobotoLight';
+}
+
+h2 {
+  font-size: 28pt;
+  font-family: 'RobotoLight';
+}
+
+/* Intro section*/
+#intro {
+  background-color: #396cc2;
+  color: #ffffff;
+}
+
+#intro-flex {
+  display: flex;
+  justify-content: space-around;
+}
+
+#summary {
+  background-color: #f2f2f2;
+}
+
+#screenshots {
+  margin: 0 auto 20px auto;
+  text-align: center;
+}
+
+.screenshot {
+  width: 500px;
+  border: 1px solid #bababa;
+}
+
+@media all and (max-width: 450px) {
+  .screenshot {
+    width: 300px;
+    margin-bottom: 10px;
+  }
+}
+
+/* Download section */
+#download {
+  background-color: #5b904e;
+  color: #ffffff;
+}
+
+#download-buttons {
+  display: flex;
+  margin-bottom: 16px;
+}
+
+.download-btn {
+  margin-right: 10px;
+}
+
+#warning {
+  background: #fff5ab;
+  color: #383838;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid #e8b90c;
+}
+
+#warning-title {
+  color: red;
+  font-weight: bold;
+  font-family: 'RobotoMedium';
+}
+
+#warning-risk {
+  font-size: 14pt;
+  font-family: 'RobotoMedium';
+}
+
+/* Acknowledgments/footer section */
+#acknowledgments {
+
+}
+
+.footer-logo {
+  margin: 10px;
+}

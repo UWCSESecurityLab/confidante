@@ -8,50 +8,21 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-			<% if (!loggedIn) { %>
-        <% if (electron) { %>
-          <a class="navbar-brand" href="index.ejs">
-        <% } else { %>
-          <a class="navbar-brand" href="/">
-        <% } %>
-			<% } else { %>
-        <% if (electron) { %>
-          <a class="navbar-brand" href="mail.ejs">
-        <% } else { %>
-          <a class="navbar-brand" href="/mail">
-        <% } %>
-			<% } %>
-      <% if (!staging) { %>
-        <%= toolname %>
-      <% } else { %>
-        <!-- This sub element is used to tell KeybaseAPI whether it should
-             access Keybase stage0 or not. Don't remove unless you propagate it
-             some other way! -->
-        <%= toolname %><sub id="staging"> Staging</sub>
-      <% } %>
-      </a>
+      <a class="navbar-brand" href="/">Confidante</a>
     </div>
 		<!-- Collect the nav links, forms, and other content for toggling -->
 		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 			<ul class="nav navbar-nav">
-				<% if (loggedIn) { %>
-          <% if (electron) { %>
-            <li><a href="mail.ejs">Inbox</a></li>
-            <li><a href="help.ejs" target="_blank">Help</a></li>
-          <% } else { %>
-            <li><a href="/mail">Inbox</a></li>
-            <li><a href="/help" target="_blank">Help</a></li>
-          <% } %>
-				<% } %>
+        <li><a href="/">Home</a></li>
+        <li><a href="/about">About</a></li>
+        <li><a href="/contact">Contact Us</a></li>
 			</ul>
     	<ul class="nav navbar-nav navbar-right">
-        <% if (electron) { %>
-          <li><a href="login.ejs">Log In</a></li>
-          <li><a href="signup.ejs">Sign Up</a></li>
-        <% } else { %>
-          <li><a href="/login">Log In</a></li>
-          <li><a href="/signup">Sign Up</a></li>
-        <% } %>
+        <li>
+          <span class="navbar-btn">
+            <a type="button" class="btn btn-success navbar-btn" href="/login">Log In</a>
+          <span>
+        </li>
       </ul>
     </div><!-- /.navbar-collapse -->
   </div><!-- /.container-fluid -->

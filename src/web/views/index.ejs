@@ -3,87 +3,111 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-	<title><%= toolname %></title>
-  <% if (electron) { %>
-    <link rel="stylesheet" type="text/css" href="../css/footer.css">
-  <% } else { %>
-    <link rel="stylesheet" type="text/css" href="footer.css">
-  <% } %>
-	<%- include('includeBootstrap'); %>
+	<title>Confidante</title>
+  <%- include('includeBootstrap'); %>
+  <link rel="stylesheet" type="text/css" href="index.css">
+  <link rel="stylesheet" type="text/css" href="header.css">
+  <link rel="stylesheet" type="text/css" href="footer.css">
 </head>
 <body>
-	<%- include('header', { loggedIn: loggedIn }); %>
-	<div class="container">
-		<div class="jumbotron">
-			<h1><%= toolname %></h1>
-			<p>
-				Securely send encrypted emails straight from the browser.
-				All you need to get started is a <a href="https://keybase.io/">Keybase</a> account
-				and <a href="https://mail.google.com/">Gmail</a> account!
-			</p>
+	<%- include('header'); %>
+  <section id="intro">
+    <div class="container">
+      <h1>Confidante</h1>
+      <h2>Usable Encrypted Email</h2>
+      <!--<div id="intro-flex">
+        <div><h4>Send email from your Gmail account</h4></div>
+        <div><h4>Encrypt with Keybase</h4></div>
+        <div><h4>Easy to use <br/> no expertise needed</h4></div>
+      </div> !-->
+    </div>
+  </section>
 
-			<p>
-				<% if (loggedIn) { %>
-          <% if (electron) { %>
-            <a class="btn btn-primary" href="mail.ejs" role="button">Go to Inbox</a>
-          <% } else { %>
-            <a class="btn btn-primary" href="/mail" role="button">Go to Inbox</a>
-          <% } %>
-				<% } else { %>
-          <% if (electron) { %>
-            <a class="btn btn-success" href="signup.ejs" role="button">Create Account</a>
-            <a class="btn btn-primary" href="login.ejs" role="button">Log In</a>
-          <% } else { %>
-            <a class="btn btn-success" href="/signup" role="button">Create Account</a>
-            <a class="btn btn-primary" href="/login" role="button">Log In</a>
-          <% } %>
-				<% } %>
-			</p>
-      <a class="btn btn-primary" href="/releases/Confidante-darwin-x64.zip">Download for MacOS</a>
-		</div>
-    <div class="row">
-      <div class="col-md-6">
-        <h2>How does it work?</h2>
-        <p>
-          <%= toolname %> is a browser based end-to-end encrypted email client. It uses
-          your Gmail account to send and receive messages, and uses Keybase to
-          store your private keys and look up public keys.
-        </p>
-        <p>
-          When you log into your <%= toolname %> inbox, your browser gets your private key
-          from Keybase, and your encrypted emails from Gmail. Then, it
-          automatically decrypts all of the messages.
-        </p>
-        <p>
-          When you send an email, you find the recipients on Keybase using their
-          name, username, or any of their linked accounts (Twitter, Github, etc).
-          Then, <%= toolname %> looks up their public keys, encrypts the message
-          in the browser, and sends it through Gmail.
-        </p>
+  <section id="summary">
+    <div class="container">
+      <div id="screenshots">
+        <a href="compose_screen.png" target="_blank"><img src="compose_screen.png" class="screenshot"/></a>
+        <a href="message_screen.png" target="_blank"><img src="message_screen.png" class="screenshot"/></a>
       </div>
-      <div class="col-md-6">
-        <h2>Is it secure?</h2>
+      <p>
+        Confidante is an end-to-end encrypted email client. Our goal in building
+        Confidante was to provide strong security properties and make it easy to
+        use. We tested the first version of Confidante with journalists and
+        lawyers (read the research paper
+        <a href="http://www.franziroesner.com/pdf/confidante-eurosp17.pdf" target="_blank">here</a>),
+        and now we’d like you to try it out and help us improve it!
+      </p>
+      <p>
+        Confidante is built on top of <a href="https://google.com/gmail" target="_blank">Gmail</a>
+        and <a href="https://keybase.io" target="_blank">Keybase</a>. It uses your Gmail
+        account to send and receive messages, and uses Keybase to store your
+        private keys and look up public keys. Emails are automatically encrypted
+        and decrypted in the Confidante client; neither Gmail nor Confidante’s
+        servers can access the unencrypted versions of your emails.
+      </p>
+      <button class="btn btn-primary" href="/about">Read More</button>
+    </div>
+  </section>
+
+  <section id="download">
+    <div class="container">
+      <h2>Try Confidante</h2>
+      <div id="download-buttons">
+        <a class="btn btn-success download-btn" href="/login">
+          <h4>Web Demo</h4>
+          Desktop and Mobile
+        </a>
+        <a class="btn btn-success download-btn" href="/releases/Confidante-darwin-x64.zip">
+          <h4>Download</h4>
+          macOS 10.9 and later (x64)
+        </a>
+        <a class="btn btn-success download-btn" href="/releases/ConfidanteSetup.exe">
+          <h4>Download</h4>
+          Windows 7 and later (x64)
+        </a>
+      </div>
+      <div id="warning">
+        <h4 id="warning-title">Important!</h4>
         <p>
-          Yes!
+          Confidante is a research project, which we have released for
+          beta-testing and community evaluation. Though Confidante aims to
+          provide the security properties described below, this beta version may
+          contain bugs or other errors.
+        <p>
+        <p id="warning-risk">
+            Please use Confidante only at your own risk.
         </p>
-        <ul>
-          <li>
-            <%= toolname %> doesn't store any of your personal information or login
-            credentials on our servers.
-          </li>
-          <li><%= toolname %> uses OAuth to access your messages from Gmail.</li>
-          <li>
-            Your Keybase password is hashed in the browser, before sending it
-            over the network.
-          </li>
-          <li>
-            All emails are encrypted and decrypted in the browser using the
-            kbpgp library.
-          </li>
-        </ul>
+        <p>
+          And please give us feedback!
+        </p>
       </div>
     </div>
-	</div>
+  </section>
+
+  <section id="acknowledgments">
+    <div class="container">
+      <h2>Acknowledgments</h2>
+      <p>
+        Confidante was created and is maintained by
+        <a href="https://homes.cs.washington.edu/~lerner/">Ada Lerner</a>,
+        <a href="https://homes.cs.washington.edu/~ericzeng/">Eric Zeng</a>,
+        Mitali Palekar,
+        and <a href="http://franziroesner.com/">Franziska Roesner</a>,
+        as a research project of the
+        <a href="https://www.cs.washington.edu/">Paul G. Allen School of Computer Science &amp; Engineering</a>
+        at the University of Washington.
+      </p>
+      <p>
+        This project is funded in part by the
+        <a href="https://www.nsf.gov/">National Science Foundation</a>
+        under Awards CNS-1463968 and CNS-1513575.
+      </p>
+      <br/>
+      <a href="https://www.cs.washington.edu"><img src="allen_school.png" class="footer-logo" width="300"/></a>
+      <a href="http://seclab.cs.washington.edu"><img src="seclab.png" class="footer-logo" width="290"/></a>
+    </div>
+  </section>
+
   <%- include('footer', {version: version}); %>
 </body>
 </html>

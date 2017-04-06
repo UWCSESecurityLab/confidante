@@ -22,7 +22,8 @@ app.use(bodyParser.json());
 app.use(compression());
 
 app.use(express.static('gen'));
-app.use('/fonts', express.static(__dirname + '/web/fonts/3rdparty'));
+app.use('/fonts', express.static(__dirname + '/web/fonts'));
+
 app.use(express.static(__dirname + '/web/js'));
 app.use(express.static(__dirname + '/web/html'));
 app.use(express.static(__dirname + '/web/css'));
