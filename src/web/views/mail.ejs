@@ -25,12 +25,11 @@
   <% } %>
   <title>Inbox - <%= toolname %></title>
   <script type="application/json" id="server-vars">
-    <%- JSON.stringify({ toolname: toolname, email: email, staging: staging}) %>
+    <%- JSON.stringify({ toolname: toolname, staging: staging}) %>
   </script>
 </head>
 <body>
   <div id="app">
-    <%- include('header', { toolname: toolname, email: email, loggedIn: loggedIn, staging: staging }); %>
     <div class="container">
       <div>
         <span class="spinner" id="spinner" aria-hidden="true"></span>

@@ -1,8 +1,8 @@
 'use strict';
 
-var React = require('react');
-var ReactDOM = require('react-dom');
-var SignupClient = require('./components/SignupClient.react');
+const React = require('react');
+const ReactDOM = require('react-dom');
+const SignupClient = require('./components/SignupClient.react');
 
 let serverVars = JSON.parse(document.getElementById('server-vars').innerHTML);
 

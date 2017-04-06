@@ -1,8 +1,8 @@
 'use strict';
 
-var React = require('react');
-var KeybaseAPI = require('../keybaseAPI.js');
-var pgp = require('../../../pgp.js');
+const React = require('react');
+const KeybaseAPI = require('../keybaseAPI.js');
+const pgp = require('../../../pgp.js');
 
 /**
  * The SignupClient is the top level React class that manages signing up for

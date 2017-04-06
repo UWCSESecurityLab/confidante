@@ -1,11 +1,11 @@
 'use strict';
 
-var React = require('react');
-var DateFormat = require('dateformat');
-var InboxActions = require('../actions/InboxActions.js');
-var MessageStore = require('../stores/MessageStore');
-var messageParsing = require('../messageParsing');
-var Thread = require('./Thread.react');
+const React = require('react');
+const DateFormat = require('dateformat');
+const InboxActions = require('../actions/InboxActions.js');
+const MessageStore = require('../stores/MessageStore');
+const messageParsing = require('../messageParsing');
+const Thread = require('./Thread.react');
 
 /**
  * A thread snippet is a preview of the email, which is displayed in the inbox

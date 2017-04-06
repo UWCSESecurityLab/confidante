@@ -1,9 +1,9 @@
 'use strict';
 
-var purepack = require('purepack');
-var triplesec = require('triplesec');
-var pgpUtils = require('pgp-utils').armor;
-var crypto = require('crypto');
+const purepack = require('purepack');
+const triplesec = require('triplesec');
+const pgpUtils = require('pgp-utils').armor;
+const crypto = require('crypto');
 
 function checkP3SKBHash(json) {
   // Check the hash

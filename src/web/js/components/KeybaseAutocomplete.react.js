@@ -1,10 +1,10 @@
 'use strict';
 
-var React = require('react');
-var AutocompleteStore = require('../stores/AutocompleteStore');
-var InboxActions = require('../actions/InboxActions');
-var KeybaseCard = require('./KeybaseCard.react');
-var Typeahead = require('@tappleby/react-typeahead-component');
+const React = require('react');
+const AutocompleteStore = require('../stores/AutocompleteStore');
+const InboxActions = require('../actions/InboxActions');
+const KeybaseCard = require('./KeybaseCard.react');
+const Typeahead = require('@tappleby/react-typeahead-component');
 
 var KeybaseAutocomplete = React.createClass({
   propTypes: {

@@ -1,7 +1,7 @@
 'use strict';
 
-var React = require('react');
-var InboxActions = require('../actions/InboxActions');
+const React = require('react');
+const InboxActions = require('../actions/InboxActions');
 
 /**
  * The invite button opens the compose UI to write an invite email.

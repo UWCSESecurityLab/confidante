@@ -1,6 +1,6 @@
 'use strict';
-var React = require('react');
-var InviteClient = require('./components/InviteClient.react');
-var ReactDOM = require('react-dom');
+const React = require('react');
+const InviteClient = require('./components/InviteClient.react');
+const ReactDOM = require('react-dom');
 
 ReactDOM.render(<InviteClient/>, document.getElementById('app'));

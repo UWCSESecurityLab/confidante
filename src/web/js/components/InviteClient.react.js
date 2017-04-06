@@ -1,9 +1,9 @@
 'use strict';
 
-var React = require('react');
-var KeybaseAPI = require('../keybaseAPI.js');
-var p3skb = require('../../../p3skb.js');
-var xhr = require('xhr');
+const React = require('react');
+const KeybaseAPI = require('../keybaseAPI.js');
+const p3skb = require('../../../p3skb.js');
+const xhr = require('xhr');
 
 var InviteClient = React.createClass({
   getInitialState: function() {

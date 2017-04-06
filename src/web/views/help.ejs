@@ -1,4 +1,3 @@
-          <!-- <li><a id="myEmail" href="#"><%= email %></a></li> -->
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -8,7 +7,7 @@
     <%- include('includeBootstrap'); %>
   </head>
   <body>
-    <%- include('header', { email: email, loggedIn: loggedIn }); %>
+    <%- include('header', { loggedIn: loggedIn }); %>
     <div class="container">
       <div class="jumbotron">
         <h1><%= toolname %></h1>
@@ -24,7 +23,7 @@
             talking to know what is being said. This is called <b>End-to-End</b> encryption.
             </p>
             <p>
-            When you use <%= toolname %>, you send and receiv email to and from your regular
+            When you use <%= toolname %>, you send and receive email to and from your regular
             email address. It's just an email client that helps you encrypt those emails to
             keep them private. If you want to know more of the technical details behind
             <%= toolname %>, read the <a href="#security">Security</a> section below.

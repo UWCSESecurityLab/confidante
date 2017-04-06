@@ -11,6 +11,13 @@ class AuthError extends Error {
   }
 }
 
+class KeybaseError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'KeybaseError';
+  }
+}
+
 class InputError extends Error {
   constructor(message) {
     super(message);
@@ -35,6 +42,7 @@ class UnsupportedError extends Error {
 module.exports = {
   AuthError: AuthError,
   InputError: InputError,
+  KeybaseError: KeybaseError,
   NetworkError: NetworkError,
   UnsupportedError: UnsupportedError
 };

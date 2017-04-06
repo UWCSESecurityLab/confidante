@@ -1,42 +1,16 @@
 'use strict';
-var express = require('express');
-var fs = require('fs');
-var compression = require('compression');
-var session = require('express-session');
-var bodyParser = require('body-parser');
-var request = require('request');
-var Cookie = require('cookie');
-var URLSafeBase64 = require('urlsafe-base64');
+const express = require('express');
+const compression = require('compression');
+const bodyParser = require('body-parser');
+const request = require('request');
+const Cookie = require('cookie');
 
-var mongoose = require('mongoose');
-var MongoSessionStore = require('connect-mongodb-session')(session);
-
-var crypto = require('crypto');
-var p3skb = require('./p3skb');
-var pgp = require('./pgp.js');
-
-var auth = require('./auth.js');
-var db = require('./db.js');
-var flags = require('./flags.js');
-var GoogleOAuth = require('./googleOAuth.js');
-var GmailClient = require('./gmailClient.js');
+const GoogleOAuth = require('./googleOAuth.js');
+const GmailClient = require('./gmailClient.js');
 
 const version = require('../package.json').version;
 
-// Mongo session store setup.
-var store = new MongoSessionStore({
-  uri: 'mongodb://localhost:27017/test',
-  collection: 'mySessions'
-});
-store.on('error', function(error) {
-  console.error('MongoDB error: ' + error);
-});
-
-// User store setup.
-mongoose.connect('mongodb://localhost/test');
-mongoose.connection.on('error', function(error) {
-  console.error('MongoDB error: ' + error);
-});
+const flags = require('./flags.js');
 
 // Configure Express
 var app = express();
@@ -46,12 +20,6 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(compression());
-app.use(session({
-  secret: 'keyboard cat',
-  resave: false,
-  saveUninitialized: false,
-  store: store
-}));
 
 app.use(express.static('gen'));
 app.use('/fonts', express.static(__dirname + '/web/fonts/3rdparty'));
@@ -78,9 +46,8 @@ if (!flags.PRODUCTION) {
 }
 app.get('/', function(req, res) {
   res.render('index', {
-    email: req.session.email,
     toolname: flags.TOOLNAME,
-    loggedIn: auth.isAuthenticated(req.session),
+    loggedIn: false,
     staging: flags.KEYBASE_STAGING,
     electron: false,
     version: version
@@ -90,8 +57,7 @@ app.get('/', function(req, res) {
 app.get('/help', function(req, res) {
   res.render('help', {
     toolname: flags.TOOLNAME,
-    email: req.session.email,
-    loggedIn: auth.isAuthenticated(req.session),
+    loggedIn: false,
     staging: flags.KEYBASE_STAGING,
     electron: false,
     version: version
@@ -99,24 +65,18 @@ app.get('/help', function(req, res) {
 });
 
 app.get('/login', function(req, res) {
-  if (auth.isAuthenticated(req.session)) {
-    res.redirect('/mail');
-  } else {
-    res.render('login', {
-      toolname: flags.TOOLNAME,
-      email: req.session.email,
-      loggedIn: false,
-      staging: flags.KEYBASE_STAGING,
-      electron: false,
-      version: version
-    });
-  }
+  res.render('login', {
+    toolname: flags.TOOLNAME,
+    loggedIn: false,
+    staging: flags.KEYBASE_STAGING,
+    electron: false,
+    version: version
+  });
 });
 
-app.get('/mail', auth.webEndpoint, function(req, res) {
+app.get('/mail', function(req, res) {
   res.render('mail', {
     toolname: flags.TOOLNAME,
-    email: req.session.email,
     loggedIn: true,
     staging: flags.KEYBASE_STAGING,
     electron: false,
@@ -134,122 +94,18 @@ app.get('/signup', function(req, res) {
   });
 });
 
-/**
- * Part 1 of 2 in sending an invite to a non-Keymail user.
- * The inviter calls this endpoint to get a temporary public key for the
- * invitee. They should encrypt the invite message on their end, and then
- * call /invite/sendInvite.
- *
- * The request query should contain 'recipient=<invitee's email address>'.
- * The response body contains a JSON object containing the invite id,
- * and the public key. When calling /invite/sendInvite, pass back the invite id.
- */
-app.get('/invite/getKey', auth.dataEndpoint, function(req, res) {
+app.get('/invite/getKey', function(req, res) {
   if (flags.PRODUCTION) {
     res.status(404).send('404 Invites currently disabled');
     return;
   }
-
-  let recipient = req.query.recipient;
-  if (!recipient) {
-    res.status(500).send('No recipient provided');
-    return;
-  }
-
-  // Get a random code to encrypt the temporary private key
-  let passphrase = URLSafeBase64.encode(crypto.randomBytes(64));
-  // Store in the session, until /invite/sendInvite is sent
-  req.session.tempPassphrase = passphrase;
-
-  // Given an object containing a key pair, replace the private key with
-  // a p3skb-encrypted string
-  let encryptPrivateKey = function(keys) {
-    return new Promise((resolve, reject) => {
-      p3skb.armoredPrivateKeyToP3skb(keys.privateKey, passphrase)
-        .then(encryptedKey => {
-          resolve({publicKey: keys.publicKey, privateKey: encryptedKey});
-        }).catch(err => reject(err));
-    });
-  };
-
-  pgp.generateArmoredKeyPair(recipient)
-    .then(encryptPrivateKey)
-    .then(keys => db.storeInviteKeys(recipient, keys))
-    .then(record => {
-      res.json({ inviteId: record._id, publicKey: record.pgp.public_key });
-    })
-    .catch(err => {
-      console.error(err);
-      res.status(500).send(err);
-    });
 });
 
-/**
- * Sends an invite to a non-Keymail user. The client should provide a JSON
- * object containing 'message', 'inviteId', and 'subject'.
- */
-app.post('/invite/sendInvite', auth.dataEndpoint, function(req, res) {
+app.post('/invite/sendInvite', function(req, res) {
   if (flags.PRODUCTION) {
     res.status(404).send('404 Invites currently disabled');
     return;
   }
-
-  if (!req.session.tempPassphrase || !req.body.inviteId || !req.body.message || !req.body.subject) {
-    res.status(400).send('Bad request');
-    return;
-  }
-
-  // Save the encrypted message in the invite model.
-  let addMessageToInvite = function(invite) {
-    return new Promise(function(resolve, reject) {
-      invite.message = req.body.message;
-      invite.subject = req.body.subject;
-      invite.sender = req.session.email;
-      invite.sent = new Date();
-      invite.save(function(err) {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(invite);
-        }
-      });
-    });
-  };
-
-  // Add an invite link to the message and send it over gmail.
-  let sendMessage = function(invite) {
-    let inviteUrl = HOSTNAME + '/invite?' +
-        'id=' + req.body.inviteId + '&' +
-        'pw=' + req.session.tempPassphrase;
-    let inviteEmail = '<p>' + req.session.email +
-        ' wants to send you an encrypted email through ' + flags.TOOLNAME +'! ' +
-        'View the email at this link:</p>' +
-        '<p><a href="' + inviteUrl + '">' + inviteUrl + '<a></p>\n\n' +
-        '<pre>' + req.body.message + '</pre>';
-
-    let gmailClient = new GmailClient(req.session.googleToken);
-    return gmailClient.sendMessage({
-      headers: {
-        to: [invite.recipient],
-        from: req.session.email,
-        subject: req.body.subject,
-        date: new Date().toString(),
-        contentType: 'text/html; charset=utf-8'
-      },
-      body: inviteEmail
-    });
-  };
-
-  db.getInvite(req.body.inviteId)
-    .then(addMessageToInvite)
-    .then(sendMessage)
-    .then(function() {
-      delete req.session.tempPassphrase;
-      res.status(200).send('OK');
-    }).catch(function(err) {
-      console.error(err);
-      res.status(500).send(err);
-    });
 });
 
 app.get('/invite/viewInvite', function(req, res) {
@@ -257,30 +113,6 @@ app.get('/invite/viewInvite', function(req, res) {
     res.status(404).send('404 Invites currently disabled');
     return;
   }
-
-  if (!req.query.id) {
-    res.status(400).send('Bad Request');
-    return;
-  }
-
-  // Look up invite
-  db.getInvite(req.query.id).then(function(invite) {
-    if (invite) {
-      // Return page, invite, and encrypted message
-      res.json({
-        staging: flags.KEYBASE_STAGING,
-        expires: invite.expires.toString(),
-        key: invite.pgp.private_key,
-        message: invite.message,
-        sender: invite.sender,
-        sent: invite.sent.toString(),
-        subject: invite.subject
-      });
-    }
-  }).catch(function(err) {
-    console.error(err);
-    res.status(500).send(err);
-  });
 });
 
 app.get('/invite', function(req, res) {
@@ -288,35 +120,6 @@ app.get('/invite', function(req, res) {
     res.status(404).send('404 Invites currently disabled');
     return;
   }
-
-  if (!req.query.id || !req.query.pw) {
-    res.status(404).send('Not Found');
-    return;
-  }
-
-  res.render('invite', {
-    toolname: flags.TOOLNAME,
-    loggedIn: false,
-    staging: flags.KEYBASE_STAGING,
-    electron: false
-  });
-});
-
-/**
- * Authenticates the user with Google. The user must have already been
- * authenticated with Keybase so we can identify them.
- */
-app.get('/auth/google', function(req, res) {
-  if (!req.session.keybaseId) {
-    res.statusCode(403).send('No Keybase Username associated with this session');
-    return;
-  }
-  auth.attemptGoogleReauthentication(req.session).then(function() {
-    res.redirect('/mail');
-  }).catch(function(err) {
-    console.error(err);
-    res.redirect(GoogleOAuth.getAuthUrl());
-  });
 });
 
 /**
@@ -385,47 +188,24 @@ app.post('/keybase/login.json', function(req, res) {
       return;
     }
 
-    // Save the user's id and Keybase cookies in their session.
-    req.session.keybaseId = keybase.me.id;
-    var parsedCookies = response.headers['set-cookie'].map(
-      function(cookie) {
-        return Cookie.parse(cookie);
-      }
-    );
-    req.session.keybaseCookie = parsedCookies.find(function(cookie) {
-      if (flags.KEYBASE_STAGING) {
-        return cookie.s0_session !== undefined;
-      } else {
-        return cookie.session !== undefined;
+    let sessionCookieString = null;
+    response.headers['set-cookie'].forEach((cookieString) => {
+      let cookie = Cookie.parse(cookieString);
+      if (cookie.session) {
+        sessionCookieString = cookieString;
       }
     });
 
-    // Save the CSRF token in the user's session.
-    req.session.keybaseCSRF = keybase.csrf_token;
-
-    // Create a User record for this user if necessary.
-    db.storeKeybaseCredentials(keybase).then(function() {
-      // Echo the response with the same status code on success.
-      res.status(response.statusCode).send(body);
-    }).catch(function(mongoError) {
-      console.error(mongoError);
-      req.session.destroy(function(sessionError) {
-        console.error(sessionError);
-        if (sessionError) {
-          res.status(500).send(sessionError + mongoError);
-        } else {
-          res.status(500).send(mongoError);
-        }
-      });
-    });
+    // Echo the response with the same status code on success.
+    // Attach the Keybase cookie as a custom header.
+    res
+      .header('X-Keybase-Cookie', sessionCookieString)
+      .status(response.statusCode)
+      .send(body);
   });
 });
 
 app.post('/keybase/signup.json', function(req, res) {
-  if (auth.isAuthenticated(req.session)) {
-    res.status(400).send('Already logged in!');
-    return;
-  }
   request({
     method: 'POST',
     url: KEYBASE_URL + '/_/api/1.0/signup.json',
@@ -440,21 +220,13 @@ app.post('/keybase/signup.json', function(req, res) {
   });
 });
 
+// TODO: This might not work without passing through the CSRF token.
 app.post('/keybase/key/add.json', function(req, res) {
-  if (!auth.isAuthenticatedWithKeybase(req.session)) {
-    console.log('POST /keybase/key/add.json failed: need Keybase authentication');
-    res.status(401).send('Cannot add keys without logging into Keybase');
-    return;
-  }
-
   request({
     method: 'POST',
     url: KEYBASE_URL + '/_/api/1.0/key/add.json',
     qs: req.query,
-    jar: getKeybaseCookieJar(req.session),
-    headers: {
-      'X-CSRF-Token': req.session.keybaseCSRF
-    }
+    jar: getKeybaseCookieJar(req),
   }, function(error, response, body) {
     if (error) {
       console.error(error);
@@ -465,15 +237,12 @@ app.post('/keybase/key/add.json', function(req, res) {
   });
 });
 
-app.get('/keybase/key/fetch.json', auth.dataEndpoint, function(req, res) {
+app.get('/keybase/key/fetch.json', function(req, res) {
   request({
     method: 'GET',
     url: KEYBASE_URL + '/_/api/1.0/key/fetch.json',
     qs: req.query,
-    jar: getKeybaseCookieJar(req.session),
-    headers: {
-      'X-CSRF-Token': req.session.keybaseCSRF
-    }
+    jar: getKeybaseCookieJar(req),
   }, function(error, response, body) {
     if (error) {
       console.error(error);
@@ -485,35 +254,17 @@ app.get('/keybase/key/fetch.json', auth.dataEndpoint, function(req, res) {
 });
 
 app.get('/logout', function(req, res) {
-  if (auth.isAuthenticatedWithKeybase(req.session)) {
-    request({
-      method: 'POST',
-      url: KEYBASE_URL + '/_/api/1.0/session/killall.json',
-      headers: { 'X-CSRF-Token': req.session.keybaseCSRF },
-      jar: getKeybaseCookieJar(req.session)
-    }, function(error, response, body) {
-      if (!error) {
-        console.log(body);
-      } else {
-        console.error('Failed to kill sessions: ' + error);
-      }
-    });
-  }
-
-  req.session.destroy(function() {
-    res.redirect('/');
-  });
-});
-
-app.get('/log/console', auth.webEndpoint, auth.isEric, function(req, res) {
-  fs.readFile('console.log', (err, data) => {
-    res.send(data.toString().split('\n').join('<br/>'));
-  });
-});
-
-app.get('/log/error', auth.webEndpoint, auth.isEric, function(req, res) {
-  fs.readFile('error.log', (err, data) => {
-    res.send(data.toString().split('\n').join('<br/>'));
+  res.redirect('/');
+  request({
+    method: 'POST',
+    url: KEYBASE_URL + '/_/api/1.0/session/killall.json',
+    jar: getKeybaseCookieJar(req)
+  }, function(error, response, body) {
+    if (!error) {
+      console.log(body);
+    } else {
+      console.error('Failed to kill sessions: ' + error);
+    }
   });
 });
 
@@ -528,14 +279,9 @@ module.exports = app; // For testing
  * @param session The Keymail session belonging to the Keybase user.
  * @return request.jar containing the session cookie.
  */
-function getKeybaseCookieJar(session) {
+function getKeybaseCookieJar(req) {
   let cookieJar = request.jar();
-  let cookieString;
-  if (flags.KEYBASE_STAGING) {
-    cookieString = 's0_session=' + session.keybaseCookie.s0_session;
-  } else {
-    cookieString = 'session=' +  session.keybaseCookie.session;
-  }
+  let cookieString = req.headers['x-keybase-cookie'];
   cookieJar.setCookie(cookieString, KEYBASE_URL);
   return cookieJar;
 }

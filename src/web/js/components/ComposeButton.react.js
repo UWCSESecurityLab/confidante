@@ -1,8 +1,8 @@
 'use strict';
 
-var React = require('react');
-var InboxActions = require('../actions/InboxActions');
-var ComposeArea = require('./ComposeArea.react');
+const React = require('react');
+const InboxActions = require('../actions/InboxActions');
+const ComposeArea = require('./ComposeArea.react');
 
 /**
  * The compose button opens the compose UI to write a new (non-reply) email.

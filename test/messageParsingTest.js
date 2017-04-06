@@ -1,10 +1,10 @@
 'use strict'
-var chai = require('chai');
-var should = chai.should();
-var chaiAsPromised = require("chai-as-promised");
+const chai = require('chai');
+const should = chai.should();
+const chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
-var messageParsing = require('../src/web/js/messageParsing.js');
-var fs = require('fs');
+const messageParsing = require('../src/web/js/messageParsing.js');
+const fs = require('fs');
 
 describe('messageParsing', function() {
   describe('#messageParsingIsSameAddress', function() {

@@ -75,3 +75,7 @@ ul {
     display: none;
   }
 }
+
+#spinner {
+  margin-top: 15px;
+}

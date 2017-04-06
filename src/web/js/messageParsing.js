@@ -1,6 +1,6 @@
 'use strict';
 
-var addressParser = require('address-rfc2822');
+const addressParser = require('address-rfc2822'); 
 
 module.exports = {
   getMessageHeader: function(message, header) {

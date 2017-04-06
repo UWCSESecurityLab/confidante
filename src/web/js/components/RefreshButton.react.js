@@ -1,7 +1,7 @@
 'use strict';
 
-var React = require('react');
-var InboxActions = require('../actions/InboxActions.js');
+const React = require('react');
+const InboxActions = require('../actions/InboxActions.js');
 
 var RefreshButton = React.createClass({
   propTypes: {
