@@ -12,6 +12,7 @@
     <link rel="stylesheet" type="text/css" href="../css/snippet.css">
     <link rel="stylesheet" type="text/css" href="../css/spinner.css">
     <link rel="stylesheet" type="text/css" href="../css/composearea.css">
+    <link rel="stylesheet" type="text/css" href="../css/footer.css">
   <% } else { %>
     <link rel="stylesheet" type="text/css" href="inbox.css">
     <link rel="stylesheet" type="text/css" href="autocomplete.css">
@@ -20,6 +21,7 @@
     <link rel="stylesheet" type="text/css" href="snippet.css">
     <link rel="stylesheet" type="text/css" href="spinner.css">
     <link rel="stylesheet" type="text/css" href="composearea.css">
+    <link rel="stylesheet" type="text/css" href="footer.css">
   <% } %>
   <title>Inbox - <%= toolname %></title>
   <script type="application/json" id="server-vars">
@@ -36,6 +38,7 @@
       </div>
     </div>
   </div>
+  <%- include('footer', {version: version}); %>
   <% if (electron) { %>
     <script src="../../../gen/inbox-electron.js"></script>
   <% } else { %>
