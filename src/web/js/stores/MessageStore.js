@@ -7,6 +7,7 @@ const GmailClient = require('../../../gmailClient');
 const GoogleOAuth = require('../../../googleOAuth');
 const InboxDispatcher = require('../dispatcher/InboxDispatcher');
 const KeybaseAPI = require('../keybaseAPI');
+const KeybaseError = require('../../../error').KeybaseError;
 const messageParsing = require('../messageParsing');
 
 let ipcRenderer;
@@ -122,7 +123,11 @@ function _decryptMessage(message) {
       MessageStore.emitChange();
     }).catch(function(err) {
       _messageErrors[message.id] = err;
-      MessageStore.emitChange();
+      if (_globalError === null) {
+        MessageStore.updateGlobalError(new KeybaseError(err.message));
+      } else {
+        MessageStore.emitChange();
+      }
     });
 }
 

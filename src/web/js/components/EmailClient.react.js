@@ -51,11 +51,17 @@ var EmailClient = React.createClass({
        errorLinkText: '',
        errorLink: ''
      });
-   } else if (error.name === 'AuthError') {
+    } else if (error.name === 'AuthError') {
       this.setState({
-        error: 'Your login has expired!',
+        error: 'Your Gmail login has expired!',
         errorLinkText: 'Please sign in again.',
-        errorLink: flags.ELECTRON ? './login.ejs' : '/logout'
+        errorLink: flags.ELECTRON ? './login.ejs' : '/login'
+      });
+    } else if (error.name === 'KeybaseError') {
+      this.setState({
+        error: 'Your Keybase login has expired!',
+        errorLinkText: 'Please sign in again.',
+        errorLink: flags.ELECTRON ? './login.ejs' : '/login'
       });
     } else if (error.name === 'NetworkError') {
       this.setState({
@@ -63,9 +69,9 @@ var EmailClient = React.createClass({
         errorLinkText: 'Try refreshing the page.',
         errorLink: flags.ELECTRON ? './mail.ejs' : '/mail'
       });
-    } else if (error.name === 'UnsupportedError') {
+    } else {
       this.setState({
-        error: 'Something went wrong in ' + this.props.serverVars.toolname + ' (' + error.message + ')',
+        error: 'Something went wrong in Confidante (' + error.message + ')',
         errorLinkText: 'Try refreshing the page.',
         errorLink: flags.ELECTRON ? './mail.ejs' : '/mail'
       });
