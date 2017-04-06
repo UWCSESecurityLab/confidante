@@ -384,9 +384,9 @@ class KeybaseAPI {
     return p3skbObj;
   }
 
-  static keybaseLoggedIn() {
+  static loggedIn() {
     // TODO: Make this more sophisticated (expiry checking, etc.)
-    return localStorage.getItem('keybaseCookie') && 
+    return localStorage.getItem('keybaseCookie') &&
            localStorage.getItem('keybase') &&
            localStorage.getItem('keybaseCSRFToken');
   }
@@ -505,7 +505,7 @@ function handleKeybaseResponse(error, response, body, resolve, reject) {
 }
 
 /**
- * storeKeybaseCookie stores the Keybase CSRF Token and Session Cookie 
+ * storeKeybaseCookie stores the Keybase CSRF Token and Session Cookie
  * for later use.
  */
 function storeKeybaseCookie(error, response, body) {

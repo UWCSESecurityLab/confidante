@@ -9,7 +9,7 @@ const flags = require('../../flags');
 // TODO: Make it possible to require('MessageStore') without being logged
 // in and without errors.
 if (!flags.ELECTRON) {
-  if (!KeybaseAPI.keybaseLoggedIn()) {
+  if (!KeybaseAPI.loggedIn()) {
     window.location.href = '/login';
   }
 }
