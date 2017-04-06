@@ -1,6 +1,6 @@
 'use strict';
 
-var addressParser = require('address-rfc2822'); 
+var addressParser = require('address-rfc2822');
 
 module.exports = {
   getMessageHeader: function(message, header) {
@@ -36,7 +36,7 @@ module.exports = {
   },
 
   getMessageBody: function(message) {
-    if (message.payload.mimeType == 'multipart/alternative') {
+    if (message.payload.mimeType.startsWith('multipart')) {
       // For multipart messages, we need to find the plaintext part.
       var messagePart = message.payload.parts.find(function(messagePart) {
         return messagePart.mimeType == 'text/plain';
@@ -96,7 +96,7 @@ module.exports = {
   },
 
   /**
-   * Takes two email addresses in "Johnny Plaintext <johnny@pgp.org>" or 
+   * Takes two email addresses in "Johnny Plaintext <johnny@pgp.org>" or
    * "johnny@pgp.org" form (RFC2282 form) and compares them.
    * @param address1 First address to compare.
    * @param address2 First address to compare.
