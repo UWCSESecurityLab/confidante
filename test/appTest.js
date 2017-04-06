@@ -14,17 +14,6 @@ const querystring = require('querystring');
 const express = require('express');
 const session = require('express-session');
 
-// Stub out authentication middleware so we don't have to mess with the
-// authentication stuff in sessions.
-const auth = require('../src/auth.js');
-sinon.stub(auth, "webEndpoint", (req, res, next) => {
-  return next();
-});
-
-sinon.stub(auth, "dataEndpoint", (req, res, next) => {
-  return next();
-});
-
 // Stub out calls to mongoose.Model.save
 const Invite = require('../src/models/invite.js');
 let inviteSaveStub = sinon.stub(Invite.prototype, "save", (cb) => cb());
