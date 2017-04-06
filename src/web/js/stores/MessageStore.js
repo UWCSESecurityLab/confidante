@@ -123,9 +123,14 @@ function _decryptMessage(message) {
       MessageStore.emitChange();
     }).catch(function(err) {
       _messageErrors[message.id] = err;
-      if (_globalError === null) {
-        MessageStore.updateGlobalError(new KeybaseError(err.message));
-      } else {
+      try {
+        JSON.parse(err);
+        if (err.status.code === 502) {
+          MessageStore.updateGlobalError(new KeybaseError(err.status.desc));
+        } else {
+          MessageStore.emitChange();
+        }
+      } catch(e) {
         MessageStore.emitChange();
       }
     });
