@@ -95,6 +95,16 @@ app.get('/signup', function(req, res) {
   });
 });
 
+app.get('/contact', function(req, res) {
+  res.render('contact', {
+    toolname: flags.TOOLNAME,
+    loggedIn: false,
+    staging: flags.KEYBASE_STAGING,
+    electron: false,
+    version: flags.VERSION
+  });
+});
+
 app.get('/invite/getKey', function(req, res) {
   if (flags.PRODUCTION) {
     res.status(404).send('404 Invites currently disabled');
