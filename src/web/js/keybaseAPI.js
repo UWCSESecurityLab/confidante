@@ -33,7 +33,7 @@ class KeybaseAPI {
    * @return {string} The Keybase base URL (protocol and host)
    */
   static url() {
-    return kbUrl + API_STRING;
+    return kbUrl;
   }
 
   /**
