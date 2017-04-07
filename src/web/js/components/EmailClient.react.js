@@ -1,17 +1,18 @@
 'use strict';
 
-const React = require('react');
+const ArchiveButton = require('./ArchiveButton.react');
 const ComposeArea = require('./ComposeArea.react');
 const ComposeButton = require('./ComposeButton.react');
-const ArchiveButton = require('./ArchiveButton.react');
 const DeleteButton = require('./DeleteButton.react');
 const flags = require('../../../flags');
+const GlobalError = require('./GlobalError.react');
 const Header = require('./Header.react');
 const Inbox = require('./Inbox.react');
+const KeybaseAPI = require('../keybaseAPI');
 const MessageStore = require('../stores/MessageStore.js');
+const React = require('react');
 const RefreshButton = require('./RefreshButton.react');
 const ThreadScrollers = require('./ThreadScrollers.react');
-const KeybaseAPI = require('../keybaseAPI');
 
 import Toast, {notify} from 'react-notify-toast';
 
@@ -27,9 +28,7 @@ var EmailClient = React.createClass({
       disablePrev: true,
       disableNext: true,
       email: '',
-      error: '',
-      errorLinkText: '',
-      errorLink: '',
+      error: null,
       mailbox: 'Inbox',
       refreshing: false,
     }
@@ -43,44 +42,8 @@ var EmailClient = React.createClass({
     }.bind(this));
   },
 
-  checkError: function() {
-    let error = MessageStore.getGlobalError();
-    if (!error) {
-     this.setState({
-       error: '',
-       errorLinkText: '',
-       errorLink: ''
-     });
-    } else if (error.name === 'AuthError') {
-      this.setState({
-        error: 'Your Gmail login has expired!',
-        errorLinkText: 'Please sign in again.',
-        errorLink: flags.ELECTRON ? './login.ejs' : '/login'
-      });
-    } else if (error.name === 'KeybaseError') {
-      this.setState({
-        error: 'Your Keybase login has expired!',
-        errorLinkText: 'Please sign in again.',
-        errorLink: flags.ELECTRON ? './login.ejs' : '/login'
-      });
-    } else if (error.name === 'NetworkError') {
-      this.setState({
-        error: 'Couldn\'t connect to Gmail.',
-        errorLinkText: 'Try refreshing the page.',
-        errorLink: flags.ELECTRON ? './mail.ejs' : '/mail'
-      });
-    } else {
-      this.setState({
-        error: 'Something went wrong in Confidante (' + error.message + ')',
-        errorLinkText: 'Try refreshing the page.',
-        errorLink: flags.ELECTRON ? './mail.ejs' : '/mail'
-      });
-    }
-  },
-
   onMessageStoreChange: function() {
-    this.checkError();
-    this.setState({ refreshing: false });
+    this.setState({ refreshing: false, error: MessageStore.getGlobalError() });
 
     if (this.state.email === '') {
       MessageStore.getGmailClient().getEmailAddress().then(function(email) {
@@ -114,9 +77,7 @@ var EmailClient = React.createClass({
             : null
           }
           { this.state.error
-            ? <div id="global-error" className="alert alert-warning" role="alert">
-                {this.state.error} <a href={this.state.errorLink}>{this.state.errorLinkText}</a>
-              </div>
+            ? <GlobalError error={this.state.error}/>
             : null
           }
           <ComposeArea onSent={this.onSent} toolname={this.props.serverVars.toolname} />

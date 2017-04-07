@@ -323,6 +323,8 @@ let MessageStore = Object.assign({}, EventEmitter.prototype, {
     GoogleOAuth.deleteAccessToken();
     localStorage.removeItem('keybase');
     localStorage.removeItem('keybasePassphrase');
+    localStorage.removeItem('keybaseCookie');
+    localStorage.removeItem('keybaseCSRFToken');
     if (flags.ELECTRON) {
       window.location.href = './index.ejs';
     } else {
