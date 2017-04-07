@@ -112,3 +112,16 @@ h2 {
 .footer-logo {
   margin: 10px;
 }
+
+/* FAQ sections */
+.about-list > li {
+  font-size: 12pt;
+}
+
+.alt-color-1 {
+  background-color: #ffffff;
+}
+
+.alt-color-2 {
+  background-color: #f2f2f2;
+}

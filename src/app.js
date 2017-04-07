@@ -55,8 +55,8 @@ app.get('/', function(req, res) {
   });
 });
 
-app.get('/help', function(req, res) {
-  res.render('help', {
+app.get('/about', function(req, res) {
+  res.render('about', {
     toolname: flags.TOOLNAME,
     loggedIn: false,
     staging: flags.KEYBASE_STAGING,
