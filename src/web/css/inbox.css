@@ -8,6 +8,10 @@ ul {
   padding: 0;
 }
 
+p {
+  font-size: 10pt;
+}
+
 .alert {
   margin-top: 20px;
 }

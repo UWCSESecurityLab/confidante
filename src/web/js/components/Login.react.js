@@ -84,61 +84,64 @@ let Login = React.createClass({
     ) : null;
 
     return (
-      <div className="container">
-        <div className="row">
-          <div className="col-md-6">
-            <form id="login-form" onSubmit={this.login}>
-              <h2>Sign in with your Keybase Account</h2>
-              { flags.ELECTRON
-                ? <img src="../img/keybase_logo.png" id="keybase-logo"/>
-                : <img src="keybase_logo.png" id="keybase-logo"/>
-              }
-              <div className="form-group">
-                <input value={this.state.emailOrUsername}
-                       onChange={this.updateEmailOrUsername}
-                       type="text"
-                       className="form-control"
-                       placeholder="Email or Username"/>
+      <section>
+        <div className="container">
+          <div className="login-flex">
+            <div className="login-flex-item">
+              <h3 className="login-text">
+                <img className="login-icon" src={flags.ELECTRON ? '../img/keybase_icon.png' : 'keybase_icon.png'}/>
+                Log in with Keybase
+              </h3>
+              <form id="login-form" onSubmit={this.login}>
+                <div className="form-group">
+                  <input value={this.state.emailOrUsername}
+                          onChange={this.updateEmailOrUsername}
+                          type="text"
+                          className="form-control"
+                          placeholder="Keybase Email or Username"/>
+                </div>
+                <div className="form-group">
+                  <input value={this.state.password}
+                          onChange={this.updatePassword}
+                          type="password"
+                          className="form-control"
+                          id="password"
+                          placeholder="Password"/>
+                </div>
+              </form>
+              <div>
+                <button className="btn btn-primary" type="submit" form="login-form" disabled={this.state.loading}>
+                  { this.state.loading
+                    ? 'Signing In...'
+                    : 'Sign In'
+                  }
+                </button>
+                { this.state.loading
+                  ? <span className="spinner" id="spinner" aria-hidden="true"></span>
+                  : null
+                }
               </div>
-              <div className="form-group">
-                <input value={this.state.password}
-                       onChange={this.updatePassword}
-                       type="password"
-                       className="form-control"
-                       id="password"
-                       placeholder="Password"/>
-              </div>
-            </form>
-          <div>
-            <button className="btn btn-primary" type="submit" form="login-form" disabled={this.state.loading}>
-              { this.state.loading
-                ? 'Signing In...'
-                : 'Sign In'
-              }
-            </button>
-            { this.state.loading
-              ? <span className="spinner" id="spinner" aria-hidden="true"></span>
-              : null
-            }
+              {errorMessage}
+            </div>
+
+            <div className="login-flex-item info-bar">
+              <h3>How do I log into Confidante?</h3>
+              <p>
+                To log into Confidante, first you log in with
+                your <a href="https://keybase.io">Keybase</a> account,
+                and then your <a href="https://www.gmail.com/">Gmail</a> account.
+                No separate Confidante account is necessary.
+              </p>
+              <h3>Don't have a Keybase account?</h3>
+              <p>
+                Sign up for a free Keybase account here!
+              </p>
+              <a href="https://keybase.io/" className="btn btn-primary" type="button">Sign up for Keybase</a>
+
+            </div>
           </div>
-          {errorMessage}
         </div>
-        <div className="col-md-1"></div>
-        <div className="col-md-5"></div>
-          <h3>Don't have a Keybase Account?</h3>
-          <p>
-            Keybase is a directory of people and their PGP keys. We use Keybase to
-            make encrypting and decrypting your mail easier.
-          </p>
-          { flags.ELECTRON
-            ? <button className="btn btn-primary" href="signup.ejs">Sign Up</button>
-            : <button className="btn btn-primary" href="/signup">Sign Up</button>
-          }
-          <a className="btn btn-info" href="https://keybase.io" target="_blank">
-            Learn More
-          </a>
-        </div>
-      </div>
+      </section>
     );
   }
 });

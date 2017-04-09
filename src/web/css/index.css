@@ -1,41 +1,9 @@
 /**
- * Styles for the home page
+ * Styles for the home page, contact page, and faq page
  */
-@font-face {
-  font-family: 'RobotoRegular';
-  src: url("../fonts/Roboto/Roboto-Regular.ttf");
-}
-
-@font-face {
-  font-family: 'RobotoLight';
-  src: url("../fonts/Roboto/Roboto-Light.ttf");
-}
-
-@font-face {
-  font-family: 'RobotoMedium';
-  src: url("../fonts/Roboto/Roboto-Medium.ttf");
-}
-
-body {
-  font-family: 'RobotoRegular';
-}
 
 section {
   padding: 32px 20px 32px 20px;
-}
-
-p {
-  font-size: 12pt;
-}
-
-h1 {
- font-size: 48pt;
- font-family: 'RobotoLight';
-}
-
-h2 {
-  font-size: 28pt;
-  font-family: 'RobotoLight';
 }
 
 /* Intro section*/

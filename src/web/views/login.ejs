@@ -6,23 +6,31 @@
 	<title>Login - <%= toolname %></title>
   <%- include('includeBootstrap'); %>
   <% if (electron) { %>
+    <link rel="stylesheet" href="../css/common.css">
     <link rel="stylesheet" href="../css/login.css">
     <link rel="stylesheet" href="../css/spinner.css">
   <% } else { %>
+    <link rel="stylesheet" href="common.css">
     <link rel="stylesheet" href="login.css">
+    <link rel="stylesheet" href="header.css">
     <link rel="stylesheet" href="spinner.css">
   <% } %>
 </head>
 <body>
-  <%- include('header', { loggedIn: loggedIn, active: null }); %>
+  <section id="heading">
+    <div class="container">
+      <h2>Confidante</h2>
+    </div>
+  </section>
   <div id="app">
     <div class="container">
-      <div>
-        <span class="spinner" id="spinner" aria-hidden="true"></span>
-        Loading...
+      <div class="preload">
+        <div class="large-spinner"></div>
+        <h3 class="preload-text">Loading...</h3>
       </div>
     </div>
   </div>
+  <%- include('footer', {version: version}); %>
   <% if (electron) { %>
     <script src="../../../gen/login-electron.js"></script>
   <% } else { %>

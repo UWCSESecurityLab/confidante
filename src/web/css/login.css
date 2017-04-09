@@ -2,11 +2,52 @@
   margin-top: 1em;
 }
 
-#keybase-logo {
-  margin: 0.75em 0;
-  width: 213px;
+#back {
+  color: #fff;
 }
 
 button {
   margin-right: 12px;
+}
+
+#heading {
+  background-color: #396cc2;
+  color: #fff;
+  padding: 50px 0 10px 0;
+  margin-bottom: 20px
+}
+
+#heading > div > h2 {
+  padding-left: 15px;
+}
+
+.login-flex {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.login-flex-item {
+  flex-grow: 1;
+  flex-basis: 325px;
+  padding: 20px;
+}
+
+.login-prompt {
+  margin-bottom: 15px;
+}
+
+.login-icon {
+  height: 2em;
+  margin-right: 0.5em;
+}
+
+.info-bar {
+
+}
+
+@media all and (min-width: 700px) {
+  .info-bar {
+    margin-left: 20px;
+    border-left: 1px solid #ccc;
+  }
 }
