@@ -152,6 +152,35 @@
         </li>
       </ul>
 
+      <h3>What's the difference between the web preview and the desktop app?</h3>
+      <p>
+        The web preview is slightly less secure than the desktop version,
+        because certain information from Google and Keybase must pass through
+        our web server.
+      </p>
+      <ul class="about-list">
+        <li>
+          When logging in with Google, the OAuth token is passed to the browser
+          via a URL. However, this reveals the token to the server as well.
+        </li>
+        <li>
+          Certain API calls to Keybase require authentication and cannot be done
+          over CORS. This means that our web server must proxy these API calls.
+          As a consequence, the Keybase authentication is exposed to our server.
+        </li>
+      </ul>
+      <p>
+        We do not store either of these authenticators on our server,  but an
+        if our server was compromised by an active attacker, they could view
+        the authenticators of Confidante users that are currently online.
+      </p>
+      <p>
+        The desktop application does not have any of these vulnerabilities,
+        because it can directly communicate with Keybase and Gmail, without
+        going through our web server. We highly recommend using the desktop
+        app for this reason.
+      </p>
+
       <h3>
     </div>
   </section>

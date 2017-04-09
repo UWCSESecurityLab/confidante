@@ -30,6 +30,15 @@
       </div>
     </div>
   </div>
+  <% if (!electron) { %>
+    <div class="container web-warning">
+      <div class="alert alert-warning">
+        You are using the web preview of Confidante. For additional security,
+        please download the desktop version from the <a href="/">home page</a>.
+        For more information, <a href="/about">click here</a>.
+      </div>
+    </div>
+  <% } %>
   <%- include('footer', {version: version}); %>
   <% if (electron) { %>
     <script src="../../../gen/login-electron.js"></script>

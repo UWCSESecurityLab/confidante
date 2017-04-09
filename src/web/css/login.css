@@ -41,13 +41,13 @@ button {
   margin-right: 0.5em;
 }
 
-.info-bar {
-
-}
-
 @media all and (min-width: 700px) {
   .info-bar {
     margin-left: 20px;
     border-left: 1px solid #ccc;
   }
+}
+
+.web-warning {
+  margin-top: 50px;
 }
