@@ -14,7 +14,7 @@
     "electron": "electron .",
     "lint": "eslint src/* || true",
     "prod-build": "./scripts/prod-build.sh",
-    "postinstall": "./scripts/postinstall.sh",
+    "postinstall": "node scripts/postinstall.js",
     "test": "mocha"
   },
   "browser": {
@@ -70,6 +70,7 @@
     "envify": "^4.0.0",
     "eslint": "^2.13.1",
     "eslint-plugin-react": "^5.2.2",
+    "fs-extra": "^2.1.2",
     "insert-module-globals": "^7.0.1",
     "mocha": "^2.3.3",
     "mockery": "^1.4.0",
