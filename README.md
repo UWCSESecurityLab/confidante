@@ -30,6 +30,14 @@ Now, when you're ready to code, run these commands in separate terminal tabs:
 3. Run `$ npm run build:package` to build executables that include Electron and packages all of the code. This only builds it for the platform you're running the script on.
 4. Run `$ npm run build:installer-win` to build an installer for Windows. Only works on a Windows machine.
 
+## How to put a new Electron version on the website ##
+SSH into a CSE machine, and upload the package to `/cse/web/research/confidante/`.
+
+The Windows version should be the EXE produced by `npm build:installer-win`, 
+named `ConfidanteSetup.exe`.
+
+The Mac version should be a zipped up folder, produced by `npm build:package`,
+named `Confidante-darwin-x64.zip`.
 
 ## Helpful Links ##
 - [Design doc](https://docs.google.com/document/d/1RI3u0mPXgB4KFMkguWHM1jwJWKDkNSyGjohBZ2ScaVU/edit)
