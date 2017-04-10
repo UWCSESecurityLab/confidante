@@ -12,9 +12,19 @@ section {
   color: #ffffff;
 }
 
-#intro-flex {
+#intro-container {
   display: flex;
-  justify-content: space-around;
+  flex-wrap: wrap-reverse;
+  align-items: center;
+}
+
+#intro-text {
+  flex-grow: 1;
+}
+
+#intro-logo {
+  height: 128px;
+  margin: 0 auto;
 }
 
 #summary {
