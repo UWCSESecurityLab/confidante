@@ -6,23 +6,42 @@
 	<title>Login - <%= toolname %></title>
   <%- include('includeBootstrap'); %>
   <% if (electron) { %>
+    <link rel="stylesheet" href="../css/common.css">
     <link rel="stylesheet" href="../css/login.css">
     <link rel="stylesheet" href="../css/spinner.css">
   <% } else { %>
+    <link rel="stylesheet" href="common.css">
     <link rel="stylesheet" href="login.css">
+    <link rel="stylesheet" href="header.css">
     <link rel="stylesheet" href="spinner.css">
   <% } %>
 </head>
 <body>
-  <%- include('header', { loggedIn: loggedIn }); %>
+  <section id="heading">
+    <div class="container" id="title">
+      <img src="logo-white.png" id="title-logo"/>
+      <h2 id="title-text">Confidante</h2>
+
+    </div>
+  </section>
   <div id="app">
-    <div class="container">
-      <div>
-        <span class="spinner" id="spinner" aria-hidden="true"></span>
-        Loading...
+    <div class="container" id="title">
+      <div class="preload">
+        <div class="large-spinner"></div>
+        <h3 class="preload-text">Loading...</h3>
       </div>
     </div>
   </div>
+  <% if (!electron) { %>
+    <div class="container web-warning">
+      <div class="alert alert-warning">
+        You are using the web preview of Confidante. For additional security,
+        please download the desktop version from the <a href="/">home page</a>.
+        For more information, <a href="/about">click here</a>.
+      </div>
+    </div>
+  <% } %>
+  <%- include('footer', {version: version}); %>
   <% if (electron) { %>
     <script src="../../../gen/login-electron.js"></script>
   <% } else { %>

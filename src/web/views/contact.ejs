@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Confidante</title>
+  <%- include('includeBootstrap'); %>
+  <link rel="stylesheet" type="text/css" href="common.css">
+  <link rel="stylesheet" type="text/css" href="index.css">
+  <link rel="stylesheet" type="text/css" href="header.css">
+</head>
+<body>
+  <%- include('header', {active: 'contact'}); %>
+  <section id="intro">
+    <div class="container">
+      <h1>Contact Us</h1>
+    </div>
+  </section>
+
+  <section class="alt-color-1">
+    <div class="container">
+      <h3>General feedback and questions</h3>
+      <div class="contact-info">
+        <span class="glyphicon glyphicon-envelope" aria-hidden="true"></span>
+        &nbsp;
+        <a href="mailto:confidante@cs.washington.edu">confidante@cs.washington.edu</a>
+      </div>
+
+      <h3>Bug reports and feature requests</h3>
+
+      <div class="contact-info">
+        <img src="github.png" width="20"/>
+        &nbsp;
+        Create an issue on our <a href="#">GitHub repository</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="alt-color-2">
+    <div class="container">
+      <h3>Contributors</h3>
+      <ul class="about-list">
+        <li><a href="http://homes.cs.washington.edu/~lerner">Ada Lerner</a></li>
+        <li><a href="http://homes.cs.washington.edu/~ericzeng">Eric Zeng</a></li>
+        <li><a href="http://www.franziroesner.com/">Franzi Roesner</a></li>
+        <li>Mitali Palekar</li>
+      </ul>
+    </div>
+  </section>
+
+
+  <%- include('footer', {version: version}); %>
+</body>
+</html>

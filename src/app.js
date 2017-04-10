@@ -22,7 +22,8 @@ app.use(bodyParser.json());
 app.use(compression());
 
 app.use(express.static('gen'));
-app.use('/fonts', express.static(__dirname + '/web/fonts/3rdparty'));
+app.use('/fonts', express.static(__dirname + '/web/fonts'));
+
 app.use(express.static(__dirname + '/web/js'));
 app.use(express.static(__dirname + '/web/html'));
 app.use(express.static(__dirname + '/web/css'));
@@ -54,8 +55,8 @@ app.get('/', function(req, res) {
   });
 });
 
-app.get('/help', function(req, res) {
-  res.render('help', {
+app.get('/about', function(req, res) {
+  res.render('about', {
     toolname: flags.TOOLNAME,
     loggedIn: false,
     staging: flags.KEYBASE_STAGING,
@@ -86,6 +87,16 @@ app.get('/mail', function(req, res) {
 
 app.get('/signup', function(req, res) {
   res.render('signup', {
+    toolname: flags.TOOLNAME,
+    loggedIn: false,
+    staging: flags.KEYBASE_STAGING,
+    electron: false,
+    version: flags.VERSION
+  });
+});
+
+app.get('/contact', function(req, res) {
+  res.render('contact', {
     toolname: flags.TOOLNAME,
     loggedIn: false,
     staging: flags.KEYBASE_STAGING,

@@ -1,0 +1,15 @@
+.navbar {
+  margin-bottom: 0;
+  border-radius: 0;
+}
+
+.navbar-nav {
+  font-size: 16px;
+}
+
+#navbar-logo {
+  height: 1em;
+  margin-right: 4px;
+  margin-bottom: 1px;
+  display: inline;
+}

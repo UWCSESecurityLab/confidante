@@ -36,7 +36,7 @@ function createWindow() {
   // Create the browser window.
   win = new BrowserWindow({width: 1366, height: 768});
 
-  win.loadURL('file://' + __dirname + '/../web/views/index.ejs');
+  win.loadURL('file://' + __dirname + '/../web/views/login.ejs');
 
   // Emitted when the window is closed.
   win.on('closed', () => {

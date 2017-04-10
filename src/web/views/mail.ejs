@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <%- include('includeBootstrap'); %>
   <% if (electron) { %>
+    <link rel="stylesheet" type="text/css" href="../css/common.css">
     <link rel="stylesheet" type="text/css" href="../css/inbox.css">
     <link rel="stylesheet" type="text/css" href="../css/autocomplete.css">
     <link rel="stylesheet" type="text/css" href="../css/keybasecard.css">
@@ -12,8 +13,8 @@
     <link rel="stylesheet" type="text/css" href="../css/snippet.css">
     <link rel="stylesheet" type="text/css" href="../css/spinner.css">
     <link rel="stylesheet" type="text/css" href="../css/composearea.css">
-    <link rel="stylesheet" type="text/css" href="../css/footer.css">
   <% } else { %>
+    <link rel="stylesheet" type="text/css" href="common.css">
     <link rel="stylesheet" type="text/css" href="inbox.css">
     <link rel="stylesheet" type="text/css" href="autocomplete.css">
     <link rel="stylesheet" type="text/css" href="keybasecard.css">
@@ -21,7 +22,6 @@
     <link rel="stylesheet" type="text/css" href="snippet.css">
     <link rel="stylesheet" type="text/css" href="spinner.css">
     <link rel="stylesheet" type="text/css" href="composearea.css">
-    <link rel="stylesheet" type="text/css" href="footer.css">
   <% } %>
   <title>Inbox - <%= toolname %></title>
   <script type="application/json" id="server-vars">
@@ -31,9 +31,9 @@
 <body>
   <div id="app">
     <div class="container">
-      <div>
-        <span class="spinner" id="spinner" aria-hidden="true"></span>
-        Loading...
+      <div class="preload">
+        <div class="large-spinner"></div>
+        <h3 class="preload-text">Confidante is loading...</h3>
       </div>
     </div>
   </div>

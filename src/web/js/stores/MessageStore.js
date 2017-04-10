@@ -326,7 +326,7 @@ let MessageStore = Object.assign({}, EventEmitter.prototype, {
     localStorage.removeItem('keybaseCookie');
     localStorage.removeItem('keybaseCSRFToken');
     if (flags.ELECTRON) {
-      window.location.href = './index.ejs';
+      window.location.href = './login.ejs';
     } else {
       window.location.href = '/logout';
     }

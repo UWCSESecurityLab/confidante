@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Confidante</title>
+  <%- include('includeBootstrap'); %>
+  <link rel="stylesheet" type="text/css" href="common.css">
+  <link rel="stylesheet" type="text/css" href="index.css">
+  <link rel="stylesheet" type="text/css" href="header.css">
+</head>
+<body>
+  <%- include('header', {active: 'about'}); %>
+  <section id="intro">
+    <div class="container">
+      <h1>About Confidante</h1>
+    </div>
+  </section>
+  <section class="alt-color-1">
+    <div class="container">
+      <h2>Overview</h2>
+
+      <h3>How does Confidante work?</h3>
+      <p>
+        Confidante is built on top of
+        <a target="_blank" href="https://www.google.com/gmail/about/">Gmail</a>
+        and <a target="_blank" href="https://keybase.io">Keybase</a>.
+        It uses your Gmail account to send and receive messages, and uses
+        Keybase to store your private keys and look up public keys. When you log
+        into your Confidante  inbox, your browser gets your private key from
+        Keybase, and your encrypted emails from Gmail. Then, it automatically
+        decrypts all of the messages. When you send an email, you find the
+        recipients on Keybase using their name, username, or any of their linked
+        accounts (Twitter, Facebook, Github, etc). Then, Confidante looks up
+        their public keys, encrypts the message in the browser, and sends it
+        through Gmail.
+      </p>
+
+      <h3>Can I use Confidante for my sensitive communications?</h3>
+      <p>
+        Use only at your own risk. This is a beta version of Confidante, which
+        we have released along with our source code for community evaluation and
+        feedback. While we have designed Confidante to provide the security
+        properties described in this FAQ, please be aware that Confidante has
+        not received a formal security audit.
+      </p>
+    </div>
+  </section>
+
+  <section class="alt-color-2">
+    <div class="container">
+      <h2>Using Confidante</h2>
+
+      <h3>Why do I have to log in twice?</h3>
+      <p>
+        To use Confidante, you need to log in to both your Gmail account (so
+        Confidante can access your emails) and your Keybase account (so
+        Confidante can access your keys).
+      </p>
+
+      <h3>Can Confidante only work with Gmail?</h3>
+      <p>
+        In theory, Confidante can work with any email provider that supports
+        access by third-party applications, like Gmail does. In practice, this
+        beta version of Confidante was only built to work with Gmail.
+      </p>
+
+      <h3>Where are all my emails?</h3>
+      <p>
+        Confidante only shows you the emails in your Gmail account that are
+        encrypted. Any unencrypted messages (for example, messages that you sent
+        or received through the regular Gmail website) will not appear in
+        Confidante.
+      </p>
+
+      <h3>Can I send an unencrypted email?</h3>
+      <p>
+        Confidante only supports sending encrypted emails. If you’d like to send
+        a regular, unencrypted email, you can do so from the regular Gmail
+        website.
+      <p>
+
+      <h3>
+        Why do I have to enter both an email address and a Keybase user name
+        for the recipient of an email?
+      </h3>
+      <p>
+        Keybase links Keybase accounts to social media accounts
+        (Twitter, Facebook, etc.) by posting cryptographic proofs publicly to
+        those accounts (see <a target="_blank" href="https://keybase.io">Keybase's website</a>
+        for more information). Because such a proof can’t be publicly posted to
+        an email account, Keybase does not provide a verified link between
+        Keybase accounts and email addresses. Thus, Confidante cannot look up a
+        Keybase account given an email address, nor vice versa. In the future
+        Confidante may include a feature to remember such mappings, but this
+        feature comes with tradeoffs.
+      </p>
+
+    </div>
+  </section>
+
+  <section  class="alt-color-1">
+    <div class="container">
+      <h2>Security and Threat Model</h2>
+      <h3>What security properties does Confidante provide?</h3>
+      <ul class="about-list">
+        <li>
+          <b>Untrusted server:</b> Confidante does not access or store any of
+          your personal information, emails, or login credentials on our
+          servers. This information is only accessed in the Confidante client.
+        </li>
+        <li>
+          <b>Authentication best practices:</b> Confidante uses OAuth to
+          access your messages from Gmail. Keybase does not support Oauth, but
+          your Keybase password is hashed in the browser, before sending it over
+          the network.
+        </li>
+        <li>
+          <b>End-to-end encryption:</b> All emails are encrypted and decrypted
+          in the Confidante client using the kbpgp library. No intermediary --
+          including Gmail or Confidante’s servers -- can access the plaintext
+          of your emails.
+        </li>
+      </ul>
+
+      <h3>What does Confidante NOT protect against?</h3>
+      <ul class="about-list">
+        <li>
+          Confidante does <em>not</em> protect the metadata of emails. The sender,
+          recipient, and message subject are not encrypted and can be viewed by
+          your email provider or anyone who access your stored emails (as with
+          regular email).
+        </li>
+        <li>
+          Confidante cannot protect you if your computer or browser are
+          compromised. Malicious code running on your local machine could access
+          your emails, keys, or passwords.
+        </li>
+        <li>
+          Confidante also cannot protect you from phishing or other password
+          theft, or from weak emails. Be cautious only to enter your passwords
+          on trusted sites, and choose strong passwords. Someone who knows your
+          Gmail password can access your encrypted email messages (and any
+          unencrypted messages you have in your Gmail account), and someone who
+          knows your Keybase password can access your private key and decrypt
+          those messages.
+        </li>
+        <li>
+          We do not currently independently verify the proofs posted on Keybase
+          accounts. We are planning to release this feature soon, but for now,
+          we are trusting that the information on Keybase is accurate.
+        </li>
+      </ul>
+
+      <h3>What's the difference between the web preview and the desktop app?</h3>
+      <p>
+        The web preview is slightly less secure than the desktop version,
+        because certain information from Google and Keybase must pass through
+        our web server.
+      </p>
+      <ul class="about-list">
+        <li>
+          When logging in with Google, the OAuth token is passed to the browser
+          via a URL. However, this reveals the token to the server as well.
+        </li>
+        <li>
+          Certain API calls to Keybase require authentication and cannot be done
+          over CORS. This means that our web server must proxy these API calls.
+          As a consequence, the Keybase authentication is exposed to our server.
+        </li>
+      </ul>
+      <p>
+        We do not store either of these authenticators on our server,  but an
+        if our server was compromised by an active attacker, they could view
+        the authenticators of Confidante users that are currently online.
+      </p>
+      <p>
+        The desktop application does not have any of these vulnerabilities,
+        because it can directly communicate with Keybase and Gmail, without
+        going through our web server. We highly recommend using the desktop
+        app for this reason.
+      </p>
+
+      <h3>
+    </div>
+  </section>
+
+  <section class="alt-color-2">
+    <div class="container">
+      <h2>Keybase</h2>
+
+      <h3>What is the difference between Confidante and Keybase?</h3>
+      <p>
+        Keybase is a cool new key directory service and was not developed by us.
+        Confidante uses Keybase for private/public key storage and lookup. For
+        more information on Keybase and its security properties, please visit
+        the <a target="_blank" href="https://keybase.io">Keybase website</a>.
+      </p>
+
+      <h3>Can I use Confidante without a Keybase account?</h3>
+      <p>
+        No. If you don’t already have a Keybase account, you can sign up for one
+        at the <a target="_blank" href="https://keybase.io">Keybase website</a>.
+      <p>
+
+      <h3>
+        Can I use Confidante if I don’t have a private key stored on my
+        Keybase account? (For example, can I upload my private key directly to
+        Confidante?)
+      </h3>
+      <p>
+        We understand that some users may not wish to store their
+        (passphrase-protected) private keys on Keybase’s servers. In the future,
+        Confidante may support local private keys; at the moment, you must use
+        Confidante with a Keybase account that contains a private key.
+      </p>
+    </div>
+  </section>
+
+  <section class="alt-color-1">
+    <div class="container">
+      <h2>Learn More</h2>
+
+      <h3>
+        I want to learn more about Confidante’s design and security properties.
+      </h3>
+      <p>
+        Please check out our
+        <a target="_blank" href="http://www.franziroesner.com/pdf/confidante-eurosp17.pdf">research paper</a>,
+        which appeared at the IEEE European Symposium on Security and Privacy in
+        April 2017.
+      </p>
+
+      <h3>I want to provide feedback to the Confidante team.</h3>
+      <p>
+        We’d love to hear your feedback! Please contact us at
+        <a target="_blank" href="mailto:confidante@cs.washington.edu">confidante@cs.washington.edu</a>
+        or on our GitHub repository.
+      </p>
+
+      <h3>I want to look at or contribute to the Confidante source code.</h3>
+      <p>
+        Great! Please see our GitHub repository.
+      </p>
+    </div>
+  </section>
+
+
+  <%- include('footer', {version: version}); %>
+</body>
+</html>
