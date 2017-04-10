@@ -19,7 +19,11 @@
 <body>
   <section id="heading">
     <div class="container" id="title">
-      <img src="logo-white.png" id="title-logo"/>
+      <% if (electron) { %>
+        <img src="../img/logo-white.png" id="title-logo"/>
+      <% } else { %>
+        <img src="logo-white.png" id="title-logo"/>
+      <% } %>
       <h2 id="title-text">Confidante</h2>
 
     </div>
