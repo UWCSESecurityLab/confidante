@@ -30,6 +30,8 @@ Now, when you're ready to code, run these commands in separate terminal tabs:
 3. Run `$ npm run build:package` to build executables that include Electron and packages all of the code. This only builds it for the platform you're running the script on.
 4. Run `$ npm run build:installer-win` to build an installer for Windows. Only works on a Windows machine.
 
+The output packages/installers will be in the `dist/` folder in the root directory.
+
 ## How to put a new Electron version on the website ##
 SSH into a CSE machine, and upload the package to `/cse/web/research/confidante/`.
 
