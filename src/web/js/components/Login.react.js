@@ -2,6 +2,7 @@
 const flags = require('../../../flags');
 const KeybaseAPI = require('../keybaseAPI');
 const GoogleOAuth = require('../../../googleOAuth');
+const openLink = require('../openLink');
 const React = require('react');
 
 let ipcRenderer;
@@ -128,16 +129,15 @@ let Login = React.createClass({
               <h3>How do I log into Confidante?</h3>
               <p>
                 To log into Confidante, first you log in with
-                your <a href="https://keybase.io">Keybase</a> account,
-                and then your <a href="https://www.gmail.com/">Gmail</a> account.
+                your <a href="https://keybase.io" onClick={openLink} target="_blank">Keybase</a> account,
+                and then your <a href="https://www.gmail.com/" onClick={openLink} target="_blank">Gmail</a> account.
                 No separate Confidante account is necessary.
               </p>
               <h3>Don't have a Keybase account?</h3>
               <p>
                 Sign up for a free Keybase account here!
               </p>
-              <a href="https://keybase.io/" className="btn btn-primary" type="button">Sign up for Keybase</a>
-
+              <a href="https://keybase.io/" onClick={openLink} target="_blank" className="btn btn-primary" type="button">Sign up for Keybase</a>
             </div>
           </div>
         </div>
@@ -147,4 +147,3 @@ let Login = React.createClass({
 });
 
 module.exports = Login;
-
