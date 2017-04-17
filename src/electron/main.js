@@ -11,12 +11,20 @@ const http = require('http');
 
 const version = require('../../package.json').version;
 
+// Set up installer related stuff
 if (require('electron-squirrel-startup')) {
   return;
 }
 
+// Set up right click context menu
+require('electron-context-menu')({
+
+});
+
+// Set up persistent storage for access tokens
 const config = new Config();
 
+// Set variables for rendering EJS templates
 const locals = {
   toolname: 'Confidante',
   staging: false,
@@ -25,7 +33,6 @@ const locals = {
   electron: true,
   version: version
 };
-
 ejse.setOptions(locals);
 
 // Keep a global reference of the window object, if you don't, the window will
