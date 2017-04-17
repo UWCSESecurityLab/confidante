@@ -76,11 +76,25 @@ let Login = React.createClass({
   },
 
   render: function() {
-    let errorMessage = this.state.error ? (
+    let errorMessage = null;
+    if (this.state.error) {
+      switch (this.state.error.status.name) {
+        case 'BAD_LOGIN_USER_NOT_FOUND':
+          errorMessage = 'We couldn\'t find that user on Keybase.';
+          break;
+        case 'BAD_LOGIN_PASSWORD':
+          errorMessage = 'Incorrect email/username or password - please try again.';
+          break;
+        case 'INPUT_ERROR':
+          if (this.state.error.status.desc === 'bad username or email') {
+            errorMessage = 'Please enter a valid Keybase username or email address.';
+          }
+      }
+    }
+
+    let error = errorMessage ? (
       <div className="alert alert-danger" role="alert" id="error">
-        An error occured when logging in.
-        <br/>
-        {this.state.error.status.name + ': ' + this.state.error.status.desc}
+        {errorMessage}
       </div>
     ) : null;
 
@@ -99,7 +113,8 @@ let Login = React.createClass({
                           onChange={this.updateEmailOrUsername}
                           type="text"
                           className="form-control"
-                          placeholder="Keybase Email or Username"/>
+                          placeholder="Keybase Email or Username"
+                          required/>
                 </div>
                 <div className="form-group">
                   <input value={this.state.password}
@@ -107,7 +122,8 @@ let Login = React.createClass({
                           type="password"
                           className="form-control"
                           id="password"
-                          placeholder="Password"/>
+                          placeholder="Password"
+                          required/>
                 </div>
               </form>
               <div>
@@ -122,7 +138,7 @@ let Login = React.createClass({
                   : null
                 }
               </div>
-              {errorMessage}
+              {error}
             </div>
 
             <div className="login-flex-item info-bar">
