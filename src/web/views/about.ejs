@@ -81,6 +81,21 @@
       <p>
 
       <h3>
+        Why does autocomplete for recipients' email addressses not work? 
+        How do I type in recipients' email addresses?
+      </h3>
+      <p>
+        Currently, we make Gmail API calls directly from the browser to Google
+        through CORS.  However, the API for getting contactts does not support
+        the use of CORS and therefore we have switched off email address autocomplete
+        for the web version.  We could create our own server to allow for email
+        address autcomplete, but that is less secure which is of prime importance.
+        Therefore, you must type in the complete email address of the recipient. 
+        If you are emailing multiple people, enter each email address as a comma
+        separated list of email addresses.
+      </p>
+
+      <h3>
         Why do I have to enter both an email address and a Keybase user name
         for the recipient of an email?
       </h3>
@@ -91,9 +106,11 @@
         for more information). Because such a proof can’t be publicly posted to
         an email account, Keybase does not provide a verified link between
         Keybase accounts and email addresses. Thus, Confidante cannot look up a
-        Keybase account given an email address, nor vice versa. In the future
-        Confidante may include a feature to remember such mappings, but this
-        feature comes with tradeoffs.
+        Keybase account given an email address, nor vice versa. For this reason,
+        make sure that when you are 'Reply/Reply All' to a message, you are re-typing
+        the Keybase usernames of <strong>all</strong> the recipients, since
+        these will not be auto-filled for you.  In the future Confidante may include 
+        a feature to remember such mappings, but this feature comes with tradeoffs.
       </p>
 
     </div>
