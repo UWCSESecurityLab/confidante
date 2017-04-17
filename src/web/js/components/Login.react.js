@@ -98,7 +98,8 @@ let Login = React.createClass({
                           onChange={this.updateEmailOrUsername}
                           type="text"
                           className="form-control"
-                          placeholder="Keybase Email or Username"/>
+                          placeholder="Keybase Email or Username"
+                          required/>
                 </div>
                 <div className="form-group">
                   <input value={this.state.password}
@@ -106,7 +107,8 @@ let Login = React.createClass({
                           type="password"
                           className="form-control"
                           id="password"
-                          placeholder="Password"/>
+                          placeholder="Password"
+                          required/>
                 </div>
               </form>
               <div>
