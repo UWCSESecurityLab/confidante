@@ -1,9 +1,7 @@
 'use strict';
 
-const xhr = require('xhr');
 const request = require('request');
-const ORIGIN = 'http://localhost:3000';
-console.log(`ORIGIN: ${ORIGIN}`);
+const ORIGIN = 'https://confidante.cs.washington.edu';
 
 function getLatestVersion() {
   return new Promise(function(resolve, reject) {
@@ -14,8 +12,12 @@ function getLatestVersion() {
       if (error) {
         reject(error)
       } else {
-        let versionNumber = JSON.parse(body).version;
-        resolve(versionNumber);
+        try {
+          let versionNumber = JSON.parse(body).version;
+          resolve(versionNumber);
+        } catch (e) {
+          reject(e);
+        }
       }
     });
   });
