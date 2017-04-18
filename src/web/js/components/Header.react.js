@@ -41,7 +41,6 @@ let Header = React.createClass({
                   onClick={InboxActions.changeMailbox.bind(this, '')}>
                 <a href="#">All Mail</a>
               </li>
-              <li><a href="/help" target="_blank">Help</a></li>
             </ul>
             <ul className="nav navbar-nav navbar-right">
               <li><a id="myEmail">{this.props.email}</a></li>
