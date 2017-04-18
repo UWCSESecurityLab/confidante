@@ -12,7 +12,7 @@ let Header = React.createClass({
     email: React.PropTypes.string,
     mailbox: React.PropTypes.string,
     staging: React.PropTypes.bool,
-    toolname: React.PropTypes.string,
+    toolname: React.PropTypes.string
   },
 
   render: function() {
