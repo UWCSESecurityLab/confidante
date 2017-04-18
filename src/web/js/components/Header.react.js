@@ -52,7 +52,6 @@ let Header = React.createClass({
                   onClick={InboxActions.changeMailbox.bind(this, '')}>
                 <a href="#">All Mail</a>
               </li>
-              <li><a href="/help" target="_blank">Help</a></li>
               { outOfDate ? <li><a id="updateLink" onClick={openLink} href="https://confidante.cs.washington.edu#download">Update Confidante</a></li> : null}
             </ul>
             <ul className="nav navbar-nav navbar-right">
