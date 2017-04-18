@@ -83,3 +83,7 @@ p {
 #spinner {
   margin-top: 15px;
 }
+
+#updateLink {
+  color: #396cc2;
+}

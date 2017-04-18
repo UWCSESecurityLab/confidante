@@ -2,16 +2,27 @@
 const flags = require('../../../flags.js');
 const InboxActions = require('../actions/InboxActions');
 const React = require('react');
+const MessageStore = require('../stores/MessageStore.js');
+const version = require('../../../../package.json').version;
+const semver = require('semver');
+const openLink = require('../openLink');
 
 let Header = React.createClass({
   propTypes: {
     email: React.PropTypes.string,
     mailbox: React.PropTypes.string,
     staging: React.PropTypes.bool,
-    toolname: React.PropTypes.string
+    toolname: React.PropTypes.string,
   },
 
   render: function() {
+    let outOfDate = false;
+    if (flags.ELECTRON) {
+      let latestVersion = MessageStore.getLatestVersionNumber();
+      if (semver.valid(version) && semver.valid(latestVersion)) {
+        outOfDate = semver.lt(version, latestVersion);
+      }
+    }
     return (
       <nav className="navbar navbar-default">
         <div className="container-fluid">
@@ -41,6 +52,8 @@ let Header = React.createClass({
                   onClick={InboxActions.changeMailbox.bind(this, '')}>
                 <a href="#">All Mail</a>
               </li>
+              <li><a href="/help" target="_blank">Help</a></li>
+              { outOfDate ? <li><a id="updateLink" onClick={openLink} href="https://confidante.cs.washington.edu#download">Update Confidante</a></li> : null}
             </ul>
             <ul className="nav navbar-nav navbar-right">
               <li><a id="myEmail">{this.props.email}</a></li>

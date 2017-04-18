@@ -281,7 +281,7 @@ app.get('/logout', function(req, res) {
 
 app.get('/version.json', function(req, res) {
   res.json({
-    version: version 
+    version: '1.0.0'
   }); 
 });
 
