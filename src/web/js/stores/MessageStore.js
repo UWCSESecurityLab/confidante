@@ -426,7 +426,7 @@ if (flags.ELECTRON) {
       console.error(error);
     });
   }
-  const versionCheckInterval = 1000;
+  const versionCheckInterval = 60 * 15 * 1000;  // Once every 15 minutes.
   setInterval(getAndStoreRemoteVersionNumber, versionCheckInterval);
   getAndStoreRemoteVersionNumber();
 }
