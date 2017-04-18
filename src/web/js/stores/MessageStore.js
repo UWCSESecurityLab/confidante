@@ -419,14 +419,11 @@ if (flags.ELECTRON) {
 
 if (flags.ELECTRON) {
   function getAndStoreRemoteVersionNumber() {
-    console.log(`My current version is: ${version}`);
-    console.log(`Last time I checked, latest version number was: ${_latestVersionNumber}`);
     versionChecker.getLatestVersion().then(function(versionNumber) {
-      console.log(`Current version according to server is: ${versionNumber}`);
       _latestVersionNumber = versionNumber;
     }).catch(function(error) {
-      console.log('error trying to get version number from server');
-      console.log(error);
+      console.error('Error trying to get version number from server:');
+      console.error(error);
     });
   }
   const versionCheckInterval = 1000;
