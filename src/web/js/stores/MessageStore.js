@@ -10,7 +10,6 @@ const KeybaseAPI = require('../keybaseAPI');
 const KeybaseError = require('../../../error').KeybaseError;
 const messageParsing = require('../messageParsing');
 const versionChecker = require('../../../electron/versionChecker');
-const version = require('../../../../package.json').version;
 
 
 let ipcRenderer;
