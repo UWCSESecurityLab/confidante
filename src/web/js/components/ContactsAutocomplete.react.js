@@ -152,11 +152,6 @@ var ContactsAutocomplete = React.createClass({
     });
   },
 
-  displayOnHover: function() {
-    console.log("should hover");
-    return "Type the complete username of the recipeint; for multiple email addresses, type them as a comma separated list"
-  },
-
   render: function() {
     let selected = this.state.selected.map(function(contact) {
       return (
@@ -175,13 +170,13 @@ var ContactsAutocomplete = React.createClass({
     }.bind(this));
 
     return (
-      <ul className="autocomplete-input" onMouseOver={this.displayOnHover}>
+      <ul className="autocomplete-input">
           <span className="glyphicon glyphicon-envelope autocomplete-icon"
                 aria-label="To">
           </span>
           {selected}
           <Typeahead inputValue={this.state.to}
-                     placeholder="To"
+                     placeholder="To (insert as comma-separated list)"
                      onChange={this.handleValueChanged}
                      onOptionChange={this.handleResultScroll}
                      onOptionClick={this.handleResultSelected}
