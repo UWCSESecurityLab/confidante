@@ -5,7 +5,7 @@
 }
 
 #title-logo {
-  height: 84px;
+  height: 150px;
   margin-right: 15px;
 }
 
@@ -24,7 +24,7 @@ button {
 #heading {
   background-color: #396cc2;
   color: #fff;
-  padding: 50px 0 20px 0;
+  padding: 20px 0 20px 0;
   margin-bottom: 20px
 }
 
