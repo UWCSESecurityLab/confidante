@@ -23,6 +23,7 @@ let Header = React.createClass({
               <span className="icon-bar"></span>
             </button>
             <a className="navbar-brand" href={flags.ELECTRON ? './mail.ejs' : '/mail'}>
+              <img id="navbar-logo" src={flags.ELECTRON ? '../../img/logo-transparent-no-text.png' : 'logo-transparent-no-text.png'}/>
               {this.props.toolname}
               { this.props.staging ? <sub id="staging"> Staging</sub> : null }
             </a>
