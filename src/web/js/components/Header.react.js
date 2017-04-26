@@ -2,6 +2,7 @@
 const flags = require('../../../flags.js');
 const InboxActions = require('../actions/InboxActions');
 const React = require('react');
+const openLink = require('../openLink');
 
 let Header = React.createClass({
   propTypes: {
@@ -44,7 +45,7 @@ let Header = React.createClass({
             </ul>
             <ul className="nav navbar-nav navbar-right">
               <li>
-                <a href="https://catalyst.uw.edu/umail/form/franzi/4766" target="_blank">Feedback</a>
+                <a href="https://catalyst.uw.edu/umail/form/franzi/4766" onClick={openLink} target="_blank">Feedback</a>
               </li>
               <li><a id="myEmail">{this.props.email}</a></li>
               <li onClick={InboxActions.logout}><a href="#">Log Out</a></li>
