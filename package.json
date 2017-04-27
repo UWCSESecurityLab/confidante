@@ -1,9 +1,10 @@
 {
   "name": "Confidante",
-  "version": "0.5.10",
-  "license": "UNLICENSED",
+  "version": "1.0.0",
+  "license": "SEE LICENSE IN LICENSE.md",
   "description": "Usable encrypted email",
   "author": "UW CSE Security and Privacy Lab",
+  "private": true,
   "main": "./src/electron/main.js",
   "scripts": {
     "build": "./scripts/build.sh",
