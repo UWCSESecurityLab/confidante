@@ -7,10 +7,10 @@ function getLatestVersion() {
   return new Promise(function(resolve, reject) {
     request({
       method: 'GET',
-      url: `${ORIGIN}/version.json`,
+      url: `${ORIGIN}/version.json`
     }, function(error, response, body) {
       if (error) {
-        reject(error)
+        reject(error);
       } else {
         try {
           let versionNumber = JSON.parse(body).version;
