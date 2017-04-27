@@ -279,6 +279,12 @@ app.get('/logout', function(req, res) {
   });
 });
 
+app.get('/version.json', function(req, res) {
+  res.json({
+    version: version
+  }); 
+});
+
 app.listen(3000);
 console.log(flags.TOOLNAME + ' server listening on port 3000');
 

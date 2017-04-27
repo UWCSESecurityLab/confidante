@@ -1,8 +1,11 @@
 'use strict';
 const flags = require('../../../flags.js');
 const InboxActions = require('../actions/InboxActions');
-const React = require('react');
+const MessageStore = require('../stores/MessageStore.js');
 const openLink = require('../openLink');
+const React = require('react');
+const semver = require('semver');
+const version = require('../../../../package.json').version;
 
 let Header = React.createClass({
   propTypes: {
@@ -13,6 +16,13 @@ let Header = React.createClass({
   },
 
   render: function() {
+    let outOfDate = false;
+    if (flags.ELECTRON) {
+      let latestVersion = MessageStore.getLatestVersionNumber();
+      if (semver.valid(version) && semver.valid(latestVersion)) {
+        outOfDate = semver.lt(version, latestVersion);
+      }
+    }
     return (
       <nav className="navbar navbar-default">
         <div className="container-fluid">
@@ -43,6 +53,7 @@ let Header = React.createClass({
                   onClick={InboxActions.changeMailbox.bind(this, '')}>
                 <a href="#">All Mail</a>
               </li>
+              { outOfDate ? <li><a id="updateLink" onClick={openLink} href="https://confidante.cs.washington.edu#download">Update Confidante</a></li> : null}
             </ul>
             <ul className="nav navbar-nav navbar-right">
               <li>

@@ -9,11 +9,15 @@ const InboxDispatcher = require('../dispatcher/InboxDispatcher');
 const KeybaseAPI = require('../keybaseAPI');
 const KeybaseError = require('../../../error').KeybaseError;
 const messageParsing = require('../messageParsing');
+const versionChecker = require('../../../electron/versionChecker');
+
 
 let ipcRenderer;
 if (flags.ELECTRON && process.type === 'renderer') {
   ipcRenderer = window.require('electron').ipcRenderer;
 }
+
+let _latestVersionNumber = undefined;
 
 // Only zero or one thread can be open at a time -- the open thread, if any,
 // is stored here.
@@ -170,6 +174,9 @@ let MessageStore = Object.assign({}, EventEmitter.prototype, {
 
   getPrivateManager: function() {
     return _privateManager;
+  },
+  getLatestVersionNumber: function() {
+    return _latestVersionNumber;
   },
 
   getInboxState: function() {
@@ -409,5 +416,18 @@ if (flags.ELECTRON) {
   });
 }
 
+if (flags.ELECTRON) {
+  function getAndStoreRemoteVersionNumber() {
+    versionChecker.getLatestVersion().then(function(versionNumber) {
+      _latestVersionNumber = versionNumber;
+    }).catch(function(error) {
+      console.error('Error trying to get version number from server:');
+      console.error(error);
+    });
+  }
+  const versionCheckInterval = 60 * 15 * 1000;  // Once every 15 minutes.
+  setInterval(getAndStoreRemoteVersionNumber, versionCheckInterval);
+  getAndStoreRemoteVersionNumber();
+}
 
 module.exports = MessageStore;
