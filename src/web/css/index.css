@@ -63,6 +63,15 @@ section {
   margin-right: 10px;
 }
 
+#download-github {
+  display: inline-block;
+  padding: 10px 15px;
+  border-radius: 4px;
+  background-color: #f8f8f8;
+  font-size: 14pt;
+  color: #333;
+}
+
 #warning {
   background: #fff5ab;
   color: #383838;
