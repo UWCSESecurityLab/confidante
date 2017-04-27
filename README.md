@@ -1,10 +1,16 @@
-# Keymail #
-Encrypted email for everyone!
+# Confidante #
+Usable encrypted email, powered by Keybase!
+
+This is the repository for Confidante, an open source encrypted email client
+which uses [Keybase](https://keybase.io) to make using PGP easier. Here,
+we have the code and development instructions.
+
+If you want to try using Confidante, visit our home page at:
+[https://confidante.cs.washington.edu](https://confidante.cs.washington.edu)
 
 ## Getting Started ##
-- Keymail runs on [node.js](https://nodejs.org). You'll need to install that first.
-- Keymail also needs [MongoDB](https://www.mongodb.org/) installed for storing accounts and sessions.
-- Clone this repository: `$ git clone git@gitlab.cs.washington.edu:securityprivacylab/keymail.git`
+- Confidante runs on [node.js](https://nodejs.org). You'll need to install that first.
+- Clone this repository: `$ git clone git@github.com:UWCSESecurityLab/confidante.git`
 - Run `$ npm install` to download third-party dependencies.
 - Run `$ npm run build` to compile frontend assets.
 - Run `$ mongod` to start the database service. Leave that terminal window open.
@@ -35,13 +41,8 @@ The output packages/installers will be in the `dist/` folder in the root directo
 ## How to put a new Electron version on the website ##
 SSH into a CSE machine, and upload the package to `/cse/web/research/confidante/`.
 
-The Windows version should be the EXE produced by `npm build:installer-win`, 
+The Windows version should be the EXE produced by `npm build:installer-win`,
 named `ConfidanteSetup.exe`.
 
 The Mac version should be a zipped up folder, produced by `npm build:package`,
 named `Confidante-darwin-x64.zip`.
-
-## Helpful Links ##
-- [Design doc](https://docs.google.com/document/d/1RI3u0mPXgB4KFMkguWHM1jwJWKDkNSyGjohBZ2ScaVU/edit)
-- [Slack](https://keymail-uw.slack.com/)
-- [Trello team page](https://trello.com/keybasemail)
