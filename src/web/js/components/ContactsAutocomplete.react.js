@@ -176,7 +176,7 @@ var ContactsAutocomplete = React.createClass({
           </span>
           {selected}
           <Typeahead inputValue={this.state.to}
-                     placeholder="To"
+                     placeholder="To (insert as comma-separated list)"
                      onChange={this.handleValueChanged}
                      onOptionChange={this.handleResultScroll}
                      onOptionClick={this.handleResultSelected}

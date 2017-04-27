@@ -1,11 +1,11 @@
 'use strict';
 const flags = require('../../../flags.js');
 const InboxActions = require('../actions/InboxActions');
-const React = require('react');
 const MessageStore = require('../stores/MessageStore.js');
-const version = require('../../../../package.json').version;
-const semver = require('semver');
 const openLink = require('../openLink');
+const React = require('react');
+const semver = require('semver');
+const version = require('../../../../package.json').version;
 
 let Header = React.createClass({
   propTypes: {
@@ -34,6 +34,7 @@ let Header = React.createClass({
               <span className="icon-bar"></span>
             </button>
             <a className="navbar-brand" href={flags.ELECTRON ? './mail.ejs' : '/mail'}>
+              <img id="navbar-logo" src={flags.ELECTRON ? '../img/logo-transparent-no-text.png' : 'logo-transparent-no-text.png'}/>
               {this.props.toolname}
               { this.props.staging ? <sub id="staging"> Staging</sub> : null }
             </a>
@@ -55,6 +56,9 @@ let Header = React.createClass({
               { outOfDate ? <li><a id="updateLink" onClick={openLink} href="https://confidante.cs.washington.edu#download">Update Confidante</a></li> : null}
             </ul>
             <ul className="nav navbar-nav navbar-right">
+              <li>
+                <a href="https://catalyst.uw.edu/umail/form/franzi/4766" onClick={openLink} target="_blank">Feedback</a>
+              </li>
               <li><a id="myEmail">{this.props.email}</a></li>
               <li onClick={InboxActions.logout}><a href="#">Log Out</a></li>
             </ul>

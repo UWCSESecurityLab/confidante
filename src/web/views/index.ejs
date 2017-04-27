@@ -8,6 +8,7 @@
   <link rel="stylesheet" type="text/css" href="common.css">
   <link rel="stylesheet" type="text/css" href="index.css">
   <link rel="stylesheet" type="text/css" href="header.css">
+  <link rel="shortcut icon" href="favicon.png" type="image/x-icon">
 </head>
 <body>
 	<%- include('header', {active: 'index'}); %>
@@ -17,17 +18,27 @@
         <h1>Confidante</h1>
         <h2>Usable Encrypted Email</h2>
       </div>
-      <img src="logo-white.png" id="intro-logo"/>
-      <!--<div id="intro-flex">
-        <div><h4>Send email from your Gmail account</h4></div>
-        <div><h4>Encrypt with Keybase</h4></div>
-        <div><h4>Easy to use <br/> no expertise needed</h4></div>
-      </div> !-->
+      <img src="logo-white-transparent-no-text.png" id="intro-logo"/>
     </div>
   </section>
 
   <section id="summary">
     <div class="container">
+      <div id="warning">
+        <h4 id="warning-title">Important!</h4>
+        <p>
+          Confidante is a research project, which we have released for
+          beta-testing and community evaluation. Though Confidante aims to
+          provide the security properties described below, this beta version may
+          contain bugs or other errors.
+        <p>
+        <p id="warning-risk">
+            Please use Confidante only at your own risk.
+        </p>
+        <p>
+          And please give us feedback!
+        </p>
+      </div>
       <div id="screenshots">
         <a href="compose_screen.png" target="_blank"><img src="compose_screen.png" class="screenshot"/></a>
         <a href="message_screen.png" target="_blank"><img src="message_screen.png" class="screenshot"/></a>
@@ -66,24 +77,9 @@
           macOS 10.9 and later (x64)
         </a>
         <a class="btn btn-success download-btn" href="/releases/ConfidanteSetup.exe">
-          <h4>Download</h4>
+          <h4>Download (Experimental) </h4>
           Windows 7 and later (x64)
         </a>
-      </div>
-      <div id="warning">
-        <h4 id="warning-title">Important!</h4>
-        <p>
-          Confidante is a research project, which we have released for
-          beta-testing and community evaluation. Though Confidante aims to
-          provide the security properties described below, this beta version may
-          contain bugs or other errors.
-        <p>
-        <p id="warning-risk">
-            Please use Confidante only at your own risk.
-        </p>
-        <p>
-          And please give us feedback!
-        </p>
       </div>
     </div>
   </section>

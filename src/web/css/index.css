@@ -23,7 +23,7 @@ section {
 }
 
 #intro-logo {
-  height: 128px;
+  height: 150px;
   margin: 0 auto;
 }
 
@@ -32,7 +32,7 @@ section {
 }
 
 #screenshots {
-  margin: 0 auto 20px auto;
+  margin: 30px auto 20px auto;
   text-align: center;
 }
 
@@ -69,6 +69,7 @@ section {
   padding: 10px 20px;
   border-radius: 8px;
   border: 1px solid #e8b90c;
+  margin-top: 20px;
 }
 
 #warning-title {
