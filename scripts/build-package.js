@@ -19,6 +19,7 @@ packager({
   overwrite: true,
   asar: true,
   name: 'Confidante',
+  icon: 'src/electron/icon/confidante',
   win32metadata: {
     CompanyName: 'UW CSE Security and Privacy Lab',
     FileDescription: 'Usable Encrypted Email',
