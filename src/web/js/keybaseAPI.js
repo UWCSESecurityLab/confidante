@@ -315,10 +315,11 @@ class KeybaseAPI {
   static getPrivateManager() {
     return new Promise(function(resolve, reject) {
       var me = JSON.parse(localStorage.getItem('keybase'));
-      if (!me) {
-        reject('Nothing stored in local storage for me.');
+      if (!me.private_keys.primary) {
+        reject('Cannot decrypt: PGP private key is not available in Keybase\'s encrypted key store.');
         return;
       }
+      console.log(me);
       var bundle = me.private_keys.primary.bundle;
       var passphrase = localStorage.getItem('keybasePassphrase');
       p3skb.p3skbToArmoredPrivateKey(bundle, passphrase)
