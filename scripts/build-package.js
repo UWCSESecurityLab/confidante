@@ -1,3 +1,5 @@
+
+
 const fs = require('fs');
 const packager = require('electron-packager');
 
@@ -13,7 +15,7 @@ if (!fs.existsSync('dist')){
   fs.mkdirSync('dist');
 }
 
-packager({
+let options = {
   dir: '.',
   out: 'dist',
   overwrite: true,
@@ -22,12 +24,20 @@ packager({
   icon: 'src/electron/icon/confidante',
   win32metadata: {
     CompanyName: 'UW CSE Security and Privacy Lab',
-    FileDescription: 'Usable Encrypted Email',
+    FileDescription: 'Confidante - Usable Encrypted Email',
     OriginalFilename: 'Confidante.exe',
     ProductName: 'Confidante',
     InternalName: 'Confidante'
   }
-}, function(err, appPaths) {
+};
+
+let buildForWin32 = process.argv.find((arg) => arg === '--win32');
+if (buildForWin32) {
+  options.platform = 'win32';
+  options.arch = 'x64';
+}
+
+packager(options, function(err, appPaths) {
   if (err) {
     console.error(err);
   } else {
