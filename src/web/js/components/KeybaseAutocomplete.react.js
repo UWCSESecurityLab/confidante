@@ -107,12 +107,14 @@ var KeybaseAutocomplete = React.createClass({
 
     return (
       <ul className="autocomplete-input">
-        <span className="glyphicon glyphicon-lock autocomplete-icon"
-              aria-label="Keybase Username">
-        </span>
-        <span className="autocomplete-label">
-          Encrypt this message for:
-        </span>
+        <div className="autocomplete-label">
+          <span className="glyphicon glyphicon-lock autocomplete-icon"
+                aria-label="Keybase Username">
+          </span>
+          <span>
+            Encrypt this message for:
+          </span>
+        </div>
         {selected}
         <Typeahead inputValue={this.state.kbto}
                    placeholder="Search for people on Keybase"
