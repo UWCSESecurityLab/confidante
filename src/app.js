@@ -12,6 +12,8 @@ const version = require('../package.json').version;
 
 const flags = require('./flags.js');
 
+const webManifest = require('../manifest.json');
+
 // Configure Express
 var app = express();
 
@@ -103,6 +105,10 @@ app.get('/contact', function(req, res) {
     electron: false,
     version: flags.VERSION
   });
+});
+
+app.get('/manifest.json', function(req, res) {
+  res.json(webManifest);
 });
 
 app.get('/invite/getKey', function(req, res) {
@@ -282,7 +288,7 @@ app.get('/logout', function(req, res) {
 app.get('/version.json', function(req, res) {
   res.json({
     version: version
-  }); 
+  });
 });
 
 app.listen(3000);
