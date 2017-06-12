@@ -208,7 +208,7 @@ var ComposeArea = React.createClass({
           this.setState({ feedback: 'Your login expired! Sign in again and try sending the email again.' });
         } else {
           // TODO: show error message, ask users to send error to us
-          this.setState({ feedback: 'Something in ' + this.props.toolname + ' broke. Sorry!'});
+          this.setState({ feedback: 'Something in ' + this.props.toolname + ' broke: ' + error.toString()});
         }
         this.setState({ sendingSpinner: false });
       }.bind(this));
