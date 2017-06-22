@@ -4,7 +4,8 @@
 
 /* The top level container element */
 .compose-area {
-  width: 600px;
+  max-width: 600px;
+  max-height: 100%;
 
   /* These rules get it to hover over the rest of the content */
   position: fixed;
@@ -26,6 +27,16 @@
   color: white;
   border-top-right-radius: 8px;
   border-top-left-radius: 8px;
+}
+
+@media all and (max-width: 750px) {
+  .compose-area {
+    right: 0px;
+    height: 100%;
+  }
+  .compose-header {
+    border-radius: 0px;
+  }
 }
 
 .compose-input {

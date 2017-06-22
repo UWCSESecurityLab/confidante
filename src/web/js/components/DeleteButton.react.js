@@ -17,7 +17,7 @@ var DeleteButton = React.createClass({
               id="archive-button"
               className="btn btn-primary inbox-button"
               onClick={this.deleteSelectedThreads}>
-        Delete
+        <span className="glyphicon glyphicon-trash" aria-label="delete"></span>
       </button>
     );
   }
