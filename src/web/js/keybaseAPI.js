@@ -5,6 +5,8 @@ const crypto = require('crypto');
 const flags = require('../../flags');
 const emailValidator = require('email-validator');
 const kbpgp = require('kbpgp');
+const NetworkError = require('../../error').NetworkError;
+const NoPublicKeyError = require('../../error').NoPublicKeyError;
 const p3skb = require('../../p3skb');
 const purepack = require('purepack');
 const querystring = require('querystring');
@@ -273,12 +275,15 @@ class KeybaseAPI {
         url: kbUrl + '/' + username + '/key.asc'
       }, function(error, response, body) {
         if (error) {
-          reject('Internal error attempting to fetch key for user ' + username);
-        } else if (response.statusCode == 200) {
+          reject(new NetworkError(kbUrl));
+        } else if (response.statusCode === 404 &&
+                   body === 'SELF-SIGNED PUBLIC KEY NOT FOUND') {
+          reject(new NoPublicKeyError(username));
+        } else if (response.statusCode === 200) {
           resolve(body);
         } else {
-          reject('Error code ' + response.statusCode +
-                 ' from keybase for key.asc for user ' + username);
+          console.error(response);
+          reject(new Error('Unknown error fetching ' + username + '\'s public key'));
         }
       });
     }.bind(this));

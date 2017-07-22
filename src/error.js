@@ -4,6 +4,8 @@
  * The name property corresponds to the type of error, and the message is
  * a human readable error.
  */
+
+// AuthErrors are thrown when there is an authentication issue with Gmail/OAuth.
 class AuthError extends Error {
   constructor(message) {
     super(message);
@@ -11,6 +13,7 @@ class AuthError extends Error {
   }
 }
 
+// KeybaseErrors are thrown when there is an authentication issue with Keybase.
 class KeybaseError extends Error {
   constructor(message) {
     super(message);
@@ -18,6 +21,7 @@ class KeybaseError extends Error {
   }
 }
 
+// InputErrors are thrown when the user provides invalid input.
 class InputError extends Error {
   constructor(message) {
     super(message);
@@ -25,6 +29,8 @@ class InputError extends Error {
   }
 }
 
+// NetworkErrors are thrown if there was some error with the network connection
+// (e.g. a request fails)
 class NetworkError extends Error {
   constructor(message) {
     super(message);
@@ -32,6 +38,17 @@ class NetworkError extends Error {
   }
 }
 
+// NoPublicKeyErrors are thrown when a public key is unavailable for some
+// reason.
+class NoPublicKeyError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'NoPublicKeyError';
+  }
+}
+
+// UnsupportedErrors are thrown when platform specific code is called, but
+// aren't supported on the current platform.
 class UnsupportedError extends Error {
   constructor(message) {
     super(message);
@@ -44,5 +61,6 @@ module.exports = {
   InputError: InputError,
   KeybaseError: KeybaseError,
   NetworkError: NetworkError,
+  NoPublicKeyError: NoPublicKeyError,
   UnsupportedError: UnsupportedError
 };

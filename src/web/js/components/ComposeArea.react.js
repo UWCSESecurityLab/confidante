@@ -5,6 +5,7 @@ const ContactsAutocomplete = require('./ContactsAutocomplete.react');
 const kbpgp = require('kbpgp');
 const KeybaseAutocomplete = require('./KeybaseAutocomplete.react');
 const InboxActions = require('../actions/InboxActions');
+const InputError = require('../../../error').InputError;
 const KeybaseAPI = require('../keybaseAPI');
 const messageParsing = require('../messageParsing');
 const MessageStore = require('../stores/MessageStore');
@@ -138,7 +139,7 @@ var ComposeArea = React.createClass({
     return new Promise(function(fulfill, reject) {
       // This happens if the sender didn't fill in any Keybase Usernames
       if (keyManagers.length <= 1) {
-        reject('Please give the Keybase Username of the user you wish to encrypt to.');
+        reject(new InputError('Please provide the Keybase Username of the user you wish to encrypt to.'));
         return;
       }
       var params;
@@ -181,7 +182,8 @@ var ComposeArea = React.createClass({
     this.setState({ sendingSpinner: true });
 
     let keyManagers = this.state.kbto.map((user) => {
-      return KeybaseAPI.publicKeyForUser(user).then(KeybaseAPI.managerFromPublicKey);
+      return KeybaseAPI.publicKeyForUser(user)
+          .then(KeybaseAPI.managerFromPublicKey);
     });
     keyManagers.push(ourPublicKeyManager);
 
@@ -189,7 +191,7 @@ var ComposeArea = React.createClass({
       .then(this.encryptEmail)
       .then(function(encryptedEmail) {
         if (this.state.to.length === 0) {
-          throw new Error('Please specify at least one recipient email address.');
+          throw new InputError('Please specify at least one recipient email address.');
         }
         return gmail.sendMessage({
           to: this.state.to,
@@ -204,11 +206,21 @@ var ComposeArea = React.createClass({
         InboxActions.setComposeUIClose();
         this.props.onSent();
       }.bind(this)).catch(function(error) {
-        if (error.name === 'AuthError') {
-          this.setState({ feedback: 'Your login expired! Sign in again and try sending the email again.' });
-        } else {
-          // TODO: show error message, ask users to send error to us
-          this.setState({ feedback: 'Something in ' + this.props.toolname + ' broke: ' + error.toString()});
+        switch (error.name) {
+          case 'AuthError':
+            this.setState({ feedback: 'Your login expired! Sign in again and try sending the email again.' });
+            break;
+          case 'InputError':
+            this.setState({ feedback: error.message });
+            break;
+          case 'NetworkError':
+            this.setState({ feedback: 'Couldn\'t connect to ' + error.message });
+            break;
+          case 'NoPublicKeyError':
+            this.setState({ feedback: error.message + ' doesn\'t have a PGP public key! Confidante couldn\'t encrypt your message.' });
+            break;
+          default:
+            this.setState({ feedback: 'Something in ' + this.props.toolname + ' broke: ' + error.toString()});
         }
         this.setState({ sendingSpinner: false });
       }.bind(this));
