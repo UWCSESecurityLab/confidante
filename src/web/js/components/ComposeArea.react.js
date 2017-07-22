@@ -12,27 +12,8 @@ const MessageStore = require('../stores/MessageStore');
 const React = require('react');
 const xhr = require('xhr');
 
-var ourPrivateManager;
-MessageStore.getPrivateManager().then(function(privateManager) {
-  ourPrivateManager = privateManager;
-});
-
-var ourPublicKeyManager =
-  Promise
-    .reject(new Error('Key manager for local public key not yet created.'))
-    .catch(function() {});
-
-(function() {
-  try {
-    var me = JSON.parse(localStorage.getItem('keybase'));
-    var pubkey = me.public_keys.primary.bundle;
-    ourPublicKeyManager = KeybaseAPI.managerFromPublicKey(pubkey);
-  } catch (err) {
-    ourPublicKeyManager = Promise.reject(new Error(err));
-  }
-})();
-
 let gmail = MessageStore.getGmailClient();
+let userKeyManager = MessageStore.getPrivateManager();
 
 function getKBIDFromSigner(signer) {
   if (signer && signer.user && signer.user[0] && signer.user[0].basics) {
@@ -135,6 +116,14 @@ var ComposeArea = React.createClass({
   _onReset: function() {
     this.replaceState(this.getInitialState());
   },
+
+  /**
+   * Encrypts the message written in the ComposeArea.
+   * @param {array} keyManagers An array of kbpgp KeyManagers, representing the
+   * public keys of the recipients. Must also include the current user's
+   * KeyManager (so they can also read the message).
+   * @return {Promise} string containing the PGP encrypted message.
+   */
   encryptEmail: function(keyManagers) {
     return new Promise(function(fulfill, reject) {
       // This happens if the sender didn't fill in any Keybase Usernames
@@ -142,25 +131,21 @@ var ComposeArea = React.createClass({
         reject(new InputError('Please provide the Keybase Username of the user you wish to encrypt to.'));
         return;
       }
-      var params;
-      if(this.state.checked) {
-        params = {
-          msg: this.state.email,
-          encrypt_for: keyManagers,
-          sign_with: ourPrivateManager
-        };
-      } else {
-        params = {
+      userKeyManager.then(function(privateKeyManager) {
+        let params = {
           msg: this.state.email,
           encrypt_for: keyManagers
         };
-      }
-      kbpgp.box(params, function(err, result_string) {
-        if (!err) {
-          fulfill(result_string);
-        } else {
-          reject(err);
+        if (this.state.checked) {
+          params.sign_with = privateKeyManager;
         }
+        kbpgp.box(params, function(err, result_string) {
+          if (!err) {
+            fulfill(result_string);
+          } else {
+            reject(err);
+          }
+        });
       });
     }.bind(this));
   },
@@ -185,7 +170,7 @@ var ComposeArea = React.createClass({
       return KeybaseAPI.publicKeyForUser(user)
           .then(KeybaseAPI.managerFromPublicKey);
     });
-    keyManagers.push(ourPublicKeyManager);
+    keyManagers.push(userKeyManager);
 
     Promise.all(keyManagers)
       .then(this.encryptEmail)
@@ -215,6 +200,9 @@ var ComposeArea = React.createClass({
             break;
           case 'NetworkError':
             this.setState({ feedback: 'Couldn\'t connect to ' + error.message });
+            break;
+          case 'NoPrivateKeyError':
+            this.setState({ feedback: 'Confidante couldn\'t send your message because your PGP private key isn\'t stored with Keybase.' });
             break;
           case 'NoPublicKeyError':
             this.setState({ feedback: error.message + ' doesn\'t have a PGP public key! Confidante couldn\'t encrypt your message.' });

@@ -47,6 +47,13 @@ class NoPublicKeyError extends Error {
   }
 }
 
+class NoPrivateKeyError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'NoPrivateKeyError';
+  }
+}
+
 // UnsupportedErrors are thrown when platform specific code is called, but
 // aren't supported on the current platform.
 class UnsupportedError extends Error {
@@ -61,6 +68,7 @@ module.exports = {
   InputError: InputError,
   KeybaseError: KeybaseError,
   NetworkError: NetworkError,
+  NoPrivateKeyError: NoPrivateKeyError,
   NoPublicKeyError: NoPublicKeyError,
   UnsupportedError: UnsupportedError
 };

@@ -5,7 +5,9 @@ const crypto = require('crypto');
 const flags = require('../../flags');
 const emailValidator = require('email-validator');
 const kbpgp = require('kbpgp');
+const KeybaseError = require('../../error').KeybaseError;
 const NetworkError = require('../../error').NetworkError;
+const NoPrivateKeyError = require('../../error').NoPrivateKeyError;
 const NoPublicKeyError = require('../../error').NoPublicKeyError;
 const p3skb = require('../../p3skb');
 const purepack = require('purepack');
@@ -36,6 +38,18 @@ class KeybaseAPI {
    */
   static url() {
     return kbUrl;
+  }
+
+  /**
+   * Get the Keybase username of the currently logged-in user.
+   * @return {string} username
+   */
+  static getUsername() {
+    try {
+      return JSON.parse(localStorage.getItem('keybase')).basics.username;
+    } catch(e) {
+      throw new KeybaseError();
+    }
   }
 
   /**
@@ -321,7 +335,7 @@ class KeybaseAPI {
     return new Promise(function(resolve, reject) {
       var me = JSON.parse(localStorage.getItem('keybase'));
       if (!me.private_keys.primary) {
-        reject('Cannot decrypt: PGP private key is not available in Keybase\'s encrypted key store.');
+        reject(new NoPrivateKeyError());
         return;
       }
       console.log(me);

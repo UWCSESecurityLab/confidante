@@ -126,6 +126,11 @@ function _decryptMessage(message) {
       delete _messageErrors[message.id];
       MessageStore.emitChange();
     }).catch(function(err) {
+      if (err.name === 'NoPrivateKeyError') {
+        _messageErrors[message.id] = 'Confidante couldn\'t decrypt this message because your PGP private key isn\'t stored with Keybase.';
+        MessageStore.updateGlobalError(err);
+        return;
+      }
       _messageErrors[message.id] = err;
       try {
         JSON.parse(err);
