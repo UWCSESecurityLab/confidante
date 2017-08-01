@@ -10,7 +10,7 @@ let GlobalError = React.createClass({
     return { error: null };
   },
 
-  renderAuthError: function() {
+  renderGoogleAuthError: function() {
     return (
       <div id="global-error" className="alert alert-warning" role="alert">
         Your Gmail login has expired!
@@ -19,7 +19,7 @@ let GlobalError = React.createClass({
     );
   },
 
-  renderKeybaseError: function() {
+  renderKeybaseAuthError: function() {
     return (
       <div id="global-error" className="alert alert-warning" role="alert">
         Your Keybase login has expired!
@@ -60,10 +60,10 @@ let GlobalError = React.createClass({
 
   render: function() {
     switch (this.props.error.name) {
-      case 'AuthError':
-        return this.renderAuthError();
-      case 'KeybaseError':
-        return this.renderKeybaseError();
+      case 'GoogleAuthError':
+        return this.renderGoogleAuthError();
+      case 'KeybaseAuthError':
+        return this.renderKeybaseAuthError();
       case 'NoPrivateKeyError':
         return this.renderNoPrivateKeyError();
       case 'NetworkError':

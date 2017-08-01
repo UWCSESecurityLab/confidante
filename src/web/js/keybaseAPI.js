@@ -5,7 +5,7 @@ const crypto = require('crypto');
 const flags = require('../../flags');
 const emailValidator = require('email-validator');
 const kbpgp = require('kbpgp');
-const KeybaseError = require('../../error').KeybaseError;
+const KeybaseAuthError = require('../../error').KeybaseAuthError;
 const NetworkError = require('../../error').NetworkError;
 const NoPrivateKeyError = require('../../error').NoPrivateKeyError;
 const NoPublicKeyError = require('../../error').NoPublicKeyError;
@@ -48,7 +48,7 @@ class KeybaseAPI {
     try {
       return JSON.parse(localStorage.getItem('keybase')).basics.username;
     } catch(e) {
-      throw new KeybaseError();
+      throw new KeybaseAuthError();
     }
   }
 

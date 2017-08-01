@@ -1,13 +1,13 @@
 'use strict';
 
-const AuthError = require('../../../error').AuthError;
 const EventEmitter = require('events').EventEmitter;
 const flags = require('../../../flags');
 const GmailClient = require('../../../gmailClient');
+const GoogleAuthError = require('../../../error').GoogleAuthError;
 const GoogleOAuth = require('../../../googleOAuth');
 const InboxDispatcher = require('../dispatcher/InboxDispatcher');
 const KeybaseAPI = require('../keybaseAPI');
-const KeybaseError = require('../../../error').KeybaseError;
+const KeybaseAuthError = require('../../../error').KeybaseAuthError;
 const messageParsing = require('../messageParsing');
 const versionChecker = require('../../../electron/versionChecker');
 
@@ -135,7 +135,7 @@ function _decryptMessage(message) {
       try {
         JSON.parse(err);
         if (err.status.code === 502) {
-          MessageStore.updateGlobalError(new KeybaseError(err.status.desc));
+          MessageStore.updateGlobalError(new KeybaseAuthError(err.status.desc));
         } else {
           MessageStore.emitChange();
         }
@@ -412,11 +412,11 @@ if (flags.ELECTRON) {
       _token = arg;                               // Update store token
       _gmail.setToken(_token.access_token);       // Update GmailClient's token
       onTokenExpiry(_token.expires - Date.now());  // Reset the timeout
-      if (_globalError.name === 'AuthError') {
+      if (_globalError.name === 'GoogleAuthError') {
         MessageStore.updateGlobalError(null);
       }
     } else {
-      MessageStore.updateGlobalError(new AuthError('Refresh failed'));
+      MessageStore.updateGlobalError(new GoogleAuthError());
     }
   });
 }

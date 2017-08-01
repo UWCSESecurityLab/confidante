@@ -192,7 +192,7 @@ var ComposeArea = React.createClass({
         this.props.onSent();
       }.bind(this)).catch(function(error) {
         switch (error.name) {
-          case 'AuthError':
+          case 'GoogleAuthError':
             this.setState({ feedback: 'Your login expired! Sign in again and try sending the email again.' });
             break;
           case 'InputError':

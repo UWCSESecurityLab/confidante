@@ -5,19 +5,20 @@
  * a human readable error.
  */
 
-// AuthErrors are thrown when there is an authentication issue with Gmail/OAuth.
-class AuthError extends Error {
+// GoogleAuthErrors are thrown when there is an authentication issue with
+// Gmail/OAuth.
+class GoogleAuthError extends Error {
   constructor(message) {
     super(message);
-    this.name = 'AuthError';
+    this.name = 'GoogleAuthError';
   }
 }
 
-// KeybaseErrors are thrown when there is an authentication issue with Keybase.
-class KeybaseError extends Error {
+// KeybaseAuthErrors are thrown when there is an authentication issue with Keybase.
+class KeybaseAuthError extends Error {
   constructor(message) {
     super(message);
-    this.name = 'KeybaseError';
+    this.name = 'KeybaseAuthError';
   }
 }
 
@@ -64,9 +65,9 @@ class UnsupportedError extends Error {
 }
 
 module.exports = {
-  AuthError: AuthError,
+  GoogleAuthError: GoogleAuthError,
   InputError: InputError,
-  KeybaseError: KeybaseError,
+  KeybaseAuthError: KeybaseAuthError,
   NetworkError: NetworkError,
   NoPrivateKeyError: NoPrivateKeyError,
   NoPublicKeyError: NoPublicKeyError,

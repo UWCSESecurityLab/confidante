@@ -1,7 +1,7 @@
 'use strict';
 
-const AuthError = require('./error').AuthError;
 const flags = require('./flags.js');
+const GoogleAuthError = require('./error').GoogleAuthError;
 const InputError = require('./error').InputError;
 const messageParsing = require('./web/js/messageParsing');
 const NetworkError = require('./error').NetworkError;
@@ -55,7 +55,7 @@ class GmailClient {
         } else {
           if (body.error) {
             if (body.error.code === 401) {
-              reject(new AuthError(body.error.message));
+              reject(new GoogleAuthError(body.error.message));
             }
           }
           resolve(body);
