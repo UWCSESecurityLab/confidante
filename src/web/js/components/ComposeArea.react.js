@@ -193,7 +193,7 @@ var ComposeArea = React.createClass({
       }.bind(this)).catch(function(error) {
         switch (error.name) {
           case 'GoogleAuthError':
-            this.setState({ feedback: 'Your login expired! Sign in again and try sending the email again.' });
+            this.setState({ feedback: 'Your Gmail login expired! Sign in again and try sending the email again.' });
             break;
           case 'InputError':
             this.setState({ feedback: error.message });
@@ -205,7 +205,7 @@ var ComposeArea = React.createClass({
             this.setState({ feedback: 'Confidante couldn\'t send your message because your PGP private key isn\'t stored with Keybase.' });
             break;
           case 'NoPublicKeyError':
-            this.setState({ feedback: error.message + ' doesn\'t have a PGP public key! Confidante couldn\'t encrypt your message.' });
+            this.setState({ feedback: error.message + ' didn\'t put their public key on Keybase, so Confidante couldn\'t encrypt your message.' });
             break;
           default:
             this.setState({ feedback: 'Something in ' + this.props.toolname + ' broke: ' + error.toString()});
