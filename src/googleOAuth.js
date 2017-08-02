@@ -1,7 +1,7 @@
 'use strict';
 
-const AuthError = require('./error.js').AuthError;
 const flags = require('./flags.js');
+const GoogleAuthError = require('./error.js').GoogleAuthError;
 const qs = require('querystring');
 // We use request instead of xhr here, because Electron uses this library from
 // the main process, which doesn't support XMLHttpRequest. Browserify will
@@ -142,14 +142,14 @@ let GoogleOAuth = {
           url: 'https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=' + accessToken
         }, function(error, response, body) {
           if (error) {
-            reject(new AuthError('Invalid access token (rejected by Google).'));
+            reject(new GoogleAuthError('Invalid access token (rejected by Google).'));
             return;
           }
           let tokenInfo = JSON.parse(body);
           if (tokenInfo.aud !== credentials.web.client_id) {
-            reject(new AuthError('The provided access token\'s client ID does not match the app\'s client id.'));
+            reject(new GoogleAuthError('The provided access token\'s client ID does not match the app\'s client id.'));
           } else if (tokenInfo.expires_in < 0 || tokenInfo.exp < Date.now()/1000) {
-            reject(new AuthError('The access token has expired.'));
+            reject(new GoogleAuthError('The access token has expired.'));
           } else {
             resolve();
           }

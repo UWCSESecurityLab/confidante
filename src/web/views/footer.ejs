@@ -1,3 +1,7 @@
 <div class="footer">
-  Confidante <%= version %> - © 2017 UW CSE Security and Privacy Lab</a>
+  Confidante <%= version %> -
+  <% if (staging) { %>
+    using Keybase staging server -
+  <% } %>
+  © 2017 UW CSE Security and Privacy Lab
 </div>

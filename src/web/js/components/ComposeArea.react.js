@@ -5,33 +5,15 @@ const ContactsAutocomplete = require('./ContactsAutocomplete.react');
 const kbpgp = require('kbpgp');
 const KeybaseAutocomplete = require('./KeybaseAutocomplete.react');
 const InboxActions = require('../actions/InboxActions');
+const InputError = require('../../../error').InputError;
 const KeybaseAPI = require('../keybaseAPI');
 const messageParsing = require('../messageParsing');
 const MessageStore = require('../stores/MessageStore');
 const React = require('react');
 const xhr = require('xhr');
 
-var ourPrivateManager;
-MessageStore.getPrivateManager().then(function(privateManager) {
-  ourPrivateManager = privateManager;
-});
-
-var ourPublicKeyManager =
-  Promise
-    .reject(new Error('Key manager for local public key not yet created.'))
-    .catch(function() {});
-
-(function() {
-  try {
-    var me = JSON.parse(localStorage.getItem('keybase'));
-    var pubkey = me.public_keys.primary.bundle;
-    ourPublicKeyManager = KeybaseAPI.managerFromPublicKey(pubkey);
-  } catch (err) {
-    ourPublicKeyManager = Promise.reject(new Error(err));
-  }
-})();
-
 let gmail = MessageStore.getGmailClient();
+let userKeyManager = MessageStore.getPrivateManager();
 
 function getKBIDFromSigner(signer) {
   if (signer && signer.user && signer.user[0] && signer.user[0].basics) {
@@ -134,32 +116,36 @@ var ComposeArea = React.createClass({
   _onReset: function() {
     this.replaceState(this.getInitialState());
   },
+
+  /**
+   * Encrypts the message written in the ComposeArea.
+   * @param {array} keyManagers An array of kbpgp KeyManagers, representing the
+   * public keys of the recipients. Must also include the current user's
+   * KeyManager (so they can also read the message).
+   * @return {Promise} string containing the PGP encrypted message.
+   */
   encryptEmail: function(keyManagers) {
     return new Promise(function(fulfill, reject) {
       // This happens if the sender didn't fill in any Keybase Usernames
       if (keyManagers.length <= 1) {
-        reject('Please give the Keybase Username of the user you wish to encrypt to.');
+        reject(new InputError('Please provide the Keybase Username of the user you wish to encrypt to.'));
         return;
       }
-      var params;
-      if(this.state.checked) {
-        params = {
-          msg: this.state.email,
-          encrypt_for: keyManagers,
-          sign_with: ourPrivateManager
-        };
-      } else {
-        params = {
+      userKeyManager.then(function(privateKeyManager) {
+        let params = {
           msg: this.state.email,
           encrypt_for: keyManagers
         };
-      }
-      kbpgp.box(params, function(err, result_string) {
-        if (!err) {
-          fulfill(result_string);
-        } else {
-          reject(err);
+        if (this.state.checked) {
+          params.sign_with = privateKeyManager;
         }
+        kbpgp.box(params, function(err, result_string) {
+          if (!err) {
+            fulfill(result_string);
+          } else {
+            reject(err);
+          }
+        });
       });
     }.bind(this));
   },
@@ -181,15 +167,16 @@ var ComposeArea = React.createClass({
     this.setState({ sendingSpinner: true });
 
     let keyManagers = this.state.kbto.map((user) => {
-      return KeybaseAPI.publicKeyForUser(user).then(KeybaseAPI.managerFromPublicKey);
+      return KeybaseAPI.publicKeyForUser(user)
+          .then(KeybaseAPI.managerFromPublicKey);
     });
-    keyManagers.push(ourPublicKeyManager);
+    keyManagers.push(userKeyManager);
 
     Promise.all(keyManagers)
       .then(this.encryptEmail)
       .then(function(encryptedEmail) {
         if (this.state.to.length === 0) {
-          throw new Error('Please specify at least one recipient email address.');
+          throw new InputError('Please specify at least one recipient email address.');
         }
         return gmail.sendMessage({
           to: this.state.to,
@@ -204,11 +191,24 @@ var ComposeArea = React.createClass({
         InboxActions.setComposeUIClose();
         this.props.onSent();
       }.bind(this)).catch(function(error) {
-        if (error.name === 'AuthError') {
-          this.setState({ feedback: 'Your login expired! Sign in again and try sending the email again.' });
-        } else {
-          // TODO: show error message, ask users to send error to us
-          this.setState({ feedback: 'Something in ' + this.props.toolname + ' broke: ' + error.toString()});
+        switch (error.name) {
+          case 'GoogleAuthError':
+            this.setState({ feedback: 'Your Gmail login expired! Sign in again and try sending the email again.' });
+            break;
+          case 'InputError':
+            this.setState({ feedback: error.message });
+            break;
+          case 'NetworkError':
+            this.setState({ feedback: 'Couldn\'t connect to ' + error.message });
+            break;
+          case 'NoPrivateKeyError':
+            this.setState({ feedback: 'Confidante couldn\'t send your message because your PGP private key isn\'t stored with Keybase.' });
+            break;
+          case 'NoPublicKeyError':
+            this.setState({ feedback: error.message + ' didn\'t put their public key on Keybase, so Confidante couldn\'t encrypt your message.' });
+            break;
+          default:
+            this.setState({ feedback: 'Something in ' + this.props.toolname + ' broke: ' + error.toString()});
         }
         this.setState({ sendingSpinner: false });
       }.bind(this));

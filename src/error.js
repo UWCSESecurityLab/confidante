@@ -4,20 +4,25 @@
  * The name property corresponds to the type of error, and the message is
  * a human readable error.
  */
-class AuthError extends Error {
+
+// GoogleAuthErrors are thrown when there is an authentication issue with
+// Gmail/OAuth.
+class GoogleAuthError extends Error {
   constructor(message) {
     super(message);
-    this.name = 'AuthError';
+    this.name = 'GoogleAuthError';
   }
 }
 
-class KeybaseError extends Error {
+// KeybaseAuthErrors are thrown when there is an authentication issue with Keybase.
+class KeybaseAuthError extends Error {
   constructor(message) {
     super(message);
-    this.name = 'KeybaseError';
+    this.name = 'KeybaseAuthError';
   }
 }
 
+// InputErrors are thrown when the user provides invalid input.
 class InputError extends Error {
   constructor(message) {
     super(message);
@@ -25,6 +30,8 @@ class InputError extends Error {
   }
 }
 
+// NetworkErrors are thrown if there was some error with the network connection
+// (e.g. a request fails)
 class NetworkError extends Error {
   constructor(message) {
     super(message);
@@ -32,6 +39,24 @@ class NetworkError extends Error {
   }
 }
 
+// NoPublicKeyErrors are thrown when a public key is unavailable for some
+// reason.
+class NoPublicKeyError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'NoPublicKeyError';
+  }
+}
+
+class NoPrivateKeyError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'NoPrivateKeyError';
+  }
+}
+
+// UnsupportedErrors are thrown when platform specific code is called, but
+// aren't supported on the current platform.
 class UnsupportedError extends Error {
   constructor(message) {
     super(message);
@@ -40,9 +65,11 @@ class UnsupportedError extends Error {
 }
 
 module.exports = {
-  AuthError: AuthError,
+  GoogleAuthError: GoogleAuthError,
   InputError: InputError,
-  KeybaseError: KeybaseError,
+  KeybaseAuthError: KeybaseAuthError,
   NetworkError: NetworkError,
+  NoPrivateKeyError: NoPrivateKeyError,
+  NoPublicKeyError: NoPublicKeyError,
   UnsupportedError: UnsupportedError
 };
