@@ -146,7 +146,7 @@ var ComposeArea = React.createClass({
             reject(err);
           }
         });
-      });
+      }.bind(this));
     }.bind(this));
   },
 
