@@ -15,9 +15,6 @@
     "eslint:recommended",
     "plugin:react/recommended"
   ],
-  "ecmaFeatures": {
-    "jsx": true
-  },
   "globals": {
     "$": true,
     "KeybaseAPI": true
