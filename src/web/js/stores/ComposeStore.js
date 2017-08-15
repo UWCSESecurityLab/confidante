@@ -2,7 +2,6 @@
 
 const InboxDispatcher = require('../dispatcher/InboxDispatcher');
 const EventEmitter = require('events').EventEmitter;
-const assign = require('object-assign');
 
 var _replyAll = false;
 var _inReplyTo = {};
@@ -13,7 +12,7 @@ var _email = '';
 var _signPrivate = true;
 var _displayCompose = false;
 
-var ComposeStore = assign({}, EventEmitter.prototype, {
+var ComposeStore = Object.assign({}, EventEmitter.prototype, {
   emitChange: function() {
     this.emit('CHANGE');
   },
