@@ -1,7 +1,7 @@
 'use strict';
 const flags = require('../../../flags');
 const InboxActions = require('../actions/InboxActions');
-const KeybaseAPI = require('../KeybaseAPI');
+const KeybaseAPI = require('../keybaseAPI');
 const openLink = require('../openLink');
 const React = require('react');
 
