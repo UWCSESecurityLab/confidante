@@ -1,6 +1,6 @@
 'use strict';
 
-const addressParser = require('address-rfc2822'); 
+const addrs = require('email-addresses');
 
 module.exports = {
   getMessageHeader: function(message, header) {
@@ -103,7 +103,7 @@ module.exports = {
    * @return True if they're the same email, false otherwise.
    */
   isSameAddress: function(address1, address2) {
-    return addressParser.parse(address1)[0].address ===
-           addressParser.parse(address2)[0].address;
+    return addrs.parseOneAddress(address1).address ===
+           addrs.parse(address2).address;
   }
 };

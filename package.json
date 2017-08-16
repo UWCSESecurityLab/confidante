@@ -23,7 +23,6 @@
   },
   "dependencies": {
     "@tappleby/react-typeahead-component": "^0.10.3",
-    "address-rfc2822": "^2.0.1",
     "body-parser": "^1.17.2",
     "bootstrap": "^3.3.7",
     "compression": "^1.7.0",
@@ -34,6 +33,7 @@
     "electron-config": "^1.0.0",
     "electron-context-menu": "^0.9.1",
     "electron-squirrel-startup": "^1.0.0",
+    "email-addresses": "^3.0.1",
     "email-validator": "^1.1.1",
     "express": "^4.15.3",
     "express-session": "^1.15.5",

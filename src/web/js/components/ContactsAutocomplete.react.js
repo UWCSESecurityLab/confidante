@@ -1,7 +1,7 @@
 'use strict';
 
 const React = require('react');
-const AddressParser = require('address-rfc2822');
+const addrs = require('email-addresses');
 const AutocompleteStore = require('../stores/AutocompleteStore');
 const ContactCompletion = require('./ContactCompletion.react');
 const InboxActions = require('../actions/InboxActions');
@@ -142,13 +142,8 @@ var ContactsAutocomplete = React.createClass({
     if (string === '') {
       return [];
     }
-    let addresses = AddressParser.parse(string);
-    return addresses.filter(function(address) {
-      // First, filter out invalid email addresses.
-      return address.user() && address.host();
-    }).map(function(address) {
-      // Then format it in the simple format we like.
-      return { email: address.address, name: address.name() };
+    addrs.parseAddressList(string).map(function(address) {
+      return { email: address.address, name: address.name };
     });
   },
 
