@@ -127,7 +127,7 @@ var ContactsAutocomplete = React.createClass({
   // Converts a JSON email contact to a RFC compliant string
   formatContact: function(contact) {
     let contactAddr = '';
-    if (contact.name.length != 0) {
+    if (contact.name && contact.name.length !== 0) {
       // If the contact includes a name, wrap the email address in "< >"
       contactAddr = contact.name + ' <' + contact.email + '>';
     } else {
@@ -142,9 +142,14 @@ var ContactsAutocomplete = React.createClass({
     if (string === '') {
       return [];
     }
-    addrs.parseAddressList(string).map(function(address) {
-      return { email: address.address, name: address.name };
-    });
+    let addresses = string.split(',');
+    return addresses
+      .map((str) => str.trim())
+      .map(addrs.parseOneAddress)
+      .filter((result) => result != null)
+      .map(function(address) {
+        return { email: address.address, name: address.name };
+      });
   },
 
   render: function() {
