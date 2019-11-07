@@ -44,7 +44,7 @@
     "jquery": "^3.2.1",
     "kbpgp": "^2.0.73",
     "keybase-proofs": "^2.1.16",
-    "mongoose": "^4.11.5",
+    "mongoose": "^5.7.8",
     "node-uuid": "^1.4.8",
     "pgp-utils": "0.0.32",
     "purepack": "^1.0.4",
