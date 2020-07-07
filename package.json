@@ -64,7 +64,7 @@
     "browserify": "^14.4.0",
     "chai": "^4.1.0",
     "chai-as-promised": "^7.1.1",
-    "electron": "^1.6.11",
+    "electron": "^9.1.0",
     "electron-packager": "^8.7.2",
     "electron-winstaller": "^2.6.3",
     "envify": "^4.1.0",
